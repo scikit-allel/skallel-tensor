@@ -1,0 +1,10 @@
+# pyup.io config file
+# see https://pyup.io/docs/configuration/ for all available options
+
+schedule: every month
+
+requirements:
+  - requirements.txt:
+      pin: True
+      update: all
+
