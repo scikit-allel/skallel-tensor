@@ -42,7 +42,7 @@ remember to activate the virtual environment, e.g.:
 workon scikit-allel-model
 ```
 
-## Running tests
+## Run tests
 
 To run the unit tests manually:
 
@@ -54,4 +54,16 @@ To run the unit tests with coverage:
 
 ```bash
 pytest -v --cov=skallel
+```
+
+## Code style
+
+Please use [black](https://black.readthedocs.io/en/stable/index.html) to format all 
+Python files.
+
+Python files should also pass [flake8](http://flake8.pycqa.org/en/latest/) checks. 
+E.g., run:
+
+```bash
+flake8 --max-line-length=88
 ```
