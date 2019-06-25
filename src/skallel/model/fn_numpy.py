@@ -4,7 +4,11 @@ import numpy as np
 def genotype_array_check(gt):
 
     if not isinstance(gt, np.ndarray):
-        raise TypeError("Bad type for genotype array; expected {}, found {}.".format(np.ndarray, type(gt)))
+        raise TypeError(
+            "Bad type for genotype array; expected {}, found {}.".format(
+                np.ndarray, type(gt)
+            )
+        )
 
     if gt.dtype != np.dtype("i1"):
         raise TypeError(
