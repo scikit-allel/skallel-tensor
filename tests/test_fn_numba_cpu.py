@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
-from skallel.model.fn_numpy import genotype_array_check
+from numpy.testing import assert_array_equal
+from skallel.model.fn_numpy import genotype_array_check, genotype_array_is_called
 
 
 def test_genotype_array_check():
@@ -33,3 +34,10 @@ def test_genotype_array_check():
     gt = np.array([0, 1], dtype="i1")
     with pytest.raises(ValueError):
         genotype_array_check(gt)
+
+
+def test_genotype_array_is_called():
+    gt = np.array([[[0, 0], [0, 1]], [[0, -1], [-1, -1]]], dtype="i1")
+    expect = np.array([[True, True], [False, False]], dtype=bool)
+    actual = genotype_array_is_called(gt)
+    assert_array_equal(expect, actual)
