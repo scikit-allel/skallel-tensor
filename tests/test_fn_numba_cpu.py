@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
-from skallel.model.fn_numpy import genotype_array_check, genotype_array_is_called
+from skallel.model.fn_numba_cpu import genotype_array_check, genotype_array_is_called
 
 
 def test_genotype_array_check():
@@ -37,7 +37,7 @@ def test_genotype_array_check():
 
 
 def test_genotype_array_is_called():
-    gt = np.array([[[0, 0], [0, 1]], [[0, -1], [-1, -1]]], dtype="i1")
-    expect = np.array([[True, True], [False, False]], dtype=bool)
+    gt = np.array([[[0, 0], [0, 1], [2, 3]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1")
+    expect = np.array([[True, True, True], [False, False, False]], dtype=bool)
     actual = genotype_array_is_called(gt)
     assert_array_equal(expect, actual)
