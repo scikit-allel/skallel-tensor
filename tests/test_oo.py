@@ -82,3 +82,22 @@ def test_genotype_array_is_called():
     gt = GenotypeArray(data_dask)
     actual = gt.is_called().compute()
     assert_array_equal(expect, actual)
+
+
+def test_genotype_array_is_missing():
+
+    data = np.array(
+        [[[0, 0], [0, 1], [2, 3]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
+    )
+    expect = np.array([[False, False, False], [True, True, True]], dtype=bool)
+
+    # test numpy array
+    gt = GenotypeArray(data)
+    actual = gt.is_missing()
+    assert_array_equal(expect, actual)
+
+    # test dask array
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    gt = GenotypeArray(data_dask)
+    actual = gt.is_missing().compute()
+    assert_array_equal(expect, actual)

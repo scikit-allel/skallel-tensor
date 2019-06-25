@@ -51,3 +51,10 @@ class GenotypeArray(object):
             return fn_numpy.genotype_array_is_called(self.data)
         if isinstance(self.data, da.Array):
             return fn_dask.genotype_array_is_called(self.data)
+
+    def is_missing(self):
+        """TODO"""
+        if isinstance(self.data, np.ndarray):
+            return fn_numpy.genotype_array_is_missing(self.data)
+        if isinstance(self.data, da.Array):
+            return fn_dask.genotype_array_is_missing(self.data)
