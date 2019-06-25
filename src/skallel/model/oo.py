@@ -2,8 +2,8 @@ import numpy as np
 import dask.array as da
 
 
-from skallel.model import fn_numpy
-from skallel.model import fn_dask
+from . import fn_numpy
+from . import fn_dask
 
 
 class GenotypeArray(object):
@@ -58,3 +58,10 @@ class GenotypeArray(object):
             return fn_numpy.genotype_array_is_missing(self.data)
         if isinstance(self.data, da.Array):
             return fn_dask.genotype_array_is_missing(self.data)
+
+    def is_hom(self):
+        """TODO"""
+        if isinstance(self.data, np.ndarray):
+            return fn_numpy.genotype_array_is_hom(self.data)
+        if isinstance(self.data, da.Array):
+            return fn_dask.genotype_array_is_hom(self.data)

@@ -34,3 +34,24 @@ def _genotype_array_is_missing(gt, out):
                     out[i, j] = True
                     # no need to check other alleles
                     break
+
+
+def genotype_array_is_hom(gt):
+    out = np.ones(gt.shape[:2], dtype=bool)
+    _genotype_array_is_hom(gt, out)
+    return out
+
+
+@numba.njit(numba.void(numba.int8[:, :, :], numba.boolean[:, :]), nogil=True)
+def _genotype_array_is_hom(g, out):
+    for i in range(g.shape[0]):
+        for j in range(g.shape[1]):
+            first_allele = g[i, j, 0]
+            if first_allele < 0:
+                out[i, j] = False
+            else:
+                for k in range(1, g.shape[2]):
+                    if g[i, j, k] != first_allele:
+                        out[i, j] = False
+                        # no need to check other alleles
+                        break
