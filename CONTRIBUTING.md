@@ -29,6 +29,7 @@ then run:
 ```bash
 mkvirtualenv --python=/usr/bin/python3.7 scikit-allel-model
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ...replacing "/usr/bin/python3.7" with whatever is the path to your
@@ -39,4 +40,18 @@ remember to activate the virtual environment, e.g.:
 
 ```bash
 workon scikit-allel-model
+```
+
+## Running tests
+
+To run the unit tests manually:
+
+```bash
+pytest -v
+```
+
+To run the unit tests with coverage:
+
+```bash
+pytest -v --cov=skallel
 ```
