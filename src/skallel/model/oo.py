@@ -71,11 +71,13 @@ class GenotypeArray(object):
 
     def count_alleles(self, max_allele):
         """TODO"""
+        # TODO wrap the result as AlleleCountsArray
         return self._fn.genotype_array_count_alleles(self.data, max_allele)
 
     # TODO __getitem__ with support for simple slices and/or ints only
     # TODO select_variants_by_id
     # TODO select_variants_by_position
+    # TODO select_variants_by_region
     # TODO select_variants_by_index
     # TODO select_variants_by_mask
     # TODO select_samples_by_id
@@ -83,3 +85,10 @@ class GenotypeArray(object):
     # TODO select_samples_by_mask
     # TODO take
     # TODO compress
+
+
+# TODO Callset
+# TODO ContigCallset
+# TODO HaplotypeArray
+# TODO AlleleCountsArray
+# TODO GenotypeAlleleCountsArray
