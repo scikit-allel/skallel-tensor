@@ -55,3 +55,19 @@ def _genotype_array_is_hom(g, out):
                         out[i, j] = False
                         # no need to check other alleles
                         break
+
+
+def genotype_array_count_alleles(gt, max_allele):
+    out = np.zeros((gt.shape[0], max_allele + 1), dtype="i4")
+    _genotype_array_count_alleles(gt, max_allele, out)
+    return out
+
+
+@numba.njit(numba.void(numba.int8[:, :, :], numba.int8, numba.int32[:, :]), nogil=True)
+def _genotype_array_count_alleles(g, max_allele, out):
+    for i in range(g.shape[0]):
+        for j in range(g.shape[1]):
+            for k in range(g.shape[2]):
+                allele = g[i, j, k]
+                if 0 <= allele <= max_allele:
+                    out[i, allele] += 1

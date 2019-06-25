@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal
 from skallel.model.oo import GenotypeArray
 
 
-def test_genotype_array_init():
+def test_init():
 
     # valid data - numpy array
     data = np.array([[[0, 1], [2, 3], [4, 5]], [[4, 5], [6, 7], [-1, -1]]], dtype="i1")
@@ -65,7 +65,7 @@ def test_genotype_array_init():
         GenotypeArray(data)
 
 
-def test_genotype_array_is_called():
+def test_is_called():
 
     data = np.array(
         [[[0, 0], [0, 1], [2, 3]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
@@ -84,7 +84,7 @@ def test_genotype_array_is_called():
     assert_array_equal(expect, actual)
 
 
-def test_genotype_array_is_missing():
+def test_is_missing():
 
     data = np.array(
         [[[0, 0], [0, 1], [2, 3]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
@@ -103,7 +103,7 @@ def test_genotype_array_is_missing():
     assert_array_equal(expect, actual)
 
 
-def test_genotype_array_is_hom():
+def test_is_hom():
 
     data = np.array(
         [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
@@ -119,4 +119,23 @@ def test_genotype_array_is_hom():
     data_dask = da.from_array(data, chunks=(1, 1, -1))
     gt = GenotypeArray(data_dask)
     actual = gt.is_hom().compute()
+    assert_array_equal(expect, actual)
+
+
+def test_count_alleles():
+
+    data = np.array(
+        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
+    )
+    expect = np.array([[3, 1, 2], [2, 0, 0]], dtype="i4")
+
+    # test numpy array
+    gt = GenotypeArray(data)
+    actual = gt.count_alleles(max_allele=2)
+    assert_array_equal(expect, actual)
+
+    # test dask array
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    gt = GenotypeArray(data_dask)
+    actual = gt.count_alleles(max_allele=2).compute()
     assert_array_equal(expect, actual)
