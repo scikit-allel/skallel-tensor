@@ -85,6 +85,7 @@ class GenotypeArray(object):
     # TODO select_samples_by_mask
     # TODO take
     # TODO compress
+    # TODO to_allele_counts
 
 
 # TODO Callset
