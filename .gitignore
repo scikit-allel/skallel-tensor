@@ -111,3 +111,6 @@ venv.bak/
 
 # setuptools scm
 version.py
+
+# pip?
+pip-wheel-metadata/
