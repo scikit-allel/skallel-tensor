@@ -1,2 +1,11 @@
+# library requirements
 numba==0.44.0
 numpy==1.16.4
+# test requirements
+tox==3.12.1
+pytest==4.6.3
+pytest-cov==2.7.1
+flake8==3.7.7
+coverage==4.5.3
+coveralls==1.8.1
+setuptools-scm==3.3.3
