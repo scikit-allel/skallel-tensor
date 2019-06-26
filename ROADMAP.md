@@ -20,7 +20,7 @@ can be simplified.
 
 Why rewrite it? Several reasons:
 
-* We've learned the hard way that [writing dumb
+* [Writing dumb
   code](https://matthewrocklin.com/blog/work/2018/01/27/write-dumb-code)
   and [avoiding
   indirection](https://matthewrocklin.com/blog/work/2019/06/23/avoid-indirection)
