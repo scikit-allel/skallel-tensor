@@ -50,10 +50,10 @@ To run the unit tests manually:
 pytest -v
 ```
 
-To run the unit tests with coverage:
+To run the unit tests via tox, with coverage report:
 
 ```bash
-pytest -v --cov=skallel
+tox -e py37-nojit
 ```
 
 ## Code style
