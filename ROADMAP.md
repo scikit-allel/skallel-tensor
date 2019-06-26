@@ -2,10 +2,11 @@
 
 ## Design notes
 
-This project (scikit-allel-model) is intended to provide functions and
-classes for representing and transforming genetic variation data. It
-factors out and rewrites the functionality currently available in the
-scikit-allel version 1.x modules under the `allel.model` package.
+This project (scikit-allel-model) is intended to provide array
+functions and classes for representing and transforming genetic
+variation data. It factors out and rewrites the functionality
+currently available in the scikit-allel version 1.x modules under the
+`allel.model` package.
 
 Why split this functionality out into a separate project? Primarily to
 make it easier to maintain. The current scikit-allel code base is
@@ -34,7 +35,7 @@ Why rewrite it? Several reasons:
   cython or complicated numpy tricks. Cython is a wonderful tool but
   adds complexity both in the implementation and in the packaging and
   distribution. Numpy is also wonderful but things can get very
-  obscure when functions are using several vectorized operations with
+  obscure when algorithms are using several vectorized operations with
   lots of broadcasting and indexing tricks. Numba allows
   straightforward algorithm implementations using plain Python code.
   
