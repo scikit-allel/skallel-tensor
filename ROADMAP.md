@@ -6,7 +6,8 @@ This project (scikit-allel-model) is intended to provide array
 functions and classes for representing and transforming genetic
 variation data. It factors out and rewrites the functionality
 currently available in the scikit-allel version 1.x modules under the
-`allel.model` package.
+[allel.model](https://github.com/cggh/scikit-allel/tree/master/allel/model)
+package.
 
 Why split this functionality out into a separate project? Primarily to
 make it easier to maintain. The current scikit-allel code base is
@@ -26,11 +27,11 @@ Why rewrite it? Several reasons:
   are excellent pieces of advice which make maintaining a code base
   much easier, as well as making it easier for others to review and
   contribute code. On reflection, there is way too much cleverness and
-  indirection in the current `allel.model` code.
+  indirection in the current code base.
   
-* Some of the existing `allel.model` code is rarely used and just too
-  complex to be worth maintaining. If dropped, it would allow us to
-  focus our limited energies on core functionalities.
+* Some of the existing code is rarely used and just too complex to be
+  worth maintaining. If dropped, it would allow us to focus our
+  limited energies on core functionalities.
   
 * There are a number of specific opportunities to simplify the
   underlying code. In particular, [numba](https://numba.pydata.org/)
@@ -44,27 +45,27 @@ Why rewrite it? Several reasons:
   code.
   
 * There are specific opportunities to simplify the API for users. For
-  example, the current `allel.model` API exposes three classes for
-  working with genotype data: `GenotypeArray`, `GenotypeDaskArray` and
+  example, the v1.x scikit-allel API exposes three classes for working
+  with genotype data: `GenotypeArray`, `GenotypeDaskArray` and
   `GenotypeChunkedArray`. Now that dask is mature, we can drop support
   for the "chunked" classes, e.g., `GenotypeChunkedArray`. It would
   also be simpler if we had just a single `GenotypeArray` class that
   could be used with either numpy or dask arrays as the underlying
   data container.
   
-* There are some technical issue with the current `allel.model` code
-  that arise when using dask with a distributed cluster. These issues
-  only surface in a distributed setting because functions are being
-  pickled and sent to workers where they are unpickled. We need to
-  anticipate and accommodate that type of usage.
+* There are some technical issue with the v1.x code that arise when
+  using dask with a distributed cluster. These issues only surface in
+  a distributed setting because functions are being pickled and sent
+  to workers where they are unpickled. We need to anticipate and
+  accommodate that type of usage.
 
 Below are some further details on the approach being taken.
 
 ### Use numba
 
-The functions in the current `allel.model` sub-modules are written
-either using numpy's built-in vectorized functions or using a cython
-module
+The functions in the v1.x `allel.model` sub-modules are currently
+written either using numpy's built-in vectorized functions or using a
+cython module
 ([allel.opt.model](https://github.com/cggh/scikit-allel/blob/master/allel/opt/model.pyx)).
 
 Any function previously written in cython will be rewritten using
@@ -172,7 +173,7 @@ From a user point of view this will be all hidden, so the user can
 still install with, e.g.:
 
 ```
-pip install scikit-allel
+pip install scikit-allel==2.0.0
 ```
 
 ...and work with an API very similar to the current v1.x API, e.g.:
