@@ -75,17 +75,11 @@ decorator in nopython (and nogil) mode. There are two
 advantages. First, the code is written as pure Python, so no need to
 understand any of the quirks of cython syntax. Second, the code can be
 unit tested with coverage by disabling JIT compilation during the test
-<<<<<<< HEAD
-run. I think 100% test coverage should be a minimum requirement for
-code to get into scikit-allel-model master branch, and so being able
-to get coverage reports for all functions is vital. I've done some
-casual benchmarking and find no substantial performance difference
-between numba and cython.
-=======
 run. 100% test coverage should be a minimum requirement for code to
 get into scikit-allel-model master branch, and so being able to get
-coverage reports for all functions is vital. 
->>>>>>> design-notes
+coverage reports for all functions is vital. Numba code is generally
+as fast as cython code, so there shouldn't be any performance
+implications.
 
 Wherever possible, any function previously written using numpy
 vectorized functions will also be rewritten using numba's
