@@ -6,18 +6,29 @@ from . import fn_numpy
 from . import fn_dask
 
 
+def is_hdf5_like(x):
+    return (
+        hasattr(x, "ndim")
+        and hasattr(x, "dtype")
+        and hasattr(x, "shape")
+        and hasattr(x, "chunks")
+        and len(x.chunks) == len(x.shape) == x.ndim
+    )
+
+
 class GenotypeArray(object):
     """TODO"""
 
     def __init__(self, data):
         """TODO"""
 
-        # TODO support hdf5-like data
-
         # check type
         if isinstance(data, np.ndarray):
             self._fn = fn_numpy
         elif isinstance(data, da.Array):
+            self._fn = fn_dask
+        elif is_hdf5_like(data):
+            data = da.from_array(data, chunks=data.chunks)
             self._fn = fn_dask
         else:
             raise TypeError("TODO")
