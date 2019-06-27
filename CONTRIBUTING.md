@@ -102,3 +102,11 @@ To view benchmarking results:
 asv publish
 asv preview
 ```
+
+## Release
+
+To release a new version, create a release on GitHub. Use a tag like
+"v0.1.0" for normal releases, or "v0.1.0a1" for an alpha pre-release,
+or "v0.1.0b1" for a beta pre-release. Follow [semantic
+versioning(https://semver.org/). The release will automatically be
+deployed to PyPI by Travis CI.
