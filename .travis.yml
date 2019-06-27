@@ -2,6 +2,7 @@ language: python
 branches:
   only:
   - master
+  - /v\d+\.\d+\.\d+([ab]\d)?/
 sudo: false
 matrix:
   include:
