@@ -1,23 +1,25 @@
 language: python
-
 branches:
   only:
-    - master
-
+  - master
 sudo: false
-
 matrix:
   include:
-    - python: 3.6
-    - python: 3.7
-      dist: xenial
-      sudo: true
-
+  - python: 3.6
+  - python: 3.7
+    dist: xenial
+    sudo: true
 install:
-  - pip install -U pip setuptools wheel tox-travis coveralls
-
+- pip install -U pip setuptools wheel tox-travis coveralls
 script:
-  - tox
-
+- tox
 after_success:
-  - coveralls
+- coveralls
+deploy:
+  provider: pypi
+  user: aliman
+  password:
+    secure: BnTaDvUXtMgqEcz2J40/jHDhoybUkn5FVzRkw9HJFvZbYP939pnEIyPXk4yc0ZNtRssFPLIrDhpdORozSwSL6+yZSbYdtvrxx3WdnAYGNDBr+NawGOO0wYjWPxQv/CudFkNK08mZcrKrAFXMZu6tVSCs307nGNzgt2lqVWqtBkQ1HHrG/dXyYNHEpkTZhYuYsQNkSEBGhPsbIcy3jib929EDKxDNSB7hwI73BmTkqvCXJG4bMExhpoSxKEZcyJzO4UuxzOEOn6bYieKH3vvyAsLjNu3BktTfcculdhfWs8BolLYwPZCdAH0YE8mtlhlC3oaHMc26/A+BadQQfYfKuRaS9f44AJO2hvKH6dfA/odrV32SKQpKtx9McitmXOvtArYx+y3iyfmIvqytQb0LjRr/pf9pA3H9KcocVeP289dOzFWkA/Y3StRN9kVsfQce2IPDhBldeH9SsHg5OKmEQHHgEurXnsJx4IsnoLVvRhveteLcJtWy+Hs+/8DN3GY7nab/Xc8UAu7DGTI4PgrL/XzgnoGTyQwxnPFBI+cPwhTsxm/NUSYz6sEXWNZTI3pvhH/B73t9dh7JD462nqtkE2S9LTQG/9xriI/XhwuXg2aKY48jEw4jxhZJTznNjzHHqaiaLAGU5icm1UQd1MXBwpL5vbCy9lS52Df989SZECw=
+  on:
+    tags: true
+  
