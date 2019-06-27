@@ -10,4 +10,5 @@ flake8==3.7.7
 coverage==4.5.3
 coveralls==1.8.1
 setuptools-scm==3.3.3
+asv==0.4.1
 zarr==2.3.2
