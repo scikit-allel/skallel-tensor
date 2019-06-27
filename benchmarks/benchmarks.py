@@ -14,16 +14,16 @@ class TimeGenotypeArray:
         fn_numpy.genotype_array_is_called(self.data)
 
     def time_is_called_dask(self):
-        fn_dask.genotype_array_is_called(self.data_dask)
+        fn_dask.genotype_array_is_called(self.data_dask).compute()
 
     def time_is_missing_numpy(self):
         fn_numpy.genotype_array_is_missing(self.data)
 
     def time_is_missing_dask(self):
-        fn_dask.genotype_array_is_missing(self.data_dask)
+        fn_dask.genotype_array_is_missing(self.data_dask).compute()
 
     def time_count_alleles_numpy(self):
         fn_numpy.genotype_array_count_alleles(self.data, max_allele=3)
 
     def time_count_alleles_dask(self):
-        fn_dask.genotype_array_count_alleles(self.data_dask, max_allele=3)
+        fn_dask.genotype_array_count_alleles(self.data_dask, max_allele=3).compute()
