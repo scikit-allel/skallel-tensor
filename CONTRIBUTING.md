@@ -67,3 +67,38 @@ E.g., run:
 ```bash
 flake8 --max-line-length=88
 ```
+
+## Running benchmarks
+
+To run the [ASV](https://asv.readthedocs.org/) benchmarks against the
+current state of the source code:
+
+```
+asv dev
+```
+
+...or:
+
+```
+asv run --python=same
+```
+
+To run the benchmarks against the latest commit in the master branch:
+
+```
+asv run
+```
+
+To test a range of commits, e.g., on a particular branch since
+branching off master:
+
+```
+asv run master..mybranch
+```
+
+To view benchmarking results:
+
+```
+asv publish
+asv preview
+```
