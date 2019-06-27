@@ -18,7 +18,7 @@ class TimeSuite:
             pass
 
     def time_iterkeys(self):
-        for key in self.d.iterkeys():
+        for key in self.d.keys():
             pass
 
     def time_range(self):
@@ -28,7 +28,7 @@ class TimeSuite:
 
     def time_xrange(self):
         d = self.d
-        for key in xrange(500):
+        for key in range(500):
             x = d[key]
 
 
