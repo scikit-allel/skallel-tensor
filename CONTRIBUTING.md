@@ -68,7 +68,7 @@ E.g., run:
 flake8 --max-line-length=88
 ```
 
-## Running benchmarks
+## Run benchmarks
 
 To run the [ASV](https://asv.readthedocs.org/) benchmarks against the
 current state of the source code:
