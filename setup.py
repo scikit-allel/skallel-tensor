@@ -1,9 +1,11 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
     name="scikit-allel-model",
     description="Array functions and classes for genetic variation data.",
-    packages=find_packages("src"),
+    # N.B., cannot use find_packages() with native (implicit) namespace package
+    # https://packaging.python.org/guides/packaging-namespace-packages/#native-namespace-packages
+    packages=["skallel.model"],
     package_dir={"": "src"},
     setup_requires=["setuptools>18.0", "setuptools-scm>1.5.4"],
     install_requires=["numpy", "numba", "dask[array]"],
@@ -28,4 +30,6 @@ setup(
     maintainer_email="alimanfoo@googlemail.com",
     url="https://github.com/scikit-allel/scikit-allel-model",
     license="MIT",
+    include_package_data=True,
+    zip_safe=False,
 )

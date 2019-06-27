@@ -1,37 +1,29 @@
-# Write the benchmarking functions here.
-# See "Writing benchmarks" in the asv docs for more information.
+import numpy as np
+import dask.array as da
+from skallel.model import fn_numpy, fn_dask
 
 
-class TimeSuite:
-    """
-    An example benchmark that times the performance of various kinds
-    of iterating over dictionaries in Python.
-    """
+class TimeGenotypeArray:
+    """Timing benchmarks for genotype array functions."""
 
     def setup(self):
-        self.d = {}
-        for x in range(500):
-            self.d[x] = None
+        self.data = np.random.randint(-1, 4, size=(10000, 1000, 2), dtype="i1")
+        self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
 
-    def time_keys(self):
-        for key in self.d.keys():
-            pass
+    def time_is_called_numpy(self):
+        fn_numpy.genotype_array_is_called(self.data)
 
-    def time_iterkeys(self):
-        for key in self.d.keys():
-            pass
+    def time_is_called_dask(self):
+        fn_dask.genotype_array_is_called(self.data_dask)
 
-    def time_range(self):
-        d = self.d
-        for key in range(500):
-            x = d[key]
+    def time_is_missing_numpy(self):
+        fn_numpy.genotype_array_is_missing(self.data)
 
-    def time_xrange(self):
-        d = self.d
-        for key in range(500):
-            x = d[key]
+    def time_is_missing_dask(self):
+        fn_dask.genotype_array_is_missing(self.data_dask)
 
+    def time_count_alleles_numpy(self):
+        fn_numpy.genotype_array_count_alleles(self.data, max_allele=3)
 
-class MemSuite:
-    def mem_list(self):
-        return [0] * 256
+    def time_count_alleles_dask(self):
+        fn_dask.genotype_array_count_alleles(self.data_dask, max_allele=3)
