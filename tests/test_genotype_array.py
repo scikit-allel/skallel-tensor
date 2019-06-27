@@ -2,6 +2,7 @@ import numpy as np
 import dask.array as da
 import pytest
 from numpy.testing import assert_array_equal
+import zarr
 
 
 from skallel.model.oo import GenotypeArray
@@ -23,6 +24,15 @@ def test_init():
     gt = GenotypeArray(data_dask)
     assert data_dask is gt.data
     assert data_dask is gt.values
+    assert 2 == gt.n_variants
+    assert 3 == gt.n_samples
+    assert 2 == gt.ploidy
+
+    # valid data - zarr array
+    data_zarr = zarr.array(data)
+    gt = GenotypeArray(data_zarr)
+    # expect data will get converted to a dask array
+    assert isinstance(gt.data, da.Array)
     assert 2 == gt.n_variants
     assert 3 == gt.n_samples
     assert 2 == gt.ploidy
