@@ -22,6 +22,18 @@ class TimeGenotypeArray:
     def time_is_missing_dask(self):
         fn_dask.genotype_array_is_missing(self.data_dask).compute()
 
+    def time_is_hom_numpy(self):
+        fn_numpy.genotype_array_is_hom(self.data)
+
+    def time_is_hom_dask(self):
+        fn_dask.genotype_array_is_hom(self.data_dask).compute()
+
+    def time_is_het_numpy(self):
+        fn_numpy.genotype_array_is_het(self.data)
+
+    def time_is_het_dask(self):
+        fn_dask.genotype_array_is_het(self.data_dask).compute()
+
     def time_count_alleles_numpy(self):
         fn_numpy.genotype_array_count_alleles(self.data, max_allele=3)
 

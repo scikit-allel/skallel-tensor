@@ -83,7 +83,11 @@ class GenotypeArray(object):
         # TODO support allele argument
         return self._fn.genotype_array_is_hom(self.data)
 
-    # TODO is_het
+    def is_het(self):
+        """TODO"""
+        # TODO support allele argument
+        return self._fn.genotype_array_is_het(self.data)
+
     # TODO is_call
     # TODO to_n_ref
     # TODO to_n_alt

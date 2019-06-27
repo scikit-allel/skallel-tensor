@@ -132,6 +132,45 @@ def test_is_hom():
     assert_array_equal(expect, actual)
 
 
+def test_is_het():
+
+    data = np.array(
+        [[[0, 0], [0, 1], [1, 2]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
+    )
+    expect = np.array([[False, True, True], [False, False, False]], dtype=bool)
+
+    # test numpy array
+    gt = GenotypeArray(data)
+    actual = gt.is_het()
+    assert_array_equal(expect, actual)
+
+    # test dask array
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    gt = GenotypeArray(data_dask)
+    actual = gt.is_het().compute()
+    assert_array_equal(expect, actual)
+
+
+def test_is_het_triploid():
+
+    data = np.array(
+        [[[0, 0, 0], [0, 0, 1], [0, 1, 2]], [[0, 0, -1], [0, 1, -1], [0, -1, -1]]],
+        dtype="i1",
+    )
+    expect = np.array([[False, True, True], [False, True, False]], dtype=bool)
+
+    # test numpy array
+    gt = GenotypeArray(data)
+    actual = gt.is_het()
+    assert_array_equal(expect, actual)
+
+    # test dask array
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    gt = GenotypeArray(data_dask)
+    actual = gt.is_het().compute()
+    assert_array_equal(expect, actual)
+
+
 def test_count_alleles():
 
     data = np.array(
