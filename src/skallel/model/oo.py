@@ -1,5 +1,6 @@
 import numpy as np
 import dask.array as da
+import pandas as pd
 
 
 from . import fn_numpy
@@ -186,3 +187,57 @@ class GenotypeArray(object):
 # TODO take
 # TODO compress
 # TODO concatenate?
+# TODO variants_to_dataframe
+# TODO variants_to_dask_dataframe
+
+
+VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]
+
+
+class ContigCallset(object):
+    def __init__(self, data):
+        self._data = data
+
+    @property
+    def data(self):
+        return self._data
+
+    def variants_to_dataframe(self, index="POS", columns=None):
+
+        # discover variants array keys
+        all_keys = sorted(self.data["variants"])
+
+        if columns is None:
+            # use all keys, reordering so VCF fixed fields are first
+            keys = [k for k in VCF_FIXED_FIELDS if k in all_keys]
+            keys += [k for k in all_keys if k.startswith("FILTER")]
+            keys += [k for k in all_keys if k not in keys]
+
+        else:
+            # check requested columns are present in data
+            for k in columns:
+                if k not in all_keys:
+                    raise ValueError("TODO")
+            # use only requested columns, in requested order
+            keys = columns
+
+        # build dataframe
+        df_cols = {}
+        for k in keys:
+            # load values
+            a = self.data["variants"][k][:]
+            # check number of dimensions
+            if a.ndim == 1:
+                df_cols[k] = a
+            elif a.ndim == 2:
+                for i in range(a.shape[1]):
+                    df_cols["{}_{}".format(k, i + 1)] = a[:, i]
+            else:
+                raise ValueError("TODO")
+        df = pd.DataFrame(df_cols)
+
+        # set index
+        if index is not None and index in df:
+            df.set_index(index, inplace=True)
+
+        return df
