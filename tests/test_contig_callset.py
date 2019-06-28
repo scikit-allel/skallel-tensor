@@ -2,6 +2,7 @@ import zarr
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
+import dask.dataframe as dd
 import pytest
 from skallel.model.oo import ContigCallset
 
@@ -171,3 +172,41 @@ def test_variants_to_dataframe_exceptions():
     data.create_dataset("variants/bar", data=np.arange(1000).reshape(10, 10, 10))
     with pytest.warns(UserWarning):
         callset.variants_to_dataframe()
+
+
+def test_variants_to_dask_dataframe_default():
+
+    # setup
+    data = setup_callset_data_zarr()
+    callset = ContigCallset(data)
+
+    # construct dataframe
+    df = callset.variants_to_dask_dataframe()
+    assert isinstance(df, dd.DataFrame)
+
+    # check default column ordering - expect VCF fixed fields first if present,
+    # then other fields ordered alphabetically
+    assert [
+        "POS",
+        "ID",
+        "REF",
+        "ALT_1",
+        "ALT_2",
+        "QUAL",
+        "FILTER_PASS",
+        "AC_1",
+        "AC_2",
+        "DP",
+    ] == df.columns.tolist()
+
+    # check data
+    assert_array_equal(data["variants/POS"][:], df["POS"].compute())
+    assert_array_equal(data["variants/ID"][:], df["ID"].compute())
+    assert_array_equal(data["variants/REF"][:], df["REF"].compute())
+    assert_array_equal(data["variants/ALT"][:, 0], df["ALT_1"].compute())
+    assert_array_equal(data["variants/ALT"][:, 1], df["ALT_2"].compute())
+    assert_array_equal(data["variants/QUAL"][:], df["QUAL"].compute())
+    assert_array_equal(data["variants/FILTER_PASS"][:], df["FILTER_PASS"].compute())
+    assert_array_equal(data["variants/AC"][:, 0], df["AC_1"].compute())
+    assert_array_equal(data["variants/AC"][:, 1], df["AC_2"].compute())
+    assert_array_equal(data["variants/DP"][:], df["DP"].compute())

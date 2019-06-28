@@ -2,6 +2,7 @@ import warnings
 import numpy as np
 import dask.array as da
 import pandas as pd
+import dask.dataframe as dd
 
 
 from . import fn_numpy
@@ -244,5 +245,39 @@ class ContigCallset(object):
         # set index
         if index is not None and index in df:
             df.set_index(index, inplace=True)
+
+        return df
+
+    def variants_to_dask_dataframe(self):
+
+        # discover variants array keys
+        all_keys = sorted(self.data["variants"])
+
+        # use all keys, reordering so VCF fixed fields are first
+        keys = [k for k in VCF_FIXED_FIELDS if k in all_keys]
+        keys += [k for k in all_keys if k.startswith("FILTER")]
+        keys += [k for k in all_keys if k not in keys]
+
+        # build dataframe
+        df_cols = []
+        for k in keys:
+            a = self.data["variants"][k]
+            d = da.from_array(a, chunks=a.chunks)
+            # check number of dimensions
+            if d.ndim == 1:
+                df_cols.append(d.to_dask_dataframe(columns=k))
+            elif a.ndim == 2:
+                # split columns
+                df_cols.append(
+                    d.to_dask_dataframe(
+                        columns=["{}_{}".format(k, i + 1) for i in range(a.shape[1])]
+                    )
+                )
+            else:
+                warnings.warn(
+                    "Ignoring {!r} because it has an unsupported number of "
+                    "dimensions.".format(k)
+                )
+        df = dd.concat(df_cols, axis=1)
 
         return df
