@@ -204,24 +204,28 @@ class ContigCallset(object):
     def data(self):
         return self._data
 
-    def variants_to_dataframe(self, index="POS", columns=None):
+    def _get_variants_keys(self, keys=None):
 
         # discover variants array keys
         all_keys = sorted(self.data["variants"])
 
-        if columns is None:
-            # use all keys, reordering so VCF fixed fields are first
+        if keys is None:
+            # return all keys, reordering so VCF fixed fields are first
             keys = [k for k in VCF_FIXED_FIELDS if k in all_keys]
             keys += [k for k in all_keys if k.startswith("FILTER")]
             keys += [k for k in all_keys if k not in keys]
 
         else:
-            # check requested columns are present in data
-            for k in columns:
+            # check requested keys are present in data
+            for k in keys:
                 if k not in all_keys:
                     raise ValueError("TODO")
-            # use only requested columns, in requested order
-            keys = columns
+
+        return keys
+
+    def variants_to_dataframe(self, columns=None, index="POS"):
+
+        keys = self._get_variants_keys(keys=columns)
 
         # build dataframe
         df_cols = {}
@@ -243,20 +247,14 @@ class ContigCallset(object):
         df = pd.DataFrame(df_cols)
 
         # set index
-        if index is not None and index in df:
+        if index is not None and index in df.columns.tolist():
             df.set_index(index, inplace=True)
 
         return df
 
-    def variants_to_dask_dataframe(self):
+    def variants_to_dask_dataframe(self, columns=None, index="POS"):
 
-        # discover variants array keys
-        all_keys = sorted(self.data["variants"])
-
-        # use all keys, reordering so VCF fixed fields are first
-        keys = [k for k in VCF_FIXED_FIELDS if k in all_keys]
-        keys += [k for k in all_keys if k.startswith("FILTER")]
-        keys += [k for k in all_keys if k not in keys]
+        keys = self._get_variants_keys(keys=columns)
 
         # build dataframe
         df_cols = []
@@ -279,5 +277,13 @@ class ContigCallset(object):
                     "dimensions.".format(k)
                 )
         df = dd.concat(df_cols, axis=1)
+
+        # set index
+        if index is not None and index in df.columns.tolist():
+            if index == "POS":
+                df = df.set_index(index, sorted=True)
+            else:
+                # TODO load and check if sorted?
+                df = df.set_index(index, sorted=False)
 
         return df
