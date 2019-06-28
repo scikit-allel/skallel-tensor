@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import dask.array as da
 import pandas as pd
@@ -224,16 +225,20 @@ class ContigCallset(object):
         # build dataframe
         df_cols = {}
         for k in keys:
-            # load values
+            # load values into memory
             a = self.data["variants"][k][:]
             # check number of dimensions
             if a.ndim == 1:
                 df_cols[k] = a
             elif a.ndim == 2:
+                # split columns
                 for i in range(a.shape[1]):
                     df_cols["{}_{}".format(k, i + 1)] = a[:, i]
             else:
-                raise ValueError("TODO")
+                warnings.warn(
+                    "Ignoring {!r} because it has an unsupported number of "
+                    "dimensions.".format(k)
+                )
         df = pd.DataFrame(df_cols)
 
         # set index

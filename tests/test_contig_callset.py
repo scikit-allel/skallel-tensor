@@ -2,6 +2,7 @@ import zarr
 import numpy as np
 from numpy.testing import assert_array_equal
 import pandas as pd
+import pytest
 from skallel.model.oo import ContigCallset
 
 
@@ -154,3 +155,19 @@ def test_variants_to_dataframe_columns_noindex():
     assert_array_equal(data["variants/AC"][:, 0], df["AC_1"].values)
     assert_array_equal(data["variants/AC"][:, 1], df["AC_2"].values)
     assert_array_equal(data["variants/DP"][:], df["DP"].values)
+
+
+def test_variants_to_dataframe_exceptions():
+
+    # setup
+    data = setup_callset_data_zarr()
+    callset = ContigCallset(data)
+
+    # field not present in data
+    with pytest.raises(ValueError):
+        callset.variants_to_dataframe(columns=["foo"])
+
+    # array has too many dimensions
+    data.create_dataset("variants/bar", data=np.arange(1000).reshape(10, 10, 10))
+    with pytest.warns(UserWarning):
+        callset.variants_to_dataframe()
