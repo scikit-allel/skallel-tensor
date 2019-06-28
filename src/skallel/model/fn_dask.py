@@ -19,6 +19,11 @@ def genotype_array_is_hom(gt):
     return out
 
 
+def genotype_array_is_het(gt):
+    out = da.map_blocks(fn_numpy.genotype_array_is_het, gt, drop_axis=2)
+    return out
+
+
 def genotype_array_count_alleles(g, max_allele):
 
     # determine output chunks - preserve axis 0; change axis 1, axis 2
