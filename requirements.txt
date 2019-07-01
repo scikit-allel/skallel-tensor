@@ -3,7 +3,7 @@ numba==0.44.1
 numpy==1.16.4
 dask[array]==2.0.0
 # test requirements
-tox==3.12.1
+tox==3.13.1
 pytest==4.6.3
 pytest-cov==2.7.1
 flake8==3.7.7
