@@ -1,5 +1,5 @@
 # library requirements
-numba==0.44.0
+numba==0.44.1
 numpy==1.16.4
 dask[array]==2.0.0
 # test requirements
