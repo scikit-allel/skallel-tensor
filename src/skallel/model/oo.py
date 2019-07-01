@@ -1,5 +1,8 @@
+import warnings
 import numpy as np
 import dask.array as da
+import pandas as pd
+import dask.dataframe as dd
 
 
 from . import fn_numpy
@@ -186,3 +189,101 @@ class GenotypeArray(object):
 # TODO take
 # TODO compress
 # TODO concatenate?
+# TODO variants_to_dataframe
+# TODO variants_to_dask_dataframe
+
+
+VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]
+
+
+class ContigCallset(object):
+    def __init__(self, data):
+        self._data = data
+
+    @property
+    def data(self):
+        return self._data
+
+    def _get_variants_keys(self, keys=None):
+
+        # discover variants array keys
+        all_keys = sorted(self.data["variants"])
+
+        if keys is None:
+            # return all keys, reordering so VCF fixed fields are first
+            keys = [k for k in VCF_FIXED_FIELDS if k in all_keys]
+            keys += [k for k in all_keys if k.startswith("FILTER")]
+            keys += [k for k in all_keys if k not in keys]
+
+        else:
+            # check requested keys are present in data
+            for k in keys:
+                if k not in all_keys:
+                    raise ValueError("TODO")
+
+        return keys
+
+    def variants_to_dataframe(self, columns=None, index="POS"):
+
+        keys = self._get_variants_keys(keys=columns)
+
+        # build dataframe
+        df_cols = {}
+        for k in keys:
+            # load values into memory
+            a = self.data["variants"][k][:]
+            # check number of dimensions
+            if a.ndim == 1:
+                df_cols[k] = a
+            elif a.ndim == 2:
+                # split columns
+                for i in range(a.shape[1]):
+                    df_cols["{}_{}".format(k, i + 1)] = a[:, i]
+            else:
+                warnings.warn(
+                    "Ignoring {!r} because it has an unsupported number of "
+                    "dimensions.".format(k)
+                )
+        df = pd.DataFrame(df_cols)
+
+        # set index
+        if index is not None and index in df.columns.tolist():
+            df.set_index(index, inplace=True)
+
+        return df
+
+    def variants_to_dask_dataframe(self, columns=None, index="POS"):
+
+        keys = self._get_variants_keys(keys=columns)
+
+        # build dataframe
+        df_cols = []
+        for k in keys:
+            a = self.data["variants"][k]
+            d = da.from_array(a, chunks=a.chunks)
+            # check number of dimensions
+            if d.ndim == 1:
+                df_cols.append(d.to_dask_dataframe(columns=k))
+            elif a.ndim == 2:
+                # split columns
+                df_cols.append(
+                    d.to_dask_dataframe(
+                        columns=["{}_{}".format(k, i + 1) for i in range(a.shape[1])]
+                    )
+                )
+            else:
+                warnings.warn(
+                    "Ignoring {!r} because it has an unsupported number of "
+                    "dimensions.".format(k)
+                )
+        df = dd.concat(df_cols, axis=1)
+
+        # set index
+        if index is not None and index in df.columns.tolist():
+            if index == "POS":
+                df = df.set_index(index, sorted=True)
+            else:
+                # TODO load and check if sorted?
+                df = df.set_index(index, sorted=False)
+
+        return df
