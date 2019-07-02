@@ -1,6 +1,8 @@
 import numbers
 from collections.abc import Mapping
+from functools import reduce
 import numpy as np
+import pandas as pd
 from . import methods_numpy, methods_dask
 
 
@@ -234,6 +236,8 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
 def select_indices(o, indices, axis=0):
     """TODO"""
 
+    # TODO check indices
+
     # deal with groups
     if isinstance(o, Mapping):
         return Selection(o, select_indices, indices=indices, axis=axis)
@@ -249,6 +253,8 @@ def select_indices(o, indices, axis=0):
 def select_mask(o, mask, axis=0):
     """TODO"""
 
+    # TODO check mask
+
     # deal with groups
     if isinstance(o, Mapping):
         return Selection(o, select_mask, mask=mask, axis=axis)
@@ -261,18 +267,92 @@ def select_mask(o, mask, axis=0):
     return methods.compress(mask, a, axis=axis)
 
 
-# selections
-# TODO select_variants_by_id
-# TODO select_variants_by_position
-# TODO select_variants_by_region
-# TODO select_variants_by_index
-# TODO select_variants_by_mask
-# TODO select_samples_by_id
-# TODO select_samples_by_index
-# TODO select_samples_by_mask
-# TODO take
-# TODO compress
-# TODO concatenate
+def select_range(o, index, begin, end, axis=0):
+    """TODO"""
+
+    # obtain index as a numpy array
+    if isinstance(o, Mapping) and isinstance(index, str):
+        # assume a key
+        index = o[index]
+    if not isinstance(index, np.ndarray):
+        index = np.asarray(index)
+
+    # locate slice indices
+    start = np.searchsorted(index, begin, side="left")
+    stop = np.searchsorted(index, end, side="right")
+
+    # delegate
+    return select_slice(o, start=start, stop=stop, axis=axis)
+
+
+def select_values(o, index, query, axis=0):
+    """TODO"""
+
+    # obtain index as pandas index
+    if isinstance(o, Mapping) and isinstance(index, str):
+        # assume a key
+        index = o[index]
+    if not isinstance(index, pd.Index):
+        index = pd.Index(index)
+
+    # locate indices of requested values
+    indices = index.get_indexer(query)
+
+    # check no missing values
+    if np.any(indices < 0):
+        raise KeyError  # TODO message
+
+    # delegate
+    return select_indices(o, indices, axis=axis)
+
+
+class Concatenation(Mapping):
+    """TODO"""
+
+    def __init__(self, inner, axis, *args, **kwargs):
+        self.inner = inner
+        self.axis = axis
+        self.args = args
+        self.kwargs = kwargs
+
+    def __getitem__(self, item):
+        return concatenate([m[item] for m in self.inner], axis=self.axis)
+
+    def __contains__(self, item):
+        return item in self._key_set()
+
+    def __len__(self):
+        return len(self._key_set())
+
+    def __iter__(self):
+        return self.keys()
+
+    def _key_set(self):
+        # find intersection of keys
+        return reduce(lambda x, y: x & y, [set(m) for m in self.inner])
+
+    def keys(self):
+        return iter(sorted(self._key_set()))
+
+
+def concatenate(l, axis=0):
+
+    if not isinstance(l, (list, tuple)):
+        raise TypeError  # TODO message
+    if len(l) == 0:
+        raise ValueError  # TODO message
+
+    # what type of thing are we concatenating?
+    o = l[0]
+
+    # deal with groups
+    if isinstance(o, Mapping):
+        return Concatenation(l, axis=axis)
+
+    # dispatch
+    o = array_check(o)
+    methods = get_methods(o)
+    return methods.concatenate(l, axis=axis)
 
 
 # TODO HaplotypeArray
