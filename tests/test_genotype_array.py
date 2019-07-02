@@ -180,3 +180,9 @@ def test_count_alleles():
     actual = genotype_array_count_alleles(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
+
+    # test exceptions
+    with pytest.raises(TypeError):
+        genotype_array_count_alleles(data, max_allele="foo")
+    with pytest.raises(ValueError):
+        genotype_array_count_alleles(data, max_allele=128)

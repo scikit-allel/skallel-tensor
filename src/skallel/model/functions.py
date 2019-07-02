@@ -36,7 +36,7 @@ def get_methods(a):
         if isinstance(a, methods.ARRAY_TYPE):
             return methods
 
-    raise RuntimeError  # should not reach here if array checks done
+    raise RuntimeError  # should not reach here if array checks done properly
 
 
 def genotype_array_check(gt):
@@ -149,7 +149,7 @@ def get_variants_array_names(variants, names=None):
     return names
 
 
-def variants_to_dataframe(variants, columns=None, index=None):
+def variants_to_dataframe(variants, columns=None):
 
     # check variants argument
     if not isinstance(variants, Mapping):
@@ -162,17 +162,9 @@ def variants_to_dataframe(variants, columns=None, index=None):
         if any(not isinstance(k, str) for k in columns):
             raise TypeError  # TODO message
 
-    # check index argument
-    if index is not None and not isinstance(index, str):
-        raise TypeError  # TODO message
-
     # determine array keys to build the dataframe from
     columns = get_variants_array_names(variants, names=columns)
     assert len(columns) > 0
-
-    # check index
-    if index is not None and index not in columns:
-        raise ValueError  # TODO message
 
     # peek at one of the arrays to determine dispatch path
     a = variants[columns[0]]
@@ -180,7 +172,7 @@ def variants_to_dataframe(variants, columns=None, index=None):
 
     # dispatch
     methods = get_methods(a)
-    return methods.variants_to_dataframe(variants, columns=columns, index=index)
+    return methods.variants_to_dataframe(variants, columns=columns)
 
 
 class Selection(Mapping):
@@ -192,6 +184,9 @@ class Selection(Mapping):
 
     def __getitem__(self, item):
         return self.fn(self.inner[item], *self.args, **self.kwargs)
+
+    def __contains__(self, item):
+        return item in self.inner
 
     def __len__(self):
         return len(self.inner)

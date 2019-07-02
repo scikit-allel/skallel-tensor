@@ -85,7 +85,7 @@ def genotype_array_count_alleles(gt, max_allele):
     return out
 
 
-def variants_to_dataframe(variants, columns, index):
+def variants_to_dataframe(variants, columns):
 
     # build dataframe
     df_cols = {}
@@ -111,9 +111,5 @@ def variants_to_dataframe(variants, columns, index):
             )
 
     df = pd.DataFrame(df_cols)
-
-    # set index
-    if index is not None:
-        df.set_index(index, inplace=True)
 
     return df

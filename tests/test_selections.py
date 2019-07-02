@@ -37,6 +37,19 @@ def test_slice_variants():
     assert_array_equal(pos[10:20:2], actual["variants/POS"])
     assert_array_equal(gt[10:20:2], actual["calldata/GT"])
 
+    # check mapping methods work
+    assert len(g) == len(actual)
+    assert sorted(g) == sorted(actual)
+    assert sorted(g.keys()) == sorted(actual.keys())
+    for v in actual.values():
+        assert isinstance(v, np.ndarray)
+        assert 5 == v.shape[0]
+    for k, v in actual.items():
+        assert k in g
+        assert_array_equal(g[k][10:20:2], v)
+    for k in g:
+        assert k in actual
+
     # zarr group
     g = zarr.group()
     g.create_dataset("variants/POS", data=pos)
