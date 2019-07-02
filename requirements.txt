@@ -1,11 +1,11 @@
 # library requirements
-numba==0.44.0
+numba==0.44.1
 numpy==1.16.4
 dask[complete]==2.0.0
 pandas==0.24.2
 # test requirements
-tox==3.12.1
-pytest==4.6.3
+tox==3.13.1
+pytest==5.0.0
 pytest-cov==2.7.1
 flake8==3.7.7
 coverage==4.5.3
