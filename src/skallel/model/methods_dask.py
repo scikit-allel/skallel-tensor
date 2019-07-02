@@ -31,23 +31,42 @@ def array_check(a):
 
 
 def genotype_array_is_called(gt):
-    out = da.map_blocks(methods_numpy.genotype_array_is_called, gt, drop_axis=2)
+    out = da.map_blocks(
+        methods_numpy.genotype_array_is_called, gt, drop_axis=2, dtype=bool
+    )
     return out
 
 
 def genotype_array_is_missing(gt):
-    out = da.map_blocks(methods_numpy.genotype_array_is_missing, gt, drop_axis=2)
+    out = da.map_blocks(
+        methods_numpy.genotype_array_is_missing, gt, drop_axis=2, dtype=bool
+    )
     return out
 
 
 def genotype_array_is_hom(gt):
-    out = da.map_blocks(methods_numpy.genotype_array_is_hom, gt, drop_axis=2)
+    out = da.map_blocks(
+        methods_numpy.genotype_array_is_hom, gt, drop_axis=2, dtype=bool
+    )
     return out
 
 
 def genotype_array_is_het(gt):
-    out = da.map_blocks(methods_numpy.genotype_array_is_het, gt, drop_axis=2)
+    out = da.map_blocks(
+        methods_numpy.genotype_array_is_het, gt, drop_axis=2, dtype=bool
+    )
     return out
+
+
+def _map_genotype_array_count_alleles(chunk, max_allele):
+
+    # compute allele counts for chunk
+    ac = methods_numpy.genotype_array_count_alleles(chunk, max_allele)
+
+    # insert extra dimension to allow for reducing
+    ac = ac[:, None, :]
+
+    return ac
 
 
 def genotype_array_count_alleles(g, max_allele):
@@ -55,15 +74,27 @@ def genotype_array_count_alleles(g, max_allele):
     # determine output chunks - preserve axis 0; change axis 1, axis 2
     chunks = (g.chunks[0], (1,) * len(g.chunks[1]), (max_allele + 1,))
 
-    def f(chunk):
-        # compute allele counts for chunk
-        ac = methods_numpy.genotype_array_count_alleles(chunk, max_allele)
-        # insert extra dimension to allow for reducing
-        ac = ac[:, None, :]
-        return ac
-
     # map blocks and reduce via sum
-    out = da.map_blocks(f, g, chunks=chunks).sum(axis=1, dtype="i4")
+    out = da.map_blocks(
+        _map_genotype_array_count_alleles, g, max_allele, chunks=chunks, dtype="i4"
+    ).sum(axis=1, dtype="i4")
+
+    return out
+
+
+def genotype_array_to_allele_counts(gt, max_allele):
+
+    # determine output chunks - preserve axis 0, 1; change axis 2
+    chunks = (gt.chunks[0], gt.chunks[1], (max_allele + 1,))
+
+    # map blocks
+    out = da.map_blocks(
+        methods_numpy.genotype_array_to_allele_counts,
+        gt,
+        max_allele,
+        chunks=chunks,
+        dtype="i1",
+    )
 
     return out
 

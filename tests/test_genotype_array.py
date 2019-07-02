@@ -12,10 +12,11 @@ from skallel.model.functions import (
     genotype_array_is_hom,
     genotype_array_is_het,
     genotype_array_count_alleles,
+    genotype_array_to_allele_counts,
 )
 
 
-def test_init():
+def test_array_check():
 
     # valid data - numpy array, passed through
     data = np.array([[[0, 1], [2, 3], [4, 5]], [[4, 5], [6, 7], [-1, -1]]], dtype="i1")
@@ -166,9 +167,9 @@ def test_is_het_triploid():
 def test_count_alleles():
 
     data = np.array(
-        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
+        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [1, -1], [-1, -1]]], dtype="i1"
     )
-    expect = np.array([[3, 1, 2], [2, 0, 0]], dtype="i4")
+    expect = np.array([[3, 1, 2], [1, 1, 0]], dtype="i4")
 
     # test numpy array
     actual = genotype_array_count_alleles(data, max_allele=2)
@@ -186,3 +187,31 @@ def test_count_alleles():
         genotype_array_count_alleles(data, max_allele="foo")
     with pytest.raises(ValueError):
         genotype_array_count_alleles(data, max_allele=128)
+
+
+def test_to_allele_counts():
+
+    data = np.array(
+        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [1, -1], [-1, -1]]], dtype="i1"
+    )
+    expect = np.array(
+        [[[2, 0, 0], [1, 1, 0], [0, 0, 2]], [[1, 0, 0], [0, 1, 0], [0, 0, 0]]],
+        dtype="i4",
+    )
+
+    # test numpy array
+    actual = genotype_array_to_allele_counts(data, max_allele=2)
+    assert isinstance(actual, np.ndarray)
+    assert_array_equal(expect, actual)
+
+    # test dask array
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    actual = genotype_array_to_allele_counts(data_dask, max_allele=2)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute())
+
+    # test exceptions
+    with pytest.raises(TypeError):
+        genotype_array_to_allele_counts(data, max_allele="foo")
+    with pytest.raises(ValueError):
+        genotype_array_to_allele_counts(data, max_allele=128)

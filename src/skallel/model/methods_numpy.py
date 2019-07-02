@@ -85,6 +85,18 @@ def genotype_array_count_alleles(gt, max_allele):
     return out
 
 
+@numba.njit(numba.int8[:, :, :](numba.int8[:, :, :], numba.int8), nogil=True)
+def genotype_array_to_allele_counts(gt, max_allele):
+    out = np.zeros((gt.shape[0], gt.shape[1], max_allele + 1), dtype=np.int8)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            for k in range(gt.shape[2]):
+                allele = gt[i, j, k]
+                if 0 <= allele <= max_allele:
+                    out[i, j, allele] += 1
+    return out
+
+
 def variants_to_dataframe(variants, columns):
 
     # build dataframe
