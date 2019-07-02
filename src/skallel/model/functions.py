@@ -103,6 +103,8 @@ def genotype_array_is_het(gt):
 def genotype_array_count_alleles(gt, max_allele):
     """TODO"""
 
+    # TODO support subpop arg
+
     # check arguments
     gt = genotype_array_check(gt)
     max_allele = int_check(max_allele, "i1")
@@ -110,6 +112,18 @@ def genotype_array_count_alleles(gt, max_allele):
     # dispatch
     methods = get_methods(gt)
     return methods.genotype_array_count_alleles(gt, max_allele)
+
+
+# genotype array
+# TODO is_call
+# TODO to_n_ref
+# TODO to_n_alt
+# TODO to_allele_counts
+# TODO to_haplotypes
+# TODO __repr__
+# TODO display
+# TODO map_alleles
+# TODO max
 
 
 VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]
@@ -236,3 +250,53 @@ def take_variants(o, indices):
     # dispatch
     methods = get_methods(a)
     return methods.take(a, indices, axis=0)
+
+
+# selections
+# TODO select_variants_by_id
+# TODO select_variants_by_position
+# TODO select_variants_by_region
+# TODO select_variants_by_index
+# TODO select_variants_by_mask
+# TODO select_samples_by_id
+# TODO select_samples_by_index
+# TODO select_samples_by_mask
+# TODO take
+# TODO compress
+# TODO concatenate
+
+
+# TODO HaplotypeArray
+# TODO is_called
+# TODO is_missing
+# TODO is_ref
+# TODO is_alt
+# TODO is_call
+# TODO to_genotypes
+# TODO count_alleles
+# TODO map_alleles
+# TODO prefix_argsort
+# TODO distinct
+# TODO distinct_counts
+# TODO distinct_frequencies
+# TODO display
+
+
+# TODO AlleleCountsArray
+# TODO to_frequencies
+# TODO allelism
+# TODO max_allele
+# TODO is_variant
+# TODO is_non_variant
+# TODO is_segregating
+# TODO is_non_segregating
+# TODO is_singleton
+# TODO is_doubleton
+# TODO is_biallelic
+# TODO is_biallelic_01
+# TODO map_alleles
+# TODO display
+
+
+# TODO GenotypeAlleleCountsArray
+# TODO ???
