@@ -2,6 +2,15 @@ import numpy as np
 import numba
 
 
+ARRAY_TYPE = np.ndarray
+
+
+def array_check(a):
+    if isinstance(a, np.ndarray):
+        return a
+    raise TypeError
+
+
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
 def genotype_array_is_called(gt):
     out = np.ones(gt.shape[:2], dtype=np.bool_)
