@@ -5,7 +5,7 @@ from numpy.testing import assert_array_equal
 import zarr
 
 
-from skallel.model.fn import (
+from skallel.model.functions import (
     genotype_array_check,
     genotype_array_is_called,
     genotype_array_is_missing,

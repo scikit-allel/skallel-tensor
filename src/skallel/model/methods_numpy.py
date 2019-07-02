@@ -1,5 +1,8 @@
+import warnings
 import numpy as np
+from numpy import take  # noqa
 import numba
+import pandas as pd
 
 
 ARRAY_TYPE = np.ndarray
@@ -80,3 +83,37 @@ def genotype_array_count_alleles(gt, max_allele):
                 if 0 <= allele <= max_allele:
                     out[i, allele] += 1
     return out
+
+
+def variants_to_dataframe(variants, columns, index):
+
+    # build dataframe
+    df_cols = {}
+    for c in columns:
+
+        # obtain values
+        a = variants[c]
+
+        # check array type
+        a = array_check(a)
+
+        # check number of dimensions
+        if a.ndim == 1:
+            df_cols[c] = a
+        elif a.ndim == 2:
+            # split columns
+            for i in range(a.shape[1]):
+                df_cols["{}_{}".format(c, i + 1)] = a[:, i]
+        else:
+            warnings.warn(
+                "Ignoring {!r} because it has an unsupported number of "
+                "dimensions.".format(c)
+            )
+
+    df = pd.DataFrame(df_cols)
+
+    # set index
+    if index is not None:
+        df.set_index(index, inplace=True)
+
+    return df

@@ -1,4 +1,7 @@
+import warnings
 import dask.array as da
+from dask.array import take  # noqa
+import dask.dataframe as dd
 from skallel.model import methods_numpy
 
 
@@ -63,3 +66,44 @@ def genotype_array_count_alleles(g, max_allele):
     out = da.map_blocks(f, g, chunks=chunks).sum(axis=1, dtype="i4")
 
     return out
+
+
+def variants_to_dataframe(variants, columns, index):
+
+    # build dataframe
+    df_cols = []
+    for c in columns:
+
+        # obtain values
+        a = variants[c]
+
+        # check array type
+        a = array_check(a)
+
+        # check number of dimensions
+        if a.ndim == 1:
+            df_cols.append(a.to_dask_dataframe(columns=c))
+        elif a.ndim == 2:
+            # split columns
+            df_cols.append(
+                a.to_dask_dataframe(
+                    columns=["{}_{}".format(c, i + 1) for i in range(a.shape[1])]
+                )
+            )
+        else:
+            warnings.warn(
+                "Ignoring {!r} because it has an unsupported number of "
+                "dimensions.".format(c)
+            )
+
+    df = dd.concat(df_cols, axis=1)
+
+    # set index
+    if index is not None:
+        if index == "POS":
+            df = df.set_index(index, sorted=True)
+        else:
+            # TODO load and check if sorted?
+            df = df.set_index(index, sorted=False)
+
+    return df
