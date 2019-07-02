@@ -176,6 +176,8 @@ def variants_to_dataframe(variants, columns=None):
 
 
 class Selection(Mapping):
+    """TODO"""
+
     def __init__(self, inner, fn, *args, **kwargs):
         self.inner = inner
         self.fn = fn
@@ -197,33 +199,32 @@ class Selection(Mapping):
     def keys(self):
         return self.inner.keys()
 
-    def values(self):
-        return (self.fn(v, *self.args, **self.kwargs) for v in self.inner.values())
 
-    def items(self):
-        return (
-            (k, self.fn(v, *self.args, **self.kwargs)) for k, v in self.inner.items()
-        )
-
-
-def slice_variants(o, start=None, stop=None, step=None):
+def select_slice(o, start=None, stop=None, step=None, axis=0):
+    """TODO"""
 
     # deal with groups
     if isinstance(o, Mapping):
-        return Selection(o, slice_variants, start=start, stop=stop, step=step)
+        return Selection(o, select_slice, start=start, stop=stop, step=step, axis=axis)
 
     # deal with arrays
     a = array_check(o)
 
+    # construct full selection for all array dimensions
+    sel = tuple(
+        slice(start, stop, step) if i == axis else slice(None) for i in range(a.ndim)
+    )
+
     # no need to dispatch, assume common array API
-    return a[start:stop:step]
+    return a[sel]
 
 
-def take(o, indices, axis=None):
+def select_indices(o, indices, axis=0):
+    """TODO"""
 
     # deal with groups
     if isinstance(o, Mapping):
-        return Selection(o, take, indices=indices, axis=axis)
+        return Selection(o, select_indices, indices=indices, axis=axis)
 
     # deal with arrays
     a = array_check(o)
@@ -233,18 +234,19 @@ def take(o, indices, axis=None):
     return methods.take(a, indices, axis=axis)
 
 
-def take_variants(o, indices):
+def select_mask(o, mask, axis=0):
+    """TODO"""
 
     # deal with groups
     if isinstance(o, Mapping):
-        return Selection(o, take_variants, indices=indices)
+        return Selection(o, select_mask, mask=mask, axis=axis)
 
     # deal with arrays
     a = array_check(o)
 
     # dispatch
     methods = get_methods(a)
-    return methods.take(a, indices, axis=0)
+    return methods.compress(mask, a, axis=axis)
 
 
 # selections

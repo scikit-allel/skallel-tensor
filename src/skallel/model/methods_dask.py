@@ -1,6 +1,6 @@
 import warnings
 import dask.array as da
-from dask.array import take  # noqa
+from dask.array import take, compress  # noqa
 import dask.dataframe as dd
 from skallel.model import methods_numpy
 

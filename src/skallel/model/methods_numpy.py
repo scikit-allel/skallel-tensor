@@ -1,6 +1,6 @@
 import warnings
 import numpy as np
-from numpy import take  # noqa
+from numpy import take, compress  # noqa
 import numba
 import pandas as pd
 
