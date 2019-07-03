@@ -66,7 +66,9 @@ def test_variants_to_dataframe():
         assert_array_equal(variants_numpy["ALT"][:, 0], np.asarray(df["ALT_1"]))
         assert_array_equal(variants_numpy["ALT"][:, 1], np.asarray(df["ALT_2"]))
         assert_array_equal(variants_numpy["QUAL"], np.asarray(df["QUAL"]))
-        assert_array_equal(variants_numpy["FILTER_PASS"], np.asarray(df["FILTER_PASS"]))
+        assert_array_equal(
+            variants_numpy["FILTER_PASS"], np.asarray(df["FILTER_PASS"])
+        )
         assert_array_equal(variants_numpy["AC"][:, 0], np.asarray(df["AC_1"]))
         assert_array_equal(variants_numpy["AC"][:, 1], np.asarray(df["AC_2"]))
         assert_array_equal(variants_numpy["DP"], np.asarray(df["DP"]))
@@ -123,7 +125,9 @@ def test_variants_to_dataframe_exceptions():
 
     # array has too many dimensions
     variants_numpy["bar"] = np.arange(1000).reshape((10, 10, 10))
-    variants_zarr.create_dataset("bar", data=np.arange(1000).reshape((10, 10, 10)))
+    variants_zarr.create_dataset(
+        "bar", data=np.arange(1000).reshape((10, 10, 10))
+    )
     with pytest.warns(UserWarning):
         variants_to_dataframe(variants_numpy)
     with pytest.warns(UserWarning):

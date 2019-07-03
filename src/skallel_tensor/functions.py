@@ -19,33 +19,31 @@ def int_check(i, dtype):
     return np.array(i, dtype)[()]
 
 
-def array_check(a):
+def tensor_check(a):
     """TODO"""
 
     for methods in methods_providers:
-        try:
-            return methods.array_check(a)
-        except TypeError:
-            pass
+        if methods.accepts(a):
+            return
 
     raise TypeError  # TODO message
 
 
-def get_methods(a):
+def get_methods(*args):
     """TODO"""
 
     for methods in methods_providers:
-        if isinstance(a, methods.ARRAY_TYPE):
+        if all(methods.accepts(a) for a in args):
             return methods
 
-    raise RuntimeError  # should not reach here if array checks done properly
+    raise RuntimeError  # should not reach here if checks done properly
 
 
-def genotype_array_check(gt):
+def genotype_tensor_check(gt):
     """TODO"""
 
     # check type
-    gt = array_check(gt)
+    gt = tensor_check(gt)
 
     # check dtype
     if gt.dtype != np.dtype("i1"):
@@ -58,86 +56,86 @@ def genotype_array_check(gt):
     return gt
 
 
-def genotype_array_is_called(gt):
+def genotype_tensor_is_called(gt):
     """TODO"""
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_is_called(gt)
+    return methods.genotype_tensor_is_called(gt)
 
 
-def genotype_array_is_missing(gt):
+def genotype_tensor_is_missing(gt):
     """TODO"""
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_is_missing(gt)
+    return methods.genotype_tensor_is_missing(gt)
 
 
-def genotype_array_is_hom(gt):
+def genotype_tensor_is_hom(gt):
     """TODO"""
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_is_hom(gt)
+    return methods.genotype_tensor_is_hom(gt)
 
 
-def genotype_array_is_het(gt):
+def genotype_tensor_is_het(gt):
     """TODO"""
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_is_het(gt)
+    return methods.genotype_tensor_is_het(gt)
 
 
-def genotype_array_count_alleles(gt, max_allele):
+def genotype_tensor_count_alleles(gt, max_allele):
     """TODO"""
 
     # TODO support subpop arg
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
     max_allele = int_check(max_allele, "i1")
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_count_alleles(gt, max_allele)
+    return methods.genotype_tensor_count_alleles(gt, max_allele)
 
 
-def genotype_array_to_allele_counts(gt, max_allele):
+def genotype_tensor_to_allele_counts(gt, max_allele):
     """TODO"""
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
     max_allele = int_check(max_allele, "i1")
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_to_allele_counts(gt, max_allele)
+    return methods.genotype_tensor_to_allele_counts(gt, max_allele)
 
 
-def genotype_array_to_allele_counts_melt(gt, max_allele):
+def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     """TODO"""
 
     # check arguments
-    gt = genotype_array_check(gt)
+    gt = genotype_tensor_check(gt)
     max_allele = int_check(max_allele, "i1")
 
     # dispatch
     methods = get_methods(gt)
-    return methods.genotype_array_to_allele_counts_melt(gt, max_allele)
+    return methods.genotype_tensor_to_allele_counts_melt(gt, max_allele)
 
 
 # genotype array
@@ -194,7 +192,7 @@ def variants_to_dataframe(variants, columns=None):
 
     # peek at one of the arrays to determine dispatch path
     a = variants[columns[0]]
-    a = array_check(a)
+    a = tensor_check(a)
 
     # dispatch
     methods = get_methods(a)
@@ -236,7 +234,7 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
         )
 
     # deal with arrays
-    a = array_check(o)
+    a = tensor_check(o)
 
     # construct full selection for all array dimensions
     sel = tuple(
@@ -258,7 +256,7 @@ def select_indices(o, indices, axis=0):
         return Selection(o, select_indices, indices=indices, axis=axis)
 
     # deal with arrays
-    a = array_check(o)
+    a = tensor_check(o)
 
     # dispatch
     methods = get_methods(a)
@@ -275,7 +273,7 @@ def select_mask(o, mask, axis=0):
         return Selection(o, select_mask, mask=mask, axis=axis)
 
     # deal with arrays
-    a = array_check(o)
+    a = tensor_check(o)
 
     # dispatch
     methods = get_methods(a)
@@ -365,7 +363,7 @@ def concatenate(l, axis=0):
         return Concatenation(l, axis=axis)
 
     # dispatch
-    o = array_check(o)
+    o = tensor_check(o)
     methods = get_methods(o)
     return methods.concatenate(l, axis=axis)
 
