@@ -1,6 +1,6 @@
 import numpy as np
 import dask.array as da
-from skallel.model import fn_numpy, fn_dask
+from skallel.model import methods_numpy, methods_dask
 
 
 class TimeGenotypeArray:
@@ -11,31 +11,41 @@ class TimeGenotypeArray:
         self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
 
     def time_is_called_numpy(self):
-        fn_numpy.genotype_array_is_called(self.data)
+        methods_numpy.genotype_array_is_called(self.data)
 
     def time_is_called_dask(self):
-        fn_dask.genotype_array_is_called(self.data_dask).compute()
+        methods_dask.genotype_array_is_called(self.data_dask).compute()
 
     def time_is_missing_numpy(self):
-        fn_numpy.genotype_array_is_missing(self.data)
+        methods_numpy.genotype_array_is_missing(self.data)
 
     def time_is_missing_dask(self):
-        fn_dask.genotype_array_is_missing(self.data_dask).compute()
+        methods_dask.genotype_array_is_missing(self.data_dask).compute()
 
     def time_is_hom_numpy(self):
-        fn_numpy.genotype_array_is_hom(self.data)
+        methods_numpy.genotype_array_is_hom(self.data)
 
     def time_is_hom_dask(self):
-        fn_dask.genotype_array_is_hom(self.data_dask).compute()
+        methods_dask.genotype_array_is_hom(self.data_dask).compute()
 
     def time_is_het_numpy(self):
-        fn_numpy.genotype_array_is_het(self.data)
+        methods_numpy.genotype_array_is_het(self.data)
 
     def time_is_het_dask(self):
-        fn_dask.genotype_array_is_het(self.data_dask).compute()
+        methods_dask.genotype_array_is_het(self.data_dask).compute()
 
     def time_count_alleles_numpy(self):
-        fn_numpy.genotype_array_count_alleles(self.data, max_allele=3)
+        methods_numpy.genotype_array_count_alleles(self.data, max_allele=3)
 
     def time_count_alleles_dask(self):
-        fn_dask.genotype_array_count_alleles(self.data_dask, max_allele=3).compute()
+        methods_dask.genotype_array_count_alleles(
+            self.data_dask, max_allele=3
+        ).compute()
+
+    def time_to_allele_counts_numpy(self):
+        methods_numpy.genotype_array_to_allele_counts(self.data, max_allele=3)
+
+    def time_to_allele_counts_dask(self):
+        methods_dask.genotype_array_to_allele_counts(
+            self.data_dask, max_allele=3
+        ).compute()

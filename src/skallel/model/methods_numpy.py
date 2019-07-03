@@ -1,5 +1,17 @@
+import warnings
 import numpy as np
+from numpy import take, compress, concatenate  # noqa
 import numba
+import pandas as pd
+
+
+ARRAY_TYPE = np.ndarray
+
+
+def array_check(a):
+    if isinstance(a, np.ndarray):
+        return a
+    raise TypeError
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -71,3 +83,57 @@ def genotype_array_count_alleles(gt, max_allele):
                 if 0 <= allele <= max_allele:
                     out[i, allele] += 1
     return out
+
+
+@numba.njit(numba.int8[:, :, :](numba.int8[:, :, :], numba.int8), nogil=True)
+def genotype_array_to_allele_counts(gt, max_allele):
+    out = np.zeros((gt.shape[0], gt.shape[1], max_allele + 1), dtype=np.int8)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            for k in range(gt.shape[2]):
+                allele = gt[i, j, k]
+                if 0 <= allele <= max_allele:
+                    out[i, j, allele] += 1
+    return out
+
+
+@numba.njit(numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
+def genotype_array_to_allele_counts_melt(gt, max_allele):
+    out = np.zeros((gt.shape[0] * (max_allele + 1), gt.shape[1]), dtype=np.int8)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            for k in range(gt.shape[2]):
+                allele = gt[i, j, k]
+                if 0 <= allele <= max_allele:
+                    out[(i * (max_allele + 1)) + allele, j] += 1
+    return out
+
+
+def variants_to_dataframe(variants, columns):
+
+    # build dataframe
+    df_cols = {}
+    for c in columns:
+
+        # obtain values
+        a = variants[c]
+
+        # check array type
+        a = array_check(a)
+
+        # check number of dimensions
+        if a.ndim == 1:
+            df_cols[c] = a
+        elif a.ndim == 2:
+            # split columns
+            for i in range(a.shape[1]):
+                df_cols["{}_{}".format(c, i + 1)] = a[:, i]
+        else:
+            warnings.warn(
+                "Ignoring {!r} because it has an unsupported number of "
+                "dimensions.".format(c)
+            )
+
+    df = pd.DataFrame(df_cols)
+
+    return df
