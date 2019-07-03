@@ -96,6 +96,24 @@ def genotype_tensor_is_het(gt):
     return methods.genotype_tensor_is_het(gt)
 
 
+def genotype_tensor_is_call(gt, call):
+    """TODO"""
+
+    # Check arguments.
+    genotype_tensor_check(gt)
+    for allele in call:
+        int_check(allele, "i1")
+    call = np.asarray(call, dtype="i1")
+    if call.ndim != 1:
+        raise ValueError  # TODO message
+    if call.shape[0] != gt.shape[2]:
+        raise ValueError  # TODO message
+
+    # Dispatch.
+    methods = get_methods(gt)
+    return methods.genotype_tensor_is_call(gt, call)
+
+
 def genotype_tensor_count_alleles(gt, max_allele):
     """TODO"""
 
@@ -136,13 +154,9 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
 # genotype array
 # TODO is_call
-# TODO to_n_ref
-# TODO to_n_alt
 # TODO to_haplotypes
-# TODO __repr__
 # TODO display
 # TODO map_alleles
-# TODO max
 
 
 VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]

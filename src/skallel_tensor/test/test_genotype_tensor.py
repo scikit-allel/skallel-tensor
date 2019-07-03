@@ -11,6 +11,7 @@ from skallel_tensor.functions import (
     genotype_tensor_is_missing,
     genotype_tensor_is_hom,
     genotype_tensor_is_het,
+    genotype_tensor_is_call,
     genotype_tensor_count_alleles,
     genotype_tensor_to_allele_counts,
     genotype_tensor_to_allele_counts_melt,
@@ -161,6 +162,25 @@ def test_is_het_triploid():
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
     actual = genotype_tensor_is_het(data_dask)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute())
+
+
+def test_is_call():
+
+    data = np.array(
+        [[[0, 0], [0, 1], [1, 0]], [[-1, 0], [0, -1], [-1, -1]]], dtype="i1"
+    )
+    expect = np.array([[False, False, True], [False, False, False]], dtype=bool)
+
+    # Test numpy array.
+    actual = genotype_tensor_is_call(data, (1, 0))
+    assert isinstance(actual, np.ndarray)
+    assert_array_equal(expect, actual)
+
+    # Test dask array.
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    actual = genotype_tensor_is_call(data_dask, (1, 0))
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 

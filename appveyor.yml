@@ -27,4 +27,4 @@ install:
 build: off
 
 test_script:
-  - "%CMD_IN_ENV% python -m pytest -vv --ignore=src"
+  - "%CMD_IN_ENV% python -m pytest -vv --ignore=src --pyargs skallel_tensor"

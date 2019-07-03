@@ -73,6 +73,19 @@ def genotype_tensor_is_het(gt):
     return out
 
 
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]), nogil=True)
+def genotype_tensor_is_call(gt, call):
+    out = np.ones(gt.shape[:2], dtype=np.bool_)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            for k in range(gt.shape[2]):
+                if gt[i, j, k] != call[k]:
+                    out[i, j] = False
+                    # No need to check other alleles.
+                    break
+    return out
+
+
 @numba.njit(numba.int32[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
 def genotype_tensor_count_alleles(gt, max_allele):
     out = np.zeros((gt.shape[0], max_allele + 1), dtype=np.int32)

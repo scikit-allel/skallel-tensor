@@ -34,6 +34,16 @@ class TimeGenotypeTensor:
     def time_is_het_dask(self):
         methods_dask.genotype_tensor_is_het(self.data_dask).compute()
 
+    def time_is_call_numpy(self):
+        methods_numpy.genotype_tensor_is_call(
+            self.data, np.array([0, 1], dtype="i1")
+        )
+
+    def time_is_call_dask(self):
+        methods_dask.genotype_tensor_is_call(
+            self.data_dask, np.array([0, 1], dtype="i1")
+        ).compute()
+
     def time_count_alleles_numpy(self):
         methods_numpy.genotype_tensor_count_alleles(self.data, max_allele=3)
 

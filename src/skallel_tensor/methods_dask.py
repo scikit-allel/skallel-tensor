@@ -89,6 +89,14 @@ def genotype_tensor_is_het(gt):
     return out
 
 
+def genotype_tensor_is_call(gt, call):
+    gt = ensure_dask_array(gt)
+    out = da.map_blocks(
+        methods_numpy.genotype_tensor_is_call, gt, call, drop_axis=2, dtype=bool
+    )
+    return out
+
+
 def _map_genotype_tensor_count_alleles(chunk, max_allele):
 
     # Compute allele counts for chunk.
