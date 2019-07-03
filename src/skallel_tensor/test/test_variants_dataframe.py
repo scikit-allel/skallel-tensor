@@ -30,11 +30,11 @@ def setup_variants_zarr():
 
 def test_variants_to_dataframe():
 
-    # setup
+    # Setup.
     variants_numpy = setup_variants_numpy()
     variants_zarr = setup_variants_zarr()
 
-    # construct dataframes
+    # Construct dataframes.
     pdf = variants_to_dataframe(variants_numpy)
     ddf = variants_to_dataframe(variants_zarr)
     assert isinstance(pdf, pd.DataFrame)
@@ -56,10 +56,10 @@ def test_variants_to_dataframe():
         ]
         assert expected_cols == df.columns.tolist()
 
-        # check POS used as index
+        # Check POS used as index.
         assert None is df.index.name
 
-        # check data
+        # Check data.
         assert_array_equal(variants_numpy["POS"], np.asarray(df["POS"]))
         assert_array_equal(variants_numpy["ID"], np.asarray(df["ID"]))
         assert_array_equal(variants_numpy["REF"], np.asarray(df["REF"]))
@@ -76,11 +76,11 @@ def test_variants_to_dataframe():
 
 def test_variants_to_dataframe_columns():
 
-    # setup
+    # Setup.
     variants_numpy = setup_variants_numpy()
     variants_zarr = setup_variants_zarr()
 
-    # construct dataframes
+    # Construct dataframes.
     cols = ["REF", "POS", "DP", "AC"]
     pdf = variants_to_dataframe(variants_numpy, columns=cols)
     ddf = variants_to_dataframe(variants_zarr, columns=cols)
@@ -89,13 +89,13 @@ def test_variants_to_dataframe_columns():
 
     for df in pdf, ddf:
 
-        # check column ordering, should be as requested
+        # Check column ordering, should be as requested.
         assert ["REF", "POS", "DP", "AC_1", "AC_2"] == df.columns.tolist()
 
-        # check POS not used as index
+        # Check POS not used as index.
         assert None is df.index.name
 
-        # check data
+        # Check data.
         assert_array_equal(variants_numpy["POS"], np.asarray(df["POS"]))
         assert_array_equal(variants_numpy["REF"], np.asarray(df["REF"]))
         assert_array_equal(variants_numpy["AC"][:, 0], np.asarray(df["AC_1"]))
@@ -105,11 +105,11 @@ def test_variants_to_dataframe_columns():
 
 def test_variants_to_dataframe_exceptions():
 
-    # setup
+    # Setup.
     variants_numpy = setup_variants_numpy()
     variants_zarr = setup_variants_zarr()
 
-    # bad types
+    # Bad types.
     with pytest.raises(TypeError):
         variants_to_dataframe("foo")
     with pytest.raises(TypeError):
@@ -117,13 +117,13 @@ def test_variants_to_dataframe_exceptions():
     with pytest.raises(TypeError):
         variants_to_dataframe(variants_numpy, columns=[42])
 
-    # field not present in data
+    # Field not present in data.
     with pytest.raises(ValueError):
         variants_to_dataframe(variants_numpy, columns=["foo"])
     with pytest.raises(ValueError):
         variants_to_dataframe(variants_zarr, columns=["foo"])
 
-    # array has too many dimensions
+    # Array has too many dimensions.
     variants_numpy["bar"] = np.arange(1000).reshape((10, 10, 10))
     variants_zarr.create_dataset(
         "bar", data=np.arange(1000).reshape((10, 10, 10))

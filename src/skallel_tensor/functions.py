@@ -9,26 +9,6 @@ from . import methods_numpy, methods_dask
 methods_providers = [methods_numpy, methods_dask]
 
 
-def int_check(i, dtype):
-    """TODO"""
-
-    if not isinstance(i, numbers.Integral):
-        raise TypeError  # TODO message
-    if not np.can_cast(i, dtype, casting="safe"):
-        raise ValueError  # TODO message
-    return np.array(i, dtype)[()]
-
-
-def tensor_check(a):
-    """TODO"""
-
-    for methods in methods_providers:
-        if methods.accepts(a):
-            return
-
-    raise TypeError  # TODO message
-
-
 def get_methods(*args):
     """TODO"""
 
@@ -36,33 +16,49 @@ def get_methods(*args):
         if all(methods.accepts(a) for a in args):
             return methods
 
-    raise RuntimeError  # should not reach here if checks done properly
+    raise TypeError  # TODO message
+
+
+def int_check(i, dtype=None):
+    """TODO"""
+
+    if not isinstance(i, numbers.Integral):
+        raise TypeError  # TODO message
+    if dtype is not None:
+        if not np.can_cast(i, dtype, casting="safe"):
+            raise ValueError  # TODO message
+        i = np.array(i, dtype)[()]
+    return i
+
+
+def array_check(a):
+    array_attrs = "ndim", "shape", "dtype"
+    if not all(hasattr(a, k) for k in array_attrs):
+        raise TypeError  # TODO message
 
 
 def genotype_tensor_check(gt):
     """TODO"""
 
-    # check type
-    gt = tensor_check(gt)
+    # Check type.
+    array_check(gt)
 
-    # check dtype
+    # Check dtype.
     if gt.dtype != np.dtype("i1"):
         raise TypeError  # TODO message
 
-    # check number of dimensions
+    # Check number of dimensions.
     if gt.ndim != 3:
         raise ValueError  # TODO message
-
-    return gt
 
 
 def genotype_tensor_is_called(gt):
     """TODO"""
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_is_called(gt)
 
@@ -70,10 +66,10 @@ def genotype_tensor_is_called(gt):
 def genotype_tensor_is_missing(gt):
     """TODO"""
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_is_missing(gt)
 
@@ -81,10 +77,10 @@ def genotype_tensor_is_missing(gt):
 def genotype_tensor_is_hom(gt):
     """TODO"""
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_is_hom(gt)
 
@@ -92,10 +88,10 @@ def genotype_tensor_is_hom(gt):
 def genotype_tensor_is_het(gt):
     """TODO"""
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_is_het(gt)
 
@@ -105,11 +101,11 @@ def genotype_tensor_count_alleles(gt, max_allele):
 
     # TODO support subpop arg
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
     max_allele = int_check(max_allele, "i1")
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_count_alleles(gt, max_allele)
 
@@ -117,11 +113,11 @@ def genotype_tensor_count_alleles(gt, max_allele):
 def genotype_tensor_to_allele_counts(gt, max_allele):
     """TODO"""
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
     max_allele = int_check(max_allele, "i1")
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_to_allele_counts(gt, max_allele)
 
@@ -129,11 +125,11 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     """TODO"""
 
-    # check arguments
-    gt = genotype_tensor_check(gt)
+    # Check arguments.
+    genotype_tensor_check(gt)
     max_allele = int_check(max_allele, "i1")
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(gt)
     return methods.genotype_tensor_to_allele_counts_melt(gt, max_allele)
 
@@ -155,17 +151,17 @@ VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]
 
 def get_variants_array_names(variants, names=None):
 
-    # discover array keys
+    # Discover array keys.
     all_names = sorted(variants)
 
     if names is None:
-        # return all names, reordering so VCF fixed fields are first
+        # Return all names, reordering so VCF fixed fields are first.
         names = [k for k in VCF_FIXED_FIELDS if k in all_names]
         names += [k for k in all_names if k.startswith("FILTER")]
         names += [k for k in all_names if k not in names]
 
     else:
-        # check requested keys are present in data
+        # Check requested keys are present in data.
         for n in names:
             if n not in all_names:
                 raise ValueError  # TODO message
@@ -174,32 +170,33 @@ def get_variants_array_names(variants, names=None):
 
 
 def variants_to_dataframe(variants, columns=None):
+    """TODO"""
 
-    # check variants argument
+    # Check variants argument.
     if not isinstance(variants, Mapping):
         raise TypeError  # TODO message
 
-    # check columns argument
+    # Check columns argument.
     if columns is not None:
         if not isinstance(columns, (list, tuple)):
             raise TypeError  # TODO message
         if any(not isinstance(k, str) for k in columns):
             raise TypeError  # TODO message
 
-    # determine array keys to build the dataframe from
+    # Determine array keys to build the dataframe from.
     columns = get_variants_array_names(variants, names=columns)
     assert len(columns) > 0
 
-    # peek at one of the arrays to determine dispatch path
+    # Peek at one of the arrays to determine dispatch path, assume all arrays
+    # will be of the same type.
     a = variants[columns[0]]
-    a = tensor_check(a)
 
-    # dispatch
+    # Dispatch.
     methods = get_methods(a)
     return methods.variants_to_dataframe(variants, columns=columns)
 
 
-class Selection(Mapping):
+class GroupSelection(Mapping):
     """TODO"""
 
     def __init__(self, inner, fn, *args, **kwargs):
@@ -227,99 +224,109 @@ class Selection(Mapping):
 def select_slice(o, start=None, stop=None, step=None, axis=0):
     """TODO"""
 
-    # deal with groups
+    # Deal with groups.
     if isinstance(o, Mapping):
-        return Selection(
+        return GroupSelection(
             o, select_slice, start=start, stop=stop, step=step, axis=axis
         )
 
-    # deal with arrays
-    a = tensor_check(o)
+    # Deal with arrays.
+    array_check(o)
 
-    # construct full selection for all array dimensions
-    sel = tuple(
+    # Construct full selection for all array dimensions.
+    item = tuple(
         slice(start, stop, step) if i == axis else slice(None)
-        for i in range(a.ndim)
+        for i in range(o.ndim)
     )
 
-    # no need to dispatch, assume common array API
-    return a[sel]
+    # Dispatch.
+    methods = get_methods(o)
+    return methods.getitem(o, item)
 
 
 def select_indices(o, indices, axis=0):
     """TODO"""
 
-    # TODO check indices
+    # TODO check indices?
 
-    # deal with groups
+    # Check args.
+    int_check(axis)
+
+    # Deal with groups.
     if isinstance(o, Mapping):
-        return Selection(o, select_indices, indices=indices, axis=axis)
+        return GroupSelection(o, select_indices, indices=indices, axis=axis)
 
-    # deal with arrays
-    a = tensor_check(o)
+    # Deal with arrays.
+    array_check(o)
 
-    # dispatch
-    methods = get_methods(a)
-    return methods.take(a, indices, axis=axis)
+    # Dispatch.
+    methods = get_methods(o)
+    return methods.take(o, indices, axis=axis)
 
 
 def select_mask(o, mask, axis=0):
     """TODO"""
 
-    # TODO check mask
+    # TODO check mask?
 
-    # deal with groups
+    # Check args.
+    int_check(axis)
+
+    # Deal with groups.
     if isinstance(o, Mapping):
-        return Selection(o, select_mask, mask=mask, axis=axis)
+        return GroupSelection(o, select_mask, mask=mask, axis=axis)
 
-    # deal with arrays
-    a = tensor_check(o)
+    # Deal with arrays.
+    array_check(o)
 
-    # dispatch
-    methods = get_methods(a)
-    return methods.compress(mask, a, axis=axis)
+    # Dispatch.
+    methods = get_methods(o)
+    return methods.compress(mask, o, axis=axis)
 
 
 def select_range(o, index, begin, end, axis=0):
     """TODO"""
 
-    # obtain index as a numpy array
+    # Check args.
+    int_check(axis)
+
+    # Obtain index as a numpy array.
     if isinstance(o, Mapping) and isinstance(index, str):
-        # assume a key
+        # Assume a key.
         index = o[index]
     if not isinstance(index, np.ndarray):
         index = np.asarray(index)
 
-    # locate slice indices
+    # Locate slice indices.
     start = np.searchsorted(index, begin, side="left")
     stop = np.searchsorted(index, end, side="right")
 
-    # delegate
+    # Delegate.
     return select_slice(o, start=start, stop=stop, axis=axis)
 
 
 def select_values(o, index, query, axis=0):
     """TODO"""
 
-    # obtain index as pandas index
+    # Obtain index as pandas index.
     if isinstance(o, Mapping) and isinstance(index, str):
-        # assume a key
+        # Assume a key.
         index = o[index]
     if not isinstance(index, pd.Index):
         index = pd.Index(index)
 
-    # locate indices of requested values
+    # Locate indices of requested values.
     indices = index.get_indexer(query)
 
-    # check no missing values
+    # Check no missing values.
     if np.any(indices < 0):
         raise KeyError  # TODO message
 
-    # delegate
+    # Delegate.
     return select_indices(o, indices, axis=axis)
 
 
-class Concatenation(Mapping):
+class GroupConcatenation(Mapping):
     """TODO"""
 
     def __init__(self, inner, axis, *args, **kwargs):
@@ -341,56 +348,57 @@ class Concatenation(Mapping):
         return self.keys()
 
     def _key_set(self):
-        # find intersection of keys
+        # Find intersection of keys.
         return reduce(lambda x, y: x & y, [set(m) for m in self.inner])
 
     def keys(self):
         return iter(sorted(self._key_set()))
 
 
-def concatenate(l, axis=0):
+def concatenate(seq, axis=0):
 
-    if not isinstance(l, (list, tuple)):
+    if not isinstance(seq, (list, tuple)):
         raise TypeError  # TODO message
-    if len(l) < 2:
+    if len(seq) < 2:
         raise ValueError  # TODO message
 
-    # what type of thing are we concatenating?
-    o = l[0]
+    # What type of thing are we concatenating?
+    o = seq[0]
 
-    # deal with groups
+    # Deal with groups.
     if isinstance(o, Mapping):
-        return Concatenation(l, axis=axis)
+        return GroupConcatenation(seq, axis=axis)
 
-    # dispatch
-    o = tensor_check(o)
+    # Dispatch.
     methods = get_methods(o)
-    return methods.concatenate(l, axis=axis)
+    return methods.concatenate(seq, axis=axis)
 
 
 class DictGroup(Mapping):
-    def __init__(self, data):
-        self._data = data
+    """TODO"""
+
+    def __init__(self, root):
+        self._root = root
 
     def __getitem__(self, item):
         path = item.split("/")
         assert len(path) > 0
-        data = self._data
+        node = self._root
         for p in path:
-            data = data[p]
-        if isinstance(data, dict):
-            # wrap so we get consistent behaviour
-            data = DictGroup(data)
-        return data
+            node = node[p]
+        if isinstance(node, dict):
+            # Wrap so we get consistent behaviour.
+            node = DictGroup(node)
+        return node
 
     def keys(self):
-        return self._data.keys()
+        return self._root.keys()
 
     def __len__(self):
-        return len(self._data)
+        return len(self._root)
 
     def __iter__(self):
-        return iter(self._data)
+        return iter(self._root)
 
 
 # TODO HaplotypeArray

@@ -1,15 +1,11 @@
 import warnings
 import numpy as np
 import dask.array as da
-from dask.array import take, compress, concatenate  # noqa
 import dask.dataframe as dd
 from . import methods_numpy
 
 
-ARRAY_TYPE = da.Array
-
-
-def quacks_like_hdf5_dataset(a):
+def quacks_like_h5py_dataset(a):
     """Duck typing for objects that behave like an HDF5 dataset or Zarr array.
     """
     return (
@@ -27,22 +23,38 @@ def accepts(a):
         return True
     if isinstance(a, da.Array):
         return True
-    if quacks_like_hdf5_dataset(a):
+    if quacks_like_h5py_dataset(a):
         return True
     return False
 
 
 def ensure_dask_array(a):
     if isinstance(a, da.Array):
-        # pass through
+        # Pass through.
         return a
-    if isinstance(a, np.ndarray):
-        # convert to dask array
+    else:
+        # Convert to dask array.
         return da.from_array(a)
-    if quacks_like_hdf5_dataset(a):
-        # convert to dask array
-        return da.from_array(a)
-    raise TypeError
+
+
+def getitem(a, item):
+    a = ensure_dask_array(a)
+    return a[item]
+
+
+def take(a, indices, axis):
+    a = ensure_dask_array(a)
+    return da.take(a, indices, axis=axis)
+
+
+def compress(condition, a, axis):
+    a = ensure_dask_array(a)
+    return da.compress(condition, a, axis=axis)
+
+
+def concatenate(seq, axis):
+    seq = [ensure_dask_array(a) for a in seq]
+    return da.concatenate(seq, axis=axis)
 
 
 def genotype_tensor_is_called(gt):
@@ -79,10 +91,10 @@ def genotype_tensor_is_het(gt):
 
 def _map_genotype_tensor_count_alleles(chunk, max_allele):
 
-    # compute allele counts for chunk
+    # Compute allele counts for chunk.
     ac = methods_numpy.genotype_tensor_count_alleles(chunk, max_allele)
 
-    # insert extra dimension to allow for reducing
+    # Insert extra dimension to allow for reducing.
     ac = ac[:, None, :]
 
     return ac
@@ -91,10 +103,10 @@ def _map_genotype_tensor_count_alleles(chunk, max_allele):
 def genotype_tensor_count_alleles(gt, max_allele):
     gt = ensure_dask_array(gt)
 
-    # determine output chunks - preserve axis 0; change axis 1, axis 2
+    # Determine output chunks - preserve axis 0; change axis 1, axis 2.
     chunks = (gt.chunks[0], (1,) * len(gt.chunks[1]), (max_allele + 1,))
 
-    # map blocks and reduce via sum
+    # Map blocks and reduce via sum.
     out = da.map_blocks(
         _map_genotype_tensor_count_alleles,
         gt,
@@ -109,10 +121,10 @@ def genotype_tensor_count_alleles(gt, max_allele):
 def genotype_tensor_to_allele_counts(gt, max_allele):
     gt = ensure_dask_array(gt)
 
-    # determine output chunks - preserve axis 0, 1; change axis 2
+    # Determine output chunks - preserve axis 0, 1; change axis 2.
     chunks = (gt.chunks[0], gt.chunks[1], (max_allele + 1,))
 
-    # map blocks
+    # Map blocks.
     out = da.map_blocks(
         methods_numpy.genotype_tensor_to_allele_counts,
         gt,
@@ -127,11 +139,11 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     gt = ensure_dask_array(gt)
 
-    # determine output chunks - change axis 0; preserve axis 1; drop axis 2
+    # Determine output chunks - change axis 0; preserve axis 1; drop axis 2.
     dim0_chunks = tuple(np.array(gt.chunks[0]) * (max_allele + 1))
     chunks = (dim0_chunks, gt.chunks[1])
 
-    # map blocks
+    # Map blocks.
     out = da.map_blocks(
         methods_numpy.genotype_tensor_to_allele_counts_melt,
         gt,
@@ -146,21 +158,21 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
 def variants_to_dataframe(variants, columns):
 
-    # build dataframe
+    # Build dataframe.
     df_cols = []
     for c in columns:
 
-        # obtain values
+        # Obtain values.
         a = variants[c]
 
-        # check type
+        # Check type.
         a = ensure_dask_array(a)
 
-        # check number of dimensions
+        # Check number of dimensions.
         if a.ndim == 1:
             df_cols.append(a.to_dask_dataframe(columns=c))
         elif a.ndim == 2:
-            # split columns
+            # Split columns.
             df_cols.append(
                 a.to_dask_dataframe(
                     columns=[

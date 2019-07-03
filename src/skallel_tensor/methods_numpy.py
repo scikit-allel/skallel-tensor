@@ -10,10 +10,8 @@ def accepts(a):
         return True
 
 
-def tensor_check(a):
-    if isinstance(a, np.ndarray):
-        return a
-    raise TypeError
+def getitem(a, item):
+    return a[item]
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -24,7 +22,7 @@ def genotype_tensor_is_called(gt):
             for k in range(gt.shape[2]):
                 if gt[i, j, k] < 0:
                     out[i, j] = False
-                    # no need to check other alleles
+                    # No need to check other alleles.
                     break
     return out
 
@@ -37,7 +35,7 @@ def genotype_tensor_is_missing(gt):
             for k in range(gt.shape[2]):
                 if gt[i, j, k] < 0:
                     out[i, j] = True
-                    # no need to check other alleles
+                    # No need to check other alleles.
                     break
     return out
 
@@ -54,7 +52,7 @@ def genotype_tensor_is_hom(gt):
                 for k in range(1, gt.shape[2]):
                     if gt[i, j, k] != first_allele:
                         out[i, j] = False
-                        # no need to check other alleles
+                        # No need to check other alleles.
                         break
     return out
 
@@ -70,7 +68,7 @@ def genotype_tensor_is_het(gt):
                     allele = gt[i, j, k]
                     if allele >= 0 and allele != first_allele:
                         out[i, j] = True
-                        # no need to check other alleles
+                        # No need to check other alleles.
                         break
     return out
 
@@ -113,21 +111,21 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
 def variants_to_dataframe(variants, columns):
 
-    # build dataframe
+    # Build dataframe.
     df_cols = {}
     for c in columns:
 
-        # obtain values
+        # Obtain values.
         a = variants[c]
 
-        # check array type
-        a = tensor_check(a)
+        # Ensure numpy array.
+        a = np.asarray(a)
 
-        # check number of dimensions
+        # Check number of dimensions.
         if a.ndim == 1:
             df_cols[c] = a
         elif a.ndim == 2:
-            # split columns
+            # Split columns.
             for i in range(a.shape[1]):
                 df_cols["{}_{}".format(c, i + 1)] = a[:, i]
         else:

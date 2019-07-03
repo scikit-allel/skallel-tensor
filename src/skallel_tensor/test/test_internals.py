@@ -11,7 +11,7 @@ def test_get_methods():
     d = da.from_array(a)
     m = functions.get_methods(d)
     assert m is methods_dask
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         functions.get_methods("foo")
 
 
