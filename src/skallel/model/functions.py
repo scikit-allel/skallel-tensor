@@ -231,14 +231,17 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
 
     # deal with groups
     if isinstance(o, Mapping):
-        return Selection(o, select_slice, start=start, stop=stop, step=step, axis=axis)
+        return Selection(
+            o, select_slice, start=start, stop=stop, step=step, axis=axis
+        )
 
     # deal with arrays
     a = array_check(o)
 
     # construct full selection for all array dimensions
     sel = tuple(
-        slice(start, stop, step) if i == axis else slice(None) for i in range(a.ndim)
+        slice(start, stop, step) if i == axis else slice(None)
+        for i in range(a.ndim)
     )
 
     # no need to dispatch, assume common array API
@@ -351,7 +354,7 @@ def concatenate(l, axis=0):
 
     if not isinstance(l, (list, tuple)):
         raise TypeError  # TODO message
-    if len(l) == 0:
+    if len(l) < 2:
         raise ValueError  # TODO message
 
     # what type of thing are we concatenating?
@@ -365,6 +368,31 @@ def concatenate(l, axis=0):
     o = array_check(o)
     methods = get_methods(o)
     return methods.concatenate(l, axis=axis)
+
+
+class DictGroup(Mapping):
+    def __init__(self, data):
+        self._data = data
+
+    def __getitem__(self, item):
+        path = item.split("/")
+        assert len(path) > 0
+        data = self._data
+        for p in path:
+            data = data[p]
+        if isinstance(data, dict):
+            # wrap so we get consistent behaviour
+            data = DictGroup(data)
+        return data
+
+    def keys(self):
+        return self._data.keys()
+
+    def __len__(self):
+        return len(self._data)
+
+    def __iter__(self):
+        return iter(self._data)
 
 
 # TODO HaplotypeArray
