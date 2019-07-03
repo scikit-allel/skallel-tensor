@@ -1,7 +1,7 @@
 import numpy as np
 import dask.array as da
 import pytest
-from skallel.model import functions, methods_numpy, methods_dask
+from skallel_tensor import functions, methods_numpy, methods_dask
 
 
 def test_get_methods():

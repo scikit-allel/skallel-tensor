@@ -3,7 +3,7 @@ import numpy as np
 import dask.array as da
 from dask.array import take, compress, concatenate  # noqa
 import dask.dataframe as dd
-from skallel.model import methods_numpy
+from . import methods_numpy
 
 
 ARRAY_TYPE = da.Array
