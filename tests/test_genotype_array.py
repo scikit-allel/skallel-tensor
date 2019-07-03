@@ -13,13 +13,16 @@ from skallel.model.functions import (
     genotype_array_is_het,
     genotype_array_count_alleles,
     genotype_array_to_allele_counts,
+    genotype_array_to_allele_counts_melt,
 )
 
 
 def test_array_check():
 
     # valid data - numpy array, passed through
-    data = np.array([[[0, 1], [2, 3], [4, 5]], [[4, 5], [6, 7], [-1, -1]]], dtype="i1")
+    data = np.array(
+        [[[0, 1], [2, 3], [4, 5]], [[4, 5], [6, 7], [-1, -1]]], dtype="i1"
+    )
     gt = genotype_array_check(data)
     assert data is gt
 
@@ -147,7 +150,10 @@ def test_is_het():
 def test_is_het_triploid():
 
     data = np.array(
-        [[[0, 0, 0], [0, 0, 1], [0, 1, 2]], [[0, 0, -1], [0, 1, -1], [0, -1, -1]]],
+        [
+            [[0, 0, 0], [0, 0, 1], [0, 1, 2]],
+            [[0, 0, -1], [0, 1, -1], [0, -1, -1]],
+        ],
         dtype="i1",
     )
     expect = np.array([[False, True, True], [False, True, False]], dtype=bool)
@@ -215,3 +221,31 @@ def test_to_allele_counts():
         genotype_array_to_allele_counts(data, max_allele="foo")
     with pytest.raises(ValueError):
         genotype_array_to_allele_counts(data, max_allele=128)
+
+
+def test_to_allele_counts_melt():
+
+    data = np.array(
+        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [1, -1], [-1, -1]]], dtype="i1"
+    )
+    expect = np.array(
+        [[2, 1, 0], [0, 1, 0], [0, 0, 2], [1, 0, 0], [0, 1, 0], [0, 0, 0]],
+        dtype="i4",
+    )
+
+    # test numpy array
+    actual = genotype_array_to_allele_counts_melt(data, max_allele=2)
+    assert isinstance(actual, np.ndarray)
+    assert_array_equal(expect, actual)
+
+    # test dask array
+    data_dask = da.from_array(data, chunks=(1, 1, -1))
+    actual = genotype_array_to_allele_counts_melt(data_dask, max_allele=2)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute())
+
+    # test exceptions
+    with pytest.raises(TypeError):
+        genotype_array_to_allele_counts_melt(data, max_allele="foo")
+    with pytest.raises(ValueError):
+        genotype_array_to_allele_counts_melt(data, max_allele=128)

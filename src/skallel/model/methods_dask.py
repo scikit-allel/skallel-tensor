@@ -1,6 +1,7 @@
 import warnings
+import numpy as np
 import dask.array as da
-from dask.array import take, compress  # noqa
+from dask.array import take, compress, concatenate  # noqa
 import dask.dataframe as dd
 from skallel.model import methods_numpy
 
@@ -94,6 +95,25 @@ def genotype_array_to_allele_counts(gt, max_allele):
         max_allele,
         chunks=chunks,
         dtype="i1",
+    )
+
+    return out
+
+
+def genotype_array_to_allele_counts_melt(gt, max_allele):
+
+    # determine output chunks - change axis 0; preserve axis 1; drop axis 2
+    dim0_chunks = tuple(np.array(gt.chunks[0]) * (max_allele + 1))
+    chunks = (dim0_chunks, gt.chunks[1])
+
+    # map blocks
+    out = da.map_blocks(
+        methods_numpy.genotype_array_to_allele_counts_melt,
+        gt,
+        max_allele,
+        chunks=chunks,
+        dtype="i1",
+        drop_axis=2,
     )
 
     return out

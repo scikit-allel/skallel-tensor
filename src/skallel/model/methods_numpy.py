@@ -1,6 +1,6 @@
 import warnings
 import numpy as np
-from numpy import take, compress  # noqa
+from numpy import take, compress, concatenate  # noqa
 import numba
 import pandas as pd
 
@@ -94,6 +94,18 @@ def genotype_array_to_allele_counts(gt, max_allele):
                 allele = gt[i, j, k]
                 if 0 <= allele <= max_allele:
                     out[i, j, allele] += 1
+    return out
+
+
+@numba.njit(numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
+def genotype_array_to_allele_counts_melt(gt, max_allele):
+    out = np.zeros((gt.shape[0] * (max_allele + 1), gt.shape[1]), dtype=np.int8)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            for k in range(gt.shape[2]):
+                allele = gt[i, j, k]
+                if 0 <= allele <= max_allele:
+                    out[(i * (max_allele + 1)) + allele, j] += 1
     return out
 
 

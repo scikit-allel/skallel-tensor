@@ -128,6 +128,18 @@ def genotype_array_to_allele_counts(gt, max_allele):
     return methods.genotype_array_to_allele_counts(gt, max_allele)
 
 
+def genotype_array_to_allele_counts_melt(gt, max_allele):
+    """TODO"""
+
+    # check arguments
+    gt = genotype_array_check(gt)
+    max_allele = int_check(max_allele, "i1")
+
+    # dispatch
+    methods = get_methods(gt)
+    return methods.genotype_array_to_allele_counts_melt(gt, max_allele)
+
+
 # genotype array
 # TODO is_call
 # TODO to_n_ref
