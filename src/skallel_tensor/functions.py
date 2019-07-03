@@ -138,7 +138,6 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 # TODO is_call
 # TODO to_n_ref
 # TODO to_n_alt
-# TODO to_allele_counts
 # TODO to_haplotypes
 # TODO __repr__
 # TODO display
