@@ -49,3 +49,13 @@ class TimeGenotypeTensor:
         methods_dask.genotype_tensor_to_allele_counts(
             self.data_dask, max_allele=3
         ).compute()
+
+    def time_to_allele_counts_melt_numpy(self):
+        methods_numpy.genotype_tensor_to_allele_counts_melt(
+            self.data, max_allele=3
+        )
+
+    def time_to_allele_counts_melt_dask(self):
+        methods_dask.genotype_tensor_to_allele_counts_melt(
+            self.data_dask, max_allele=3
+        ).compute()
