@@ -10,23 +10,21 @@ methods_providers = [methods_numpy, methods_dask]
 
 
 def get_methods(*args):
-    """TODO"""
 
     for methods in methods_providers:
         if all(methods.accepts(a) for a in args):
             return methods
 
-    raise TypeError  # TODO message
+    raise TypeError
 
 
 def int_check(i, dtype=None):
-    """TODO"""
 
     if not isinstance(i, numbers.Integral):
-        raise TypeError  # TODO message
+        raise TypeError
     if dtype is not None:
         if not np.can_cast(i, dtype, casting="safe"):
-            raise ValueError  # TODO message
+            raise ValueError
         i = np.array(i, dtype)[()]
     return i
 
@@ -34,26 +32,24 @@ def int_check(i, dtype=None):
 def array_check(a):
     array_attrs = "ndim", "shape", "dtype"
     if not all(hasattr(a, k) for k in array_attrs):
-        raise TypeError  # TODO message
+        raise TypeError
 
 
 def genotype_tensor_check(gt):
-    """TODO"""
 
     # Check type.
     array_check(gt)
 
     # Check dtype.
     if gt.dtype != np.dtype("i1"):
-        raise TypeError  # TODO message
+        raise TypeError
 
     # Check number of dimensions.
     if gt.ndim != 3:
-        raise ValueError  # TODO message
+        raise ValueError
 
 
 def genotype_tensor_is_called(gt):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
@@ -64,7 +60,6 @@ def genotype_tensor_is_called(gt):
 
 
 def genotype_tensor_is_missing(gt):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
@@ -75,7 +70,6 @@ def genotype_tensor_is_missing(gt):
 
 
 def genotype_tensor_is_hom(gt):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
@@ -86,7 +80,6 @@ def genotype_tensor_is_hom(gt):
 
 
 def genotype_tensor_is_het(gt):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
@@ -97,17 +90,17 @@ def genotype_tensor_is_het(gt):
 
 
 def genotype_tensor_is_call(gt, call):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
-    for allele in call:
-        int_check(allele, "i1")
+    if not isinstance(call, (list, tuple, np.ndarray)):
+        raise TypeError
+    for c in call:
+        int_check(c, "i1")
     call = np.asarray(call, dtype="i1")
-    if call.ndim != 1:
-        raise ValueError  # TODO message
     if call.shape[0] != gt.shape[2]:
-        raise ValueError  # TODO message
+        raise ValueError
+    call = call.astype("i1")
 
     # Dispatch.
     methods = get_methods(gt)
@@ -115,7 +108,6 @@ def genotype_tensor_is_call(gt, call):
 
 
 def genotype_tensor_count_alleles(gt, max_allele):
-    """TODO"""
 
     # TODO support subpop arg
 
@@ -129,7 +121,6 @@ def genotype_tensor_count_alleles(gt, max_allele):
 
 
 def genotype_tensor_to_allele_counts(gt, max_allele):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
@@ -141,7 +132,6 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
 
 
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
-    """TODO"""
 
     # Check arguments.
     genotype_tensor_check(gt)
@@ -153,7 +143,6 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
 
 # genotype array
-# TODO is_call
 # TODO to_haplotypes
 # TODO display
 # TODO map_alleles
@@ -177,24 +166,23 @@ def get_variants_array_names(variants, names=None):
         # Check requested keys are present in data.
         for n in names:
             if n not in all_names:
-                raise ValueError  # TODO message
+                raise ValueError
 
     return names
 
 
 def variants_to_dataframe(variants, columns=None):
-    """TODO"""
 
     # Check variants argument.
     if not isinstance(variants, Mapping):
-        raise TypeError  # TODO message
+        raise TypeError
 
     # Check columns argument.
     if columns is not None:
         if not isinstance(columns, (list, tuple)):
-            raise TypeError  # TODO message
+            raise TypeError
         if any(not isinstance(k, str) for k in columns):
-            raise TypeError  # TODO message
+            raise TypeError
 
     # Determine array keys to build the dataframe from.
     columns = get_variants_array_names(variants, names=columns)
@@ -210,8 +198,6 @@ def variants_to_dataframe(variants, columns=None):
 
 
 class GroupSelection(Mapping):
-    """TODO"""
-
     def __init__(self, inner, fn, *args, **kwargs):
         self.inner = inner
         self.fn = fn
@@ -235,7 +221,6 @@ class GroupSelection(Mapping):
 
 
 def select_slice(o, start=None, stop=None, step=None, axis=0):
-    """TODO"""
 
     # Deal with groups.
     if isinstance(o, Mapping):
@@ -258,9 +243,6 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
 
 
 def select_indices(o, indices, axis=0):
-    """TODO"""
-
-    # TODO check indices?
 
     # Check args.
     int_check(axis)
@@ -278,9 +260,6 @@ def select_indices(o, indices, axis=0):
 
 
 def select_mask(o, mask, axis=0):
-    """TODO"""
-
-    # TODO check mask?
 
     # Check args.
     int_check(axis)
@@ -298,7 +277,6 @@ def select_mask(o, mask, axis=0):
 
 
 def select_range(o, index, begin, end, axis=0):
-    """TODO"""
 
     # Check args.
     int_check(axis)
@@ -319,7 +297,6 @@ def select_range(o, index, begin, end, axis=0):
 
 
 def select_values(o, index, query, axis=0):
-    """TODO"""
 
     # Obtain index as pandas index.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -333,15 +310,13 @@ def select_values(o, index, query, axis=0):
 
     # Check no missing values.
     if np.any(indices < 0):
-        raise KeyError  # TODO message
+        raise KeyError
 
     # Delegate.
     return select_indices(o, indices, axis=axis)
 
 
 class GroupConcatenation(Mapping):
-    """TODO"""
-
     def __init__(self, inner, axis, *args, **kwargs):
         self.inner = inner
         self.axis = axis
@@ -371,9 +346,9 @@ class GroupConcatenation(Mapping):
 def concatenate(seq, axis=0):
 
     if not isinstance(seq, (list, tuple)):
-        raise TypeError  # TODO message
+        raise TypeError
     if len(seq) < 2:
-        raise ValueError  # TODO message
+        raise ValueError
 
     # What type of thing are we concatenating?
     o = seq[0]
@@ -388,8 +363,6 @@ def concatenate(seq, axis=0):
 
 
 class DictGroup(Mapping):
-    """TODO"""
-
     def __init__(self, root):
         self._root = root
 

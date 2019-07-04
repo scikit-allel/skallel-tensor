@@ -184,6 +184,14 @@ def test_is_call():
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
+    # Test exceptions.
+    with pytest.raises(TypeError):
+        genotype_tensor_is_call(data, "foo")
+    with pytest.raises(TypeError):
+        genotype_tensor_is_call(data, [[0, 1], [2, 3]])
+    with pytest.raises(ValueError):
+        genotype_tensor_is_call(data, (0, 1, 2))
+
 
 def test_count_alleles():
 
