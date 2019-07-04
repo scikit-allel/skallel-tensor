@@ -1,4 +1,5 @@
-from .version import version as __version__  # noqa
+# flake8: noqa
+from .version import version as __version__
 
 
 from .api import (

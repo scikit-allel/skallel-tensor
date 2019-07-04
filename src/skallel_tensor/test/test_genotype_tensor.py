@@ -1,8 +1,8 @@
 import numpy as np
 import dask.array as da
-import pytest
 from numpy.testing import assert_array_equal
 
+# import pytest
 # import zarr
 
 
