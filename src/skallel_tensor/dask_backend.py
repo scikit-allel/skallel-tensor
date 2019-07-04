@@ -197,3 +197,14 @@ def variants_to_dataframe(variants, columns):
     df = dd.concat(df_cols, axis=1)
 
     return df
+
+
+from . import api
+
+
+def foo(a):
+    print("dask backend")
+    return a - a
+
+
+api.foo.add((da.Array,), foo)

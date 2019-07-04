@@ -3,10 +3,11 @@ from collections.abc import Mapping
 from functools import reduce
 import numpy as np
 import pandas as pd
-from . import numpy_backend, dask_backend
+
+# from . import numpy_backend, dask_backend
 
 
-backends = [numpy_backend, dask_backend]
+# backends = [numpy_backend, dask_backend]
 
 
 def get_backend(*args):
@@ -421,3 +422,9 @@ class DictGroup(Mapping):
 
 # TODO GenotypeAlleleCountsArray
 # TODO ???
+
+
+from multipledispatch import Dispatcher
+
+
+foo = Dispatcher("foo")

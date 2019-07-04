@@ -150,3 +150,14 @@ def variants_to_dataframe(variants, columns):
     df = pd.DataFrame(df_cols)
 
     return df
+
+
+from . import api
+
+
+def foo(a):
+    print("numpy backend")
+    return a + a
+
+
+api.foo.add((np.ndarray,), foo)
