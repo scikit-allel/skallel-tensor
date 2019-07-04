@@ -1,6 +1,6 @@
 import numpy as np
 import dask.array as da
-from skallel_tensor import methods_numpy, methods_dask
+from skallel_tensor import numpy_backend, dask_backend
 
 
 class TimeGenotypeTensor:
@@ -11,61 +11,61 @@ class TimeGenotypeTensor:
         self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
 
     def time_is_called_numpy(self):
-        methods_numpy.genotype_tensor_is_called(self.data)
+        numpy_backend.genotype_tensor_is_called(self.data)
 
     def time_is_called_dask(self):
-        methods_dask.genotype_tensor_is_called(self.data_dask).compute()
+        dask_backend.genotype_tensor_is_called(self.data_dask).compute()
 
     def time_is_missing_numpy(self):
-        methods_numpy.genotype_tensor_is_missing(self.data)
+        numpy_backend.genotype_tensor_is_missing(self.data)
 
     def time_is_missing_dask(self):
-        methods_dask.genotype_tensor_is_missing(self.data_dask).compute()
+        dask_backend.genotype_tensor_is_missing(self.data_dask).compute()
 
     def time_is_hom_numpy(self):
-        methods_numpy.genotype_tensor_is_hom(self.data)
+        numpy_backend.genotype_tensor_is_hom(self.data)
 
     def time_is_hom_dask(self):
-        methods_dask.genotype_tensor_is_hom(self.data_dask).compute()
+        dask_backend.genotype_tensor_is_hom(self.data_dask).compute()
 
     def time_is_het_numpy(self):
-        methods_numpy.genotype_tensor_is_het(self.data)
+        numpy_backend.genotype_tensor_is_het(self.data)
 
     def time_is_het_dask(self):
-        methods_dask.genotype_tensor_is_het(self.data_dask).compute()
+        dask_backend.genotype_tensor_is_het(self.data_dask).compute()
 
     def time_is_call_numpy(self):
-        methods_numpy.genotype_tensor_is_call(
+        numpy_backend.genotype_tensor_is_call(
             self.data, np.array([0, 1], dtype="i1")
         )
 
     def time_is_call_dask(self):
-        methods_dask.genotype_tensor_is_call(
+        dask_backend.genotype_tensor_is_call(
             self.data_dask, np.array([0, 1], dtype="i1")
         ).compute()
 
     def time_count_alleles_numpy(self):
-        methods_numpy.genotype_tensor_count_alleles(self.data, max_allele=3)
+        numpy_backend.genotype_tensor_count_alleles(self.data, max_allele=3)
 
     def time_count_alleles_dask(self):
-        methods_dask.genotype_tensor_count_alleles(
+        dask_backend.genotype_tensor_count_alleles(
             self.data_dask, max_allele=3
         ).compute()
 
     def time_to_allele_counts_numpy(self):
-        methods_numpy.genotype_tensor_to_allele_counts(self.data, max_allele=3)
+        numpy_backend.genotype_tensor_to_allele_counts(self.data, max_allele=3)
 
     def time_to_allele_counts_dask(self):
-        methods_dask.genotype_tensor_to_allele_counts(
+        dask_backend.genotype_tensor_to_allele_counts(
             self.data_dask, max_allele=3
         ).compute()
 
     def time_to_allele_counts_melt_numpy(self):
-        methods_numpy.genotype_tensor_to_allele_counts_melt(
+        numpy_backend.genotype_tensor_to_allele_counts_melt(
             self.data, max_allele=3
         )
 
     def time_to_allele_counts_melt_dask(self):
-        methods_dask.genotype_tensor_to_allele_counts_melt(
+        dask_backend.genotype_tensor_to_allele_counts_melt(
             self.data_dask, max_allele=3
         ).compute()

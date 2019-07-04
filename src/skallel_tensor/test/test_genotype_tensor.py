@@ -5,7 +5,7 @@ from numpy.testing import assert_array_equal
 import zarr
 
 
-from skallel_tensor.functions import (
+from skallel_tensor.api import (
     genotype_tensor_check,
     genotype_tensor_is_called,
     genotype_tensor_is_missing,

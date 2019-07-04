@@ -4,7 +4,7 @@ from numpy.testing import assert_array_equal
 import pandas as pd
 import dask.dataframe as dd
 import pytest
-from skallel_tensor.functions import variants_to_dataframe
+from skallel_tensor.api import variants_to_dataframe
 
 
 def setup_variants_numpy():

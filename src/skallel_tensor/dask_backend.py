@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 import dask.array as da
 import dask.dataframe as dd
-from . import methods_numpy
+from . import numpy_backend
 
 
 def quacks_like_h5py_dataset(a):
@@ -60,7 +60,7 @@ def concatenate(seq, axis):
 def genotype_tensor_is_called(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_is_called, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotype_tensor_is_called, gt, drop_axis=2, dtype=bool
     )
     return out
 
@@ -68,7 +68,7 @@ def genotype_tensor_is_called(gt):
 def genotype_tensor_is_missing(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_is_missing, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotype_tensor_is_missing, gt, drop_axis=2, dtype=bool
     )
     return out
 
@@ -76,7 +76,7 @@ def genotype_tensor_is_missing(gt):
 def genotype_tensor_is_hom(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_is_hom, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotype_tensor_is_hom, gt, drop_axis=2, dtype=bool
     )
     return out
 
@@ -84,7 +84,7 @@ def genotype_tensor_is_hom(gt):
 def genotype_tensor_is_het(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_is_het, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotype_tensor_is_het, gt, drop_axis=2, dtype=bool
     )
     return out
 
@@ -92,7 +92,7 @@ def genotype_tensor_is_het(gt):
 def genotype_tensor_is_call(gt, call):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_is_call, gt, call, drop_axis=2, dtype=bool
+        numpy_backend.genotype_tensor_is_call, gt, call, drop_axis=2, dtype=bool
     )
     return out
 
@@ -100,7 +100,7 @@ def genotype_tensor_is_call(gt, call):
 def _map_genotype_tensor_count_alleles(chunk, max_allele):
 
     # Compute allele counts for chunk.
-    ac = methods_numpy.genotype_tensor_count_alleles(chunk, max_allele)
+    ac = numpy_backend.genotype_tensor_count_alleles(chunk, max_allele)
 
     # Insert extra dimension to allow for reducing.
     ac = ac[:, None, :]
@@ -134,7 +134,7 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
 
     # Map blocks.
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_to_allele_counts,
+        numpy_backend.genotype_tensor_to_allele_counts,
         gt,
         max_allele,
         chunks=chunks,
@@ -153,7 +153,7 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
     # Map blocks.
     out = da.map_blocks(
-        methods_numpy.genotype_tensor_to_allele_counts_melt,
+        numpy_backend.genotype_tensor_to_allele_counts_melt,
         gt,
         max_allele,
         chunks=chunks,
