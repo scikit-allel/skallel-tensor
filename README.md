@@ -1,6 +1,6 @@
 # skallel-tensor
 
-Array functions and classes for genetic variation data.
+Tensor functions and classes for genetic variation data.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for information on how to contribute to this 
 repo.
