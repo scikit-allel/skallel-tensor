@@ -53,7 +53,7 @@ pytest -v
 To run the unit tests via tox, with coverage report:
 
 ```bash
-tox -e py37-nojit
+tox -e py37-cov
 ```
 
 ## Code style
