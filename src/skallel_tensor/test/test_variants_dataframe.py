@@ -110,12 +110,12 @@ def test_variants_to_dataframe_exceptions():
     variants_zarr = setup_variants_zarr()
 
     # Bad types.
-    with pytest.raises(TypeError):
-        variants_to_dataframe("foo")
-    with pytest.raises(TypeError):
-        variants_to_dataframe(variants_numpy, columns="foo")
-    with pytest.raises(TypeError):
-        variants_to_dataframe(variants_numpy, columns=[42])
+    # with pytest.raises(TypeError):
+    #     variants_to_dataframe("foo")
+    # with pytest.raises(TypeError):
+    #     variants_to_dataframe(variants_numpy, columns="foo")
+    # with pytest.raises(TypeError):
+    #     variants_to_dataframe(variants_numpy, columns=[42])
 
     # Field not present in data.
     with pytest.raises(ValueError):

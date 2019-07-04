@@ -1,146 +1,25 @@
-import numbers
 from collections.abc import Mapping
 from functools import reduce
 import numpy as np
 import pandas as pd
-
-# from . import numpy_backend, dask_backend
-
-
-# backends = [numpy_backend, dask_backend]
+from multipledispatch import Dispatcher
 
 
-def get_backend(*args):
-
-    for backend in backends:
-        if all(backend.accepts(a) for a in args):
-            return backend
-
-    raise TypeError
+from . import utils
 
 
-def int_check(i, dtype=None):
-
-    if not isinstance(i, numbers.Integral):
-        raise TypeError
-    if dtype is not None:
-        if not np.can_cast(i, dtype, casting="safe"):
-            raise ValueError
-        i = np.array(i, dtype)[()]
-    return i
-
-
-def array_check(a):
-    array_attrs = "ndim", "shape", "dtype"
-    if not all(hasattr(a, k) for k in array_attrs):
-        raise TypeError
-
-
-def genotype_tensor_check(gt):
-
-    # Check type.
-    array_check(gt)
-
-    # Check dtype.
-    if gt.dtype != np.dtype("i1"):
-        raise TypeError
-
-    # Check number of dimensions.
-    if gt.ndim != 3:
-        raise ValueError
-
-
-def genotype_tensor_is_called(gt):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_called(gt)
-
-
-def genotype_tensor_is_missing(gt):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_missing(gt)
-
-
-def genotype_tensor_is_hom(gt):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_hom(gt)
-
-
-def genotype_tensor_is_het(gt):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_het(gt)
-
-
-def genotype_tensor_is_call(gt, call):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-    if not isinstance(call, (list, tuple, np.ndarray)):
-        raise TypeError
-    for c in call:
-        int_check(c, "i1")
-    call = np.asarray(call, dtype="i1")
-    if call.shape[0] != gt.shape[2]:
-        raise ValueError
-    call = call.astype("i1")
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_call(gt, call)
-
-
-def genotype_tensor_count_alleles(gt, max_allele):
-
-    # TODO support subpop arg
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-    max_allele = int_check(max_allele, "i1")
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_count_alleles(gt, max_allele)
-
-
-def genotype_tensor_to_allele_counts(gt, max_allele):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-    max_allele = int_check(max_allele, "i1")
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_to_allele_counts(gt, max_allele)
-
-
-def genotype_tensor_to_allele_counts_melt(gt, max_allele):
-
-    # Check arguments.
-    genotype_tensor_check(gt)
-    max_allele = int_check(max_allele, "i1")
-
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_to_allele_counts_melt(gt, max_allele)
+genotype_tensor_is_called = Dispatcher("genotype_tensor_is_called")
+genotype_tensor_is_missing = Dispatcher("genotype_tensor_is_missing")
+genotype_tensor_is_hom = Dispatcher("genotype_tensor_is_hom")
+genotype_tensor_is_het = Dispatcher("genotype_tensor_is_het")
+genotype_tensor_is_call = Dispatcher("genotype_tensor_is_call")
+genotype_tensor_count_alleles = Dispatcher("genotype_tensor_count_alleles")
+genotype_tensor_to_allele_counts = Dispatcher(
+    "genotype_tensor_to_allele_counts"
+)
+genotype_tensor_to_allele_counts_melt = Dispatcher(
+    "genotype_tensor_to_allele_counts_melt"
+)
 
 
 # genotype array
@@ -149,53 +28,23 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 # TODO map_alleles
 
 
-VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]
-
-
-def get_variants_array_names(variants, names=None):
-
-    # Discover array keys.
-    all_names = sorted(variants)
-
-    if names is None:
-        # Return all names, reordering so VCF fixed fields are first.
-        names = [k for k in VCF_FIXED_FIELDS if k in all_names]
-        names += [k for k in all_names if k.startswith("FILTER")]
-        names += [k for k in all_names if k not in names]
-
-    else:
-        # Check requested keys are present in data.
-        for n in names:
-            if n not in all_names:
-                raise ValueError
-
-    return names
+variants_to_dataframe_dispatcher = Dispatcher("variants_to_dataframe")
 
 
 def variants_to_dataframe(variants, columns=None):
 
-    # Check variants argument.
-    if not isinstance(variants, Mapping):
-        raise TypeError
-
-    # Check columns argument.
-    if columns is not None:
-        if not isinstance(columns, (list, tuple)):
-            raise TypeError
-        if any(not isinstance(k, str) for k in columns):
-            raise TypeError
-
-    # Determine array keys to build the dataframe from.
-    columns = get_variants_array_names(variants, names=columns)
-    assert len(columns) > 0
+    # Check requested columns.
+    columns = utils.get_variants_array_names(variants, names=columns)
 
     # Peek at one of the arrays to determine dispatch path, assume all arrays
     # will be of the same type.
     a = variants[columns[0]]
 
-    # Dispatch.
-    backend = get_backend(a)
-    return backend.variants_to_dataframe(variants, columns=columns)
+    # Manually dispatch.
+    f = variants_to_dataframe_dispatcher.dispatch(type(a))
+    if f is None:
+        raise NotImplementedError
+    return f(variants, columns=columns)
 
 
 class GroupSelection(Mapping):
@@ -221,66 +70,35 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-def select_slice(o, start=None, stop=None, step=None, axis=0):
+select_slice = Dispatcher("select_slice")
+select_indices = Dispatcher("select_indices")
+select_mask = Dispatcher("select_mask")
 
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupSelection(
-            o, select_slice, start=start, stop=stop, step=step, axis=axis
-        )
 
-    # Deal with arrays.
-    array_check(o)
-
-    # Construct full selection for all array dimensions.
-    item = tuple(
-        slice(start, stop, step) if i == axis else slice(None)
-        for i in range(o.ndim)
+def group_select_slice(o, start=None, stop=None, step=None, axis=0):
+    return GroupSelection(
+        o, select_slice, start=start, stop=stop, step=step, axis=axis
     )
 
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.getitem(o, item)
+
+select_slice.add((Mapping,), group_select_slice)
 
 
-def select_indices(o, indices, axis=0):
-
-    # Check args.
-    int_check(axis)
-
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupSelection(o, select_indices, indices=indices, axis=axis)
-
-    # Deal with arrays.
-    array_check(o)
-
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.take(o, indices, axis=axis)
+def group_select_indices(o, indices, axis=0):
+    return GroupSelection(o, select_indices, indices, axis=axis)
 
 
-def select_mask(o, mask, axis=0):
-
-    # Check args.
-    int_check(axis)
-
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupSelection(o, select_mask, mask=mask, axis=axis)
-
-    # Deal with arrays.
-    array_check(o)
-
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.compress(mask, o, axis=axis)
+select_indices.add((Mapping, np.ndarray), group_select_indices)
 
 
-def select_range(o, index, begin, end, axis=0):
+def group_select_mask(o, mask, axis=0):
+    return GroupSelection(o, select_mask, mask, axis=axis)
 
-    # Check args.
-    int_check(axis)
+
+select_mask.add((Mapping, np.ndarray), group_select_mask)
+
+
+def select_range(o, index, begin=None, end=None, axis=0):
 
     # Obtain index as a numpy array.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -290,8 +108,11 @@ def select_range(o, index, begin, end, axis=0):
         index = np.asarray(index)
 
     # Locate slice indices.
-    start = np.searchsorted(index, begin, side="left")
-    stop = np.searchsorted(index, end, side="right")
+    start = stop = None
+    if begin is not None:
+        start = np.searchsorted(index, begin, side="left")
+    if end is not None:
+        stop = np.searchsorted(index, end, side="right")
 
     # Delegate.
     return select_slice(o, start=start, stop=stop, axis=axis)
@@ -315,6 +136,19 @@ def select_values(o, index, query, axis=0):
 
     # Delegate.
     return select_indices(o, indices, axis=axis)
+
+
+concatenate_dispatcher = Dispatcher("concatenate")
+
+
+def concatenate(seq, axis=0):
+
+    # Manually dispatch on type of first object in `seq`.
+    o = seq[0]
+    f = concatenate_dispatcher.dispatch(type(o))
+    if f is None:
+        raise NotImplementedError
+    return f(seq, axis=axis)
 
 
 class GroupConcatenation(Mapping):
@@ -344,48 +178,11 @@ class GroupConcatenation(Mapping):
         return iter(sorted(self._key_set()))
 
 
-def concatenate(seq, axis=0):
-
-    if not isinstance(seq, (list, tuple)):
-        raise TypeError
-    if len(seq) < 2:
-        raise ValueError
-
-    # What type of thing are we concatenating?
-    o = seq[0]
-
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupConcatenation(seq, axis=axis)
-
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.concatenate(seq, axis=axis)
+def group_concatenate(seq, axis=0):
+    return GroupConcatenation(seq, axis=axis)
 
 
-class DictGroup(Mapping):
-    def __init__(self, root):
-        self._root = root
-
-    def __getitem__(self, item):
-        path = item.split("/")
-        assert len(path) > 0
-        node = self._root
-        for p in path:
-            node = node[p]
-        if isinstance(node, dict):
-            # Wrap so we get consistent behaviour.
-            node = DictGroup(node)
-        return node
-
-    def keys(self):
-        return self._root.keys()
-
-    def __len__(self):
-        return len(self._root)
-
-    def __iter__(self):
-        return iter(self._root)
+concatenate_dispatcher.add((Mapping,), group_concatenate)
 
 
 # TODO HaplotypeArray
@@ -422,9 +219,3 @@ class DictGroup(Mapping):
 
 # TODO GenotypeAlleleCountsArray
 # TODO ???
-
-
-from multipledispatch import Dispatcher
-
-
-foo = Dispatcher("foo")
