@@ -1,5 +1,4 @@
 graft src
-graft tests
 
 include AUTHORS.md
 include CHANGELOG.md

@@ -2,7 +2,7 @@
 
 ## Design notes
 
-This project (scikit-allel-model) is intended to provide array
+This project (skallel-tensor) is intended to provide tensor
 functions and classes for representing and transforming genetic
 variation data. It factors out and rewrites the functionality
 currently available in the scikit-allel version 1.x modules under the
@@ -49,9 +49,8 @@ Why rewrite it? Several reasons:
   with genotype data: `GenotypeArray`, `GenotypeDaskArray` and
   `GenotypeChunkedArray`. Now that dask is mature, we can drop support
   for the "chunked" classes, e.g., `GenotypeChunkedArray`. It would
-  also be simpler if we had just a single `GenotypeArray` class that
-  could be used with either numpy or dask arrays as the underlying
-  data container.
+  also be simpler if we had just a single `GenotypeArray` class, or possibly 
+  no wrapper classes at all.
   
 * There are some technical issue with the v1.x code that arise when
   using dask with a distributed cluster. These issues only surface in
@@ -76,7 +75,7 @@ advantages. First, the code is written as pure Python, so no need to
 understand any of the quirks of cython syntax. Second, the code can be
 unit tested with coverage by disabling JIT compilation during the test
 run. 100% test coverage should be a minimum requirement for code to
-get into scikit-allel-model master branch, and so being able to get
+get into skallel-tensor master branch, and so being able to get
 coverage reports for all functions is vital. Numba code is generally
 as fast as cython code, so there shouldn't be any performance
 implications.
@@ -93,31 +92,14 @@ often clearer and simpler. Second, numba code is often faster than
 equivalent numpy vectorized code, and avoids memory allocation for
 intermediate results.
 
-### Pure functions layer
+### Avoid wrapper classes
 
 We have run into problems with the current `allel.model` architecture
 when used in a distributed computing environment, primarily because it
 makes extensive use of wrapper classes like `GenotypeArray`, but these
 don't have proper pickle/unpickle support. That could be fixed, but it
 would be simpler if there was a base layer of functionality that used
-only pure functions and did not involve any wrapper classes. This base
-layer would not be exposed to the regular user, but would be used
-internally to avoid any internal use of wrapper classes like
-`GenotypeArray`.
-
-### Unify and simplify wrapper classes
-
-Currently there are three sets of wrapper classes, one for numpy
-arrays (e.g., `GenotypeArray`), one for the legacy "chunked" computing
-approach (e.g., `GenotypeChunkedArray`), and one for dask (e.g.,
-`GenotypeDaskArray`).
-
-Firstly, the "chunked" classes will get dropped completely, as these
-are no longer necessary given the maturity of dask.
-
-Secondly, the numpy and dask wrappers will be merged, so the user will
-just use e.g. the `GenotypeArray` class, which can wrap either a numpy
-or dask array as the underlying data container.
+only pure functions and did not involve any wrapper classes.
 
 ### Avoid cryptic errors
 
@@ -137,50 +119,42 @@ raise a `TypeError` with an informative message. I.e., fail fast, so
 the user has some clue how to fix the problem themselves (e.g., by
 converting the object to the correct type in their own code).
 
-### User and developer namespaces
+### Namespaces
 
-For technical reasons, there will be two root namespaces.
+API changes from scikit-allel v1.x are expected, but it may take time to port
+all functionality, so we will create a new `skallel` namespace for users, and 
+allow the new v2.x package to be installed alongside v1.x.
 
-The `allel` namespace will be maintained for users, with all
-user-facing functions and classes imported to the top level. So, e.g.,
-the user can call `allel.GenotypeArray`.
-
-However, the functions and classes that go into the `allel` namespace
+The functions and classes that go into the `skallel` namespace
 will be provisioned from different sub-projects, one of which is this
-project (scikit-allel-model), and there will be other sub-projects
-(e.g., probably scikit-allel-io and scikit-allel-stats
-subprojects). 
+project (skallel-tensor), and there will be other sub-projects
+(e.g., probably skallel-io and skallel-stats subprojects). 
 
-To make this possible, each sub-project has to use a [namespace
-package](https://www.python.org/dev/peps/pep-0420/) without an
-`__init__.py` file. The `skallel` namespace package will be used as
-the root package in all sub-projects. The `skallel` package can be
-thought of as the "developer namespace".
-
-There will then be a scikit-allel meta-package, which declares the
-`allel` user namespace and imports all user-facing functions and
+To make this possible, each sub-project has to use a different root namespace. 
+There will then be a skallel meta-package, which declares the
+`skallel` user namespace and imports all user-facing functions and
 classes from sub-projects.
 
 So in summary, there will be the following projects, each with their
 own github repo and pypi distributions:
 
-* scikit-allel (meta-package, provides the `allel` package)
-* scikit-allel-model (provides `skallel.model`)
-* scikit-allel-io (provides `skallel.io`)
-* scikit-allel-stats (provides `skallel.stats`)
+* skallel (meta-package, provides the `skallel` package)
+* skallel-tensor (provides the `skallel_tensor` package)
+* skallel-io (provides the `skallel_io` package)
+* skallel-stats (provides `skallel_stats` package)
 
 From a user point of view this will be all hidden, so the user can
-still install with, e.g.:
+install with, e.g.:
 
 ```
-pip install scikit-allel==2.0.0
+pip install skallel==2.0.0
 ```
 
-...and work with an API very similar to the current v1.x API, e.g.:
+...and use a single import, e.g.:
 
 
 ```
-import allel
-data = ...  # a numpy or dask array
-gt = allel.GenotypeArray(data)
+import skallel as ska
+gt = ...  # a numpy or dask array
+ac = ska.genotype_tensor_count_alleles(gt, max_allele=3)
 ```

@@ -5,43 +5,43 @@ import numba
 import pandas as pd
 
 
-ARRAY_TYPE = np.ndarray
-
-
-def array_check(a):
+def accepts(a):
     if isinstance(a, np.ndarray):
-        return a
-    raise TypeError
+        return True
+
+
+def getitem(a, item):
+    return a[item]
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotype_array_is_called(gt):
+def genotype_tensor_is_called(gt):
     out = np.ones(gt.shape[:2], dtype=np.bool_)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
             for k in range(gt.shape[2]):
                 if gt[i, j, k] < 0:
                     out[i, j] = False
-                    # no need to check other alleles
+                    # No need to check other alleles.
                     break
     return out
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotype_array_is_missing(gt):
+def genotype_tensor_is_missing(gt):
     out = np.zeros(gt.shape[:2], dtype=np.bool_)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
             for k in range(gt.shape[2]):
                 if gt[i, j, k] < 0:
                     out[i, j] = True
-                    # no need to check other alleles
+                    # No need to check other alleles.
                     break
     return out
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotype_array_is_hom(gt):
+def genotype_tensor_is_hom(gt):
     out = np.ones(gt.shape[:2], dtype=np.bool_)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
@@ -52,13 +52,13 @@ def genotype_array_is_hom(gt):
                 for k in range(1, gt.shape[2]):
                     if gt[i, j, k] != first_allele:
                         out[i, j] = False
-                        # no need to check other alleles
+                        # No need to check other alleles.
                         break
     return out
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotype_array_is_het(gt):
+def genotype_tensor_is_het(gt):
     out = np.zeros(gt.shape[:2], dtype=np.bool_)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
@@ -68,13 +68,26 @@ def genotype_array_is_het(gt):
                     allele = gt[i, j, k]
                     if allele >= 0 and allele != first_allele:
                         out[i, j] = True
-                        # no need to check other alleles
+                        # No need to check other alleles.
                         break
     return out
 
 
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]), nogil=True)
+def genotype_tensor_is_call(gt, call):
+    out = np.ones(gt.shape[:2], dtype=np.bool_)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            for k in range(gt.shape[2]):
+                if gt[i, j, k] != call[k]:
+                    out[i, j] = False
+                    # No need to check other alleles.
+                    break
+    return out
+
+
 @numba.njit(numba.int32[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
-def genotype_array_count_alleles(gt, max_allele):
+def genotype_tensor_count_alleles(gt, max_allele):
     out = np.zeros((gt.shape[0], max_allele + 1), dtype=np.int32)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
@@ -86,7 +99,7 @@ def genotype_array_count_alleles(gt, max_allele):
 
 
 @numba.njit(numba.int8[:, :, :](numba.int8[:, :, :], numba.int8), nogil=True)
-def genotype_array_to_allele_counts(gt, max_allele):
+def genotype_tensor_to_allele_counts(gt, max_allele):
     out = np.zeros((gt.shape[0], gt.shape[1], max_allele + 1), dtype=np.int8)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
@@ -98,7 +111,7 @@ def genotype_array_to_allele_counts(gt, max_allele):
 
 
 @numba.njit(numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
-def genotype_array_to_allele_counts_melt(gt, max_allele):
+def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     out = np.zeros((gt.shape[0] * (max_allele + 1), gt.shape[1]), dtype=np.int8)
     for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
@@ -111,21 +124,21 @@ def genotype_array_to_allele_counts_melt(gt, max_allele):
 
 def variants_to_dataframe(variants, columns):
 
-    # build dataframe
+    # Build dataframe.
     df_cols = {}
     for c in columns:
 
-        # obtain values
+        # Obtain values.
         a = variants[c]
 
-        # check array type
-        a = array_check(a)
+        # Ensure numpy array.
+        a = np.asarray(a)
 
-        # check number of dimensions
+        # Check number of dimensions.
         if a.ndim == 1:
             df_cols[c] = a
         elif a.ndim == 2:
-            # split columns
+            # Split columns.
             for i in range(a.shape[1]):
                 df_cols["{}_{}".format(c, i + 1)] = a[:, i]
         else:
