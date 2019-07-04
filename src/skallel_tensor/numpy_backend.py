@@ -155,9 +155,10 @@ def variants_to_dataframe(variants, columns):
 from . import api
 
 
-def foo(a):
+def foo(x, y):
     print("numpy backend")
-    return a + a
+    return x + y
 
 
 api.foo.add((np.ndarray,), foo)
+api.foo.add((np.ndarray, object), foo)

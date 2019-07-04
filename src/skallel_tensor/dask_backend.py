@@ -202,9 +202,10 @@ def variants_to_dataframe(variants, columns):
 from . import api
 
 
-def foo(a):
+def foo(x, y):
     print("dask backend")
-    return a - a
+    return x - y
 
 
 api.foo.add((da.Array,), foo)
+api.foo.add((da.Array, object), foo)
