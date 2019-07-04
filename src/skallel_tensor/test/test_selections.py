@@ -5,7 +5,7 @@ import dask.array as da
 import zarr
 
 
-from skallel_tensor.functions import (
+from skallel_tensor.api import (
     GroupSelection,
     DictGroup,
     select_slice,

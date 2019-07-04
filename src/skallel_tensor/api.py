@@ -3,17 +3,17 @@ from collections.abc import Mapping
 from functools import reduce
 import numpy as np
 import pandas as pd
-from . import methods_numpy, methods_dask
+from . import numpy_backend, dask_backend
 
 
-methods_providers = [methods_numpy, methods_dask]
+backends = [numpy_backend, dask_backend]
 
 
-def get_methods(*args):
+def get_backend(*args):
 
-    for methods in methods_providers:
-        if all(methods.accepts(a) for a in args):
-            return methods
+    for backend in backends:
+        if all(backend.accepts(a) for a in args):
+            return backend
 
     raise TypeError
 
@@ -55,8 +55,8 @@ def genotype_tensor_is_called(gt):
     genotype_tensor_check(gt)
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_is_called(gt)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_is_called(gt)
 
 
 def genotype_tensor_is_missing(gt):
@@ -65,8 +65,8 @@ def genotype_tensor_is_missing(gt):
     genotype_tensor_check(gt)
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_is_missing(gt)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_is_missing(gt)
 
 
 def genotype_tensor_is_hom(gt):
@@ -75,8 +75,8 @@ def genotype_tensor_is_hom(gt):
     genotype_tensor_check(gt)
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_is_hom(gt)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_is_hom(gt)
 
 
 def genotype_tensor_is_het(gt):
@@ -85,8 +85,8 @@ def genotype_tensor_is_het(gt):
     genotype_tensor_check(gt)
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_is_het(gt)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_is_het(gt)
 
 
 def genotype_tensor_is_call(gt, call):
@@ -103,8 +103,8 @@ def genotype_tensor_is_call(gt, call):
     call = call.astype("i1")
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_is_call(gt, call)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_is_call(gt, call)
 
 
 def genotype_tensor_count_alleles(gt, max_allele):
@@ -116,8 +116,8 @@ def genotype_tensor_count_alleles(gt, max_allele):
     max_allele = int_check(max_allele, "i1")
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_count_alleles(gt, max_allele)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_count_alleles(gt, max_allele)
 
 
 def genotype_tensor_to_allele_counts(gt, max_allele):
@@ -127,8 +127,8 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
     max_allele = int_check(max_allele, "i1")
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_to_allele_counts(gt, max_allele)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_to_allele_counts(gt, max_allele)
 
 
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
@@ -138,8 +138,8 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     max_allele = int_check(max_allele, "i1")
 
     # Dispatch.
-    methods = get_methods(gt)
-    return methods.genotype_tensor_to_allele_counts_melt(gt, max_allele)
+    backend = get_backend(gt)
+    return backend.genotype_tensor_to_allele_counts_melt(gt, max_allele)
 
 
 # genotype array
@@ -193,8 +193,8 @@ def variants_to_dataframe(variants, columns=None):
     a = variants[columns[0]]
 
     # Dispatch.
-    methods = get_methods(a)
-    return methods.variants_to_dataframe(variants, columns=columns)
+    backend = get_backend(a)
+    return backend.variants_to_dataframe(variants, columns=columns)
 
 
 class GroupSelection(Mapping):
@@ -238,8 +238,8 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
     )
 
     # Dispatch.
-    methods = get_methods(o)
-    return methods.getitem(o, item)
+    backend = get_backend(o)
+    return backend.getitem(o, item)
 
 
 def select_indices(o, indices, axis=0):
@@ -255,8 +255,8 @@ def select_indices(o, indices, axis=0):
     array_check(o)
 
     # Dispatch.
-    methods = get_methods(o)
-    return methods.take(o, indices, axis=axis)
+    backend = get_backend(o)
+    return backend.take(o, indices, axis=axis)
 
 
 def select_mask(o, mask, axis=0):
@@ -272,8 +272,8 @@ def select_mask(o, mask, axis=0):
     array_check(o)
 
     # Dispatch.
-    methods = get_methods(o)
-    return methods.compress(mask, o, axis=axis)
+    backend = get_backend(o)
+    return backend.compress(mask, o, axis=axis)
 
 
 def select_range(o, index, begin, end, axis=0):
@@ -358,8 +358,8 @@ def concatenate(seq, axis=0):
         return GroupConcatenation(seq, axis=axis)
 
     # Dispatch.
-    methods = get_methods(o)
-    return methods.concatenate(seq, axis=axis)
+    backend = get_backend(o)
+    return backend.concatenate(seq, axis=axis)
 
 
 class DictGroup(Mapping):
