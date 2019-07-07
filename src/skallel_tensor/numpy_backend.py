@@ -13,21 +13,21 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
     return a[item]
 
 
-api.select_slice.add((np.ndarray,), select_slice)
+api.select_slice_dispatcher.add((np.ndarray,), select_slice)
 
 
 def select_indices(a, indices, axis=0):
     return np.take(a, indices, axis=axis)
 
 
-api.select_indices.add((np.ndarray, np.ndarray), select_indices)
+api.select_indices_dispatcher.add((np.ndarray, np.ndarray), select_indices)
 
 
 def select_mask(a, mask, axis=0):
     return np.compress(mask, a, axis=axis)
 
 
-api.select_mask.add((np.ndarray, np.ndarray), select_mask)
+api.select_mask_dispatcher.add((np.ndarray, np.ndarray), select_mask)
 
 
 def concatenate(seq, axis=0):
@@ -50,7 +50,9 @@ def genotype_tensor_is_called(gt):
     return out
 
 
-api.genotype_tensor_is_called.add((np.ndarray,), genotype_tensor_is_called)
+api.genotype_tensor_is_called_dispatcher.add(
+    (np.ndarray,), genotype_tensor_is_called
+)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -66,7 +68,9 @@ def genotype_tensor_is_missing(gt):
     return out
 
 
-api.genotype_tensor_is_missing.add((np.ndarray,), genotype_tensor_is_missing)
+api.genotype_tensor_is_missing_dispatcher.add(
+    (np.ndarray,), genotype_tensor_is_missing
+)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -86,7 +90,7 @@ def genotype_tensor_is_hom(gt):
     return out
 
 
-api.genotype_tensor_is_hom.add((np.ndarray,), genotype_tensor_is_hom)
+api.genotype_tensor_is_hom_dispatcher.add((np.ndarray,), genotype_tensor_is_hom)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -105,7 +109,7 @@ def genotype_tensor_is_het(gt):
     return out
 
 
-api.genotype_tensor_is_het.add((np.ndarray,), genotype_tensor_is_het)
+api.genotype_tensor_is_het_dispatcher.add((np.ndarray,), genotype_tensor_is_het)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]), nogil=True)
@@ -121,7 +125,7 @@ def genotype_tensor_is_call(gt, call):
     return out
 
 
-api.genotype_tensor_is_call.add(
+api.genotype_tensor_is_call_dispatcher.add(
     (np.ndarray, np.ndarray), genotype_tensor_is_call
 )
 
@@ -138,7 +142,7 @@ def genotype_tensor_count_alleles(gt, max_allele):
     return out
 
 
-api.genotype_tensor_count_alleles.add(
+api.genotype_tensor_count_alleles_dispatcher.add(
     (np.ndarray, numbers.Integral), genotype_tensor_count_alleles
 )
 
@@ -155,7 +159,7 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
     return out
 
 
-api.genotype_tensor_to_allele_counts.add(
+api.genotype_tensor_to_allele_counts_dispatcher.add(
     (np.ndarray, numbers.Integral), genotype_tensor_to_allele_counts
 )
 
@@ -172,7 +176,7 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     return out
 
 
-api.genotype_tensor_to_allele_counts_melt.add(
+api.genotype_tensor_to_allele_counts_melt_dispatcher.add(
     (np.ndarray, numbers.Integral), genotype_tensor_to_allele_counts_melt
 )
 

@@ -175,13 +175,14 @@ def test_is_call():
     expect = np.array([[False, False, True], [False, False, False]], dtype=bool)
 
     # Test numpy array.
-    actual = genotype_tensor_is_call(data, np.array([1, 0]))
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
+    for call in (1, 0), [1, 0], np.array([1, 0]):
+        actual = genotype_tensor_is_call(data, call=call)
+        assert isinstance(actual, np.ndarray)
+        assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_call(data_dask, np.array([1, 0]))
+    actual = genotype_tensor_is_call(data_dask, call=np.array([1, 0]))
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -202,13 +203,13 @@ def test_count_alleles():
     expect = np.array([[3, 1, 2], [1, 1, 0]], dtype="i4")
 
     # Test numpy array.
-    actual = genotype_tensor_count_alleles(data, 2)
+    actual = genotype_tensor_count_alleles(data, max_allele=2)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_count_alleles(data_dask, 2)
+    actual = genotype_tensor_count_alleles(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -230,13 +231,13 @@ def test_to_allele_counts():
     )
 
     # Test numpy array.
-    actual = genotype_tensor_to_allele_counts(data, 2)
+    actual = genotype_tensor_to_allele_counts(data, max_allele=2)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_to_allele_counts(data_dask, 2)
+    actual = genotype_tensor_to_allele_counts(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -258,13 +259,13 @@ def test_to_allele_counts_melt():
     )
 
     # Test numpy array.
-    actual = genotype_tensor_to_allele_counts_melt(data, 2)
+    actual = genotype_tensor_to_allele_counts_melt(data, max_allele=2)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_to_allele_counts_melt(data_dask, 2)
+    actual = genotype_tensor_to_allele_counts_melt(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 

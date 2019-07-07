@@ -6,25 +6,37 @@ import dask.dataframe as dd
 from . import api, numpy_backend, utils
 
 
-ARRAY_TYPE = (da.Array,)
+daskish_array_types = (da.Array,)
 try:
     # noinspection PyUnresolvedReferences
     import h5py
 
-    ARRAY_TYPE += (h5py.Dataset,)
+    daskish_array_types += (h5py.Dataset,)
 except ImportError:
     pass
 try:
     # noinspection PyUnresolvedReferences
     import zarr
 
-    ARRAY_TYPE += (zarr.Array,)
+    daskish_array_types += (zarr.Array,)
 except ImportError:
     pass
 
 
 def ensure_dask_array(a):
     if isinstance(a, da.Array):
+        # Pass through.
+        return a
+    else:
+        # Convert to dask array.
+        return da.from_array(a)
+
+
+def ensure_dask_or_numpy_array(a):
+    if isinstance(a, da.Array):
+        # Pass through.
+        return a
+    elif isinstance(a, np.ndarray):
         # Pass through.
         return a
     else:
@@ -40,23 +52,33 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
     return a[item]
 
 
-api.select_slice.add((ARRAY_TYPE,), select_slice)
+api.select_slice_dispatcher.add((daskish_array_types,), select_slice)
 
 
 def select_indices(a, indices, axis=0):
     a = ensure_dask_array(a)
+    indices = ensure_dask_or_numpy_array(indices)
     return da.take(a, indices, axis=axis)
 
 
-api.select_indices.add((ARRAY_TYPE, np.ndarray), select_indices)
+api.select_indices_dispatcher.add(
+    (daskish_array_types, np.ndarray), select_indices
+)
+api.select_indices_dispatcher.add(
+    (daskish_array_types, daskish_array_types), select_indices
+)
 
 
 def select_mask(a, mask, axis=0):
     a = ensure_dask_array(a)
+    mask = ensure_dask_or_numpy_array(mask)
     return da.compress(mask, a, axis=axis)
 
 
-api.select_mask.add((ARRAY_TYPE, np.ndarray), select_mask)
+api.select_mask_dispatcher.add((daskish_array_types, np.ndarray), select_mask)
+api.select_mask_dispatcher.add(
+    (daskish_array_types, daskish_array_types), select_mask
+)
 
 
 def concatenate(seq, axis=0):
@@ -64,7 +86,7 @@ def concatenate(seq, axis=0):
     return da.concatenate(seq, axis=axis)
 
 
-api.concatenate_dispatcher.add((ARRAY_TYPE,), concatenate)
+api.concatenate_dispatcher.add((daskish_array_types,), concatenate)
 
 
 def genotype_tensor_is_called(gt):
@@ -75,7 +97,9 @@ def genotype_tensor_is_called(gt):
     return out
 
 
-api.genotype_tensor_is_called.add((ARRAY_TYPE,), genotype_tensor_is_called)
+api.genotype_tensor_is_called_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_called
+)
 
 
 def genotype_tensor_is_missing(gt):
@@ -86,7 +110,9 @@ def genotype_tensor_is_missing(gt):
     return out
 
 
-api.genotype_tensor_is_missing.add((ARRAY_TYPE,), genotype_tensor_is_missing)
+api.genotype_tensor_is_missing_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_missing
+)
 
 
 def genotype_tensor_is_hom(gt):
@@ -97,7 +123,9 @@ def genotype_tensor_is_hom(gt):
     return out
 
 
-api.genotype_tensor_is_hom.add((ARRAY_TYPE,), genotype_tensor_is_hom)
+api.genotype_tensor_is_hom_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_hom
+)
 
 
 def genotype_tensor_is_het(gt):
@@ -108,7 +136,9 @@ def genotype_tensor_is_het(gt):
     return out
 
 
-api.genotype_tensor_is_het.add((ARRAY_TYPE,), genotype_tensor_is_het)
+api.genotype_tensor_is_het_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_het
+)
 
 
 def genotype_tensor_is_call(gt, call):
@@ -119,8 +149,8 @@ def genotype_tensor_is_call(gt, call):
     return out
 
 
-api.genotype_tensor_is_call.add(
-    (ARRAY_TYPE, np.ndarray), genotype_tensor_is_call
+api.genotype_tensor_is_call_dispatcher.add(
+    (daskish_array_types, np.ndarray), genotype_tensor_is_call
 )
 
 
@@ -153,8 +183,8 @@ def genotype_tensor_count_alleles(gt, max_allele):
     return out
 
 
-api.genotype_tensor_count_alleles.add(
-    (ARRAY_TYPE, numbers.Integral), genotype_tensor_count_alleles
+api.genotype_tensor_count_alleles_dispatcher.add(
+    (daskish_array_types, numbers.Integral), genotype_tensor_count_alleles
 )
 
 
@@ -176,8 +206,8 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
     return out
 
 
-api.genotype_tensor_to_allele_counts.add(
-    (ARRAY_TYPE, numbers.Integral), genotype_tensor_to_allele_counts
+api.genotype_tensor_to_allele_counts_dispatcher.add(
+    (daskish_array_types, numbers.Integral), genotype_tensor_to_allele_counts
 )
 
 
@@ -201,15 +231,13 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     return out
 
 
-api.genotype_tensor_to_allele_counts_melt.add(
-    (ARRAY_TYPE, numbers.Integral), genotype_tensor_to_allele_counts_melt
+api.genotype_tensor_to_allele_counts_melt_dispatcher.add(
+    (daskish_array_types, numbers.Integral),
+    genotype_tensor_to_allele_counts_melt,
 )
 
 
-def variants_to_dataframe(variants, columns=None):
-
-    # Check requested columns.
-    columns = utils.get_variants_array_names(variants, names=columns)
+def variants_to_dataframe(variants, columns):
 
     # Build dataframe.
     df_cols = []
@@ -244,4 +272,6 @@ def variants_to_dataframe(variants, columns=None):
     return df
 
 
-api.variants_to_dataframe_dispatcher.add((ARRAY_TYPE,), variants_to_dataframe)
+api.variants_to_dataframe_dispatcher.add(
+    (daskish_array_types,), variants_to_dataframe
+)

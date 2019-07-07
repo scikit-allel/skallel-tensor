@@ -3,23 +3,193 @@ from functools import reduce
 import numpy as np
 import pandas as pd
 from multipledispatch import Dispatcher
+from .utils import coerce_scalar, get_variants_array_names
 
 
-from . import utils
+genotype_tensor_is_called_dispatcher = Dispatcher("genotype_tensor_is_called")
 
 
-genotype_tensor_is_called = Dispatcher("genotype_tensor_is_called")
-genotype_tensor_is_missing = Dispatcher("genotype_tensor_is_missing")
-genotype_tensor_is_hom = Dispatcher("genotype_tensor_is_hom")
-genotype_tensor_is_het = Dispatcher("genotype_tensor_is_het")
-genotype_tensor_is_call = Dispatcher("genotype_tensor_is_call")
-genotype_tensor_count_alleles = Dispatcher("genotype_tensor_count_alleles")
-genotype_tensor_to_allele_counts = Dispatcher(
+def genotype_tensor_is_called(gt):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    return genotype_tensor_is_called_dispatcher(gt)
+
+
+genotype_tensor_is_missing_dispatcher = Dispatcher("genotype_tensor_is_missing")
+
+
+def genotype_tensor_is_missing(gt):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    return genotype_tensor_is_missing_dispatcher(gt)
+
+
+genotype_tensor_is_hom_dispatcher = Dispatcher("genotype_tensor_is_hom")
+
+
+def genotype_tensor_is_hom(gt):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    return genotype_tensor_is_hom_dispatcher(gt)
+
+
+genotype_tensor_is_het_dispatcher = Dispatcher("genotype_tensor_is_het")
+
+
+def genotype_tensor_is_het(gt):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    return genotype_tensor_is_het_dispatcher(gt)
+
+
+genotype_tensor_is_call_dispatcher = Dispatcher("genotype_tensor_is_call")
+
+
+def genotype_tensor_is_call(gt, call):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    call : array_like, int8, shape (ploidy,)
+
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    # coerce `call` to numpy array
+    call = np.asarray(call, dtype="i1")
+
+    # dispatch
+    return genotype_tensor_is_call_dispatcher(gt, call)
+
+
+genotype_tensor_count_alleles_dispatcher = Dispatcher(
+    "genotype_tensor_count_alleles"
+)
+
+
+def genotype_tensor_count_alleles(gt, max_allele):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    max_allele : int
+
+    Returns
+    -------
+    ac: array_like, int32, shape (n_variants, max_allele + 1)
+
+    """
+
+    # coerce `max_allele` to int
+    max_allele = coerce_scalar(max_allele, "i1")
+
+    # dispatch
+    return genotype_tensor_count_alleles_dispatcher(gt, max_allele)
+
+
+genotype_tensor_to_allele_counts_dispatcher = Dispatcher(
     "genotype_tensor_to_allele_counts"
 )
-genotype_tensor_to_allele_counts_melt = Dispatcher(
+
+
+def genotype_tensor_to_allele_counts(gt, max_allele):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    max_allele : int
+
+    Returns
+    -------
+    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+
+    """
+
+    # coerce `max_allele` to int
+    max_allele = coerce_scalar(max_allele, "i1")
+
+    # dispatch
+    return genotype_tensor_to_allele_counts_dispatcher(gt, max_allele)
+
+
+genotype_tensor_to_allele_counts_melt_dispatcher = Dispatcher(
     "genotype_tensor_to_allele_counts_melt"
 )
+
+
+def genotype_tensor_to_allele_counts_melt(gt, max_allele):
+    """
+    TODO
+
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    max_allele : int
+
+    Returns
+    -------
+    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+
+    """
+
+    # coerce `max_allele` to int
+    max_allele = coerce_scalar(max_allele, "i1")
+
+    # dispatch
+    return genotype_tensor_to_allele_counts_melt_dispatcher(gt, max_allele)
 
 
 # genotype array
@@ -34,7 +204,7 @@ variants_to_dataframe_dispatcher = Dispatcher("variants_to_dataframe")
 def variants_to_dataframe(variants, columns=None):
 
     # Check requested columns.
-    columns = utils.get_variants_array_names(variants, names=columns)
+    columns = get_variants_array_names(variants, names=columns)
 
     # Peek at one of the arrays to determine dispatch path, assume all arrays
     # will be of the same type.
@@ -44,7 +214,7 @@ def variants_to_dataframe(variants, columns=None):
     f = variants_to_dataframe_dispatcher.dispatch(type(a))
     if f is None:
         raise NotImplementedError
-    return f(variants, columns=columns)
+    return f(variants, columns)
 
 
 class GroupSelection(Mapping):
@@ -70,9 +240,15 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-select_slice = Dispatcher("select_slice")
-select_indices = Dispatcher("select_indices")
-select_mask = Dispatcher("select_mask")
+select_slice_dispatcher = Dispatcher("select_slice")
+
+
+def select_slice(o, start=None, stop=None, step=None, axis=0):
+    """TODO"""
+
+    return select_slice_dispatcher(
+        o, start=start, stop=stop, step=step, axis=axis
+    )
 
 
 def group_select_slice(o, start=None, stop=None, step=None, axis=0):
@@ -81,21 +257,39 @@ def group_select_slice(o, start=None, stop=None, step=None, axis=0):
     )
 
 
-select_slice.add((Mapping,), group_select_slice)
+select_slice_dispatcher.add((Mapping,), group_select_slice)
+
+
+select_indices_dispatcher = Dispatcher("select_indices")
+
+
+def select_indices(o, indices, axis=0):
+    """TODO"""
+
+    return select_indices_dispatcher(o, indices, axis=axis)
 
 
 def group_select_indices(o, indices, axis=0):
     return GroupSelection(o, select_indices, indices, axis=axis)
 
 
-select_indices.add((Mapping, np.ndarray), group_select_indices)
+select_indices_dispatcher.add((Mapping, object), group_select_indices)
+
+
+select_mask_dispatcher = Dispatcher("select_mask")
+
+
+def select_mask(o, mask, axis=0):
+    """TODO"""
+
+    return select_mask_dispatcher(o, mask, axis=axis)
 
 
 def group_select_mask(o, mask, axis=0):
     return GroupSelection(o, select_mask, mask, axis=axis)
 
 
-select_mask.add((Mapping, np.ndarray), group_select_mask)
+select_mask_dispatcher.add((Mapping, object), group_select_mask)
 
 
 def select_range(o, index, begin=None, end=None, axis=0):

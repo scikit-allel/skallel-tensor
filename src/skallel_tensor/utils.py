@@ -2,7 +2,8 @@ from collections.abc import Mapping
 import numpy as np
 
 
-def int_check(i, dtype):
+def coerce_scalar(i, dtype):
+    dtype = np.dtype(dtype)
     if not np.can_cast(i, dtype, casting="safe"):
         raise ValueError
     i = np.array(i, dtype)[()]
@@ -36,6 +37,7 @@ def get_variants_array_names(variants, names=None):
 
     else:
         # Check requested keys are present in data.
+        names = list(names)
         for n in names:
             if n not in all_names:
                 raise ValueError
