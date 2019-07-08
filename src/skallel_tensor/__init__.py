@@ -29,5 +29,5 @@ from . import numpy_backend
 
 try:
     from . import dask_backend
-except ImportError:
+except ImportError:  # pragma: no cover
     pass

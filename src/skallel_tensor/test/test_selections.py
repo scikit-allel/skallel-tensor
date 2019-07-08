@@ -141,6 +141,10 @@ def test_select_mask():
         actual = select_mask(d, mask, axis=0)
         assert isinstance(actual, da.Array)
         assert_array_equal(expect, actual.compute())
+        # With mask as dask array.
+        actual = select_mask(d, da.from_array(mask), axis=0)
+        assert isinstance(actual, da.Array)
+        assert_array_equal(expect, actual.compute())
 
     # Numpy group.
     g = DictGroup({"variants": {"POS": pos}, "calldata": {"GT": gt}})
@@ -334,7 +338,10 @@ def test_concatenate():
     )
 
     # Test errors.
-    # with pytest.raises(TypeError):
-    #     concatenate({"gt": gt}, axis=0)
-    # with pytest.raises(ValueError):
-    #     concatenate([gt], axis=0)
+    with pytest.raises(TypeError):
+        concatenate({"gt": gt}, axis=0)
+    with pytest.raises(ValueError):
+        concatenate([gt], axis=0)
+    with pytest.raises(NotImplementedError):
+        x = [1, 2, 3, 4]
+        concatenate([x, x], axis=0)

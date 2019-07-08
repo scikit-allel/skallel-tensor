@@ -3,7 +3,13 @@ from functools import reduce
 import numpy as np
 import pandas as pd
 from multipledispatch import Dispatcher
-from .utils import coerce_scalar, get_variants_array_names
+from .utils import (
+    coerce_scalar,
+    get_variants_array_names,
+    check_array_like,
+    check_list_or_tuple,
+    check_mapping,
+)
 
 
 genotype_tensor_is_called_dispatcher = Dispatcher("genotype_tensor_is_called")
@@ -23,6 +29,7 @@ def genotype_tensor_is_called(gt):
 
     """
 
+    check_array_like(gt, dtype="i1", ndim=3)
     return genotype_tensor_is_called_dispatcher(gt)
 
 
@@ -43,6 +50,7 @@ def genotype_tensor_is_missing(gt):
 
     """
 
+    check_array_like(gt, dtype="i1", ndim=3)
     return genotype_tensor_is_missing_dispatcher(gt)
 
 
@@ -63,6 +71,7 @@ def genotype_tensor_is_hom(gt):
 
     """
 
+    check_array_like(gt, dtype="i1", ndim=3)
     return genotype_tensor_is_hom_dispatcher(gt)
 
 
@@ -83,6 +92,7 @@ def genotype_tensor_is_het(gt):
 
     """
 
+    check_array_like(gt, dtype="i1", ndim=3)
     return genotype_tensor_is_het_dispatcher(gt)
 
 
@@ -104,10 +114,8 @@ def genotype_tensor_is_call(gt, call):
 
     """
 
-    # coerce `call` to numpy array
+    check_array_like(gt, dtype="i1", ndim=3)
     call = np.asarray(call, dtype="i1")
-
-    # dispatch
     return genotype_tensor_is_call_dispatcher(gt, call)
 
 
@@ -131,10 +139,8 @@ def genotype_tensor_count_alleles(gt, max_allele):
 
     """
 
-    # coerce `max_allele` to int
+    check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-
-    # dispatch
     return genotype_tensor_count_alleles_dispatcher(gt, max_allele)
 
 
@@ -158,10 +164,8 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
 
     """
 
-    # coerce `max_allele` to int
+    check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-
-    # dispatch
     return genotype_tensor_to_allele_counts_dispatcher(gt, max_allele)
 
 
@@ -185,10 +189,8 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
     """
 
-    # coerce `max_allele` to int
+    check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-
-    # dispatch
     return genotype_tensor_to_allele_counts_melt_dispatcher(gt, max_allele)
 
 
@@ -202,6 +204,10 @@ variants_to_dataframe_dispatcher = Dispatcher("variants_to_dataframe")
 
 
 def variants_to_dataframe(variants, columns=None):
+
+    # Check input types.
+    check_mapping(variants, str)
+    check_list_or_tuple(columns, str, optional=True)
 
     # Check requested columns.
     columns = get_variants_array_names(variants, names=columns)
@@ -336,6 +342,9 @@ concatenate_dispatcher = Dispatcher("concatenate")
 
 
 def concatenate(seq, axis=0):
+
+    # Check inputs.
+    check_list_or_tuple(seq, min_length=2)
 
     # Manually dispatch on type of first object in `seq`.
     o = seq[0]

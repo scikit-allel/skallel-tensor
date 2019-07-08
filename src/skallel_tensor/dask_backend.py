@@ -12,14 +12,14 @@ try:
     import h5py
 
     daskish_array_types += (h5py.Dataset,)
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 try:
     # noinspection PyUnresolvedReferences
     import zarr
 
     daskish_array_types += (zarr.Array,)
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 
@@ -33,15 +33,11 @@ def ensure_dask_array(a):
 
 
 def ensure_dask_or_numpy_array(a):
-    if isinstance(a, da.Array):
-        # Pass through.
-        return a
-    elif isinstance(a, np.ndarray):
+    if isinstance(a, np.ndarray):
         # Pass through.
         return a
     else:
-        # Convert to dask array.
-        return da.from_array(a)
+        return ensure_dask_array(a)
 
 
 def select_slice(a, start=None, stop=None, step=None, axis=0):

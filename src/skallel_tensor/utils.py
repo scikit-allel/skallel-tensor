@@ -3,6 +3,8 @@ import numpy as np
 
 
 def coerce_scalar(i, dtype):
+    if not np.isscalar(i):
+        raise TypeError
     dtype = np.dtype(dtype)
     if not np.can_cast(i, dtype, casting="safe"):
         raise ValueError
@@ -10,14 +12,14 @@ def coerce_scalar(i, dtype):
     return i
 
 
-def genotype_tensor_check(gt):
-
-    # Check dtype.
-    if gt.dtype != np.dtype("i1"):
+def check_array_like(a, dtype=None, ndim=None):
+    array_attrs = "ndim", "dtype", "shape"
+    for k in array_attrs:
+        if not hasattr(a, k):
+            raise TypeError
+    if dtype is not None and a.dtype != np.dtype(dtype):
         raise TypeError
-
-    # Check number of dimensions.
-    if gt.ndim != 3:
+    if ndim is not None and a.ndim != ndim:
         raise ValueError
 
 
@@ -75,3 +77,23 @@ class DictGroup(Mapping):
 
     def __iter__(self):
         return iter(self._root)
+
+
+def check_list_or_tuple(l, item_type=None, optional=False, min_length=0):
+    if optional and l is None:
+        return
+    if not isinstance(l, (list, tuple)):
+        raise TypeError
+    if item_type is not None:
+        if not all(isinstance(v, item_type) for v in l):
+            raise TypeError
+    if min_length > 0 and len(l) < min_length:
+        raise ValueError
+
+
+def check_mapping(m, key_type=None):
+    if not isinstance(m, Mapping):
+        raise TypeError
+    if key_type is not None:
+        if not all(isinstance(k, key_type) for k in m.keys()):
+            raise TypeError
