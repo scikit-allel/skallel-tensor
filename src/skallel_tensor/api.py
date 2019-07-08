@@ -1,145 +1,197 @@
-import numbers
 from collections.abc import Mapping
 from functools import reduce
 import numpy as np
 import pandas as pd
-from . import numpy_backend, dask_backend
+from multipledispatch import Dispatcher
+from .utils import (
+    coerce_scalar,
+    get_variants_array_names,
+    check_array_like,
+    check_list_or_tuple,
+    check_mapping,
+)
 
 
-backends = [numpy_backend, dask_backend]
-
-
-def get_backend(*args):
-
-    for backend in backends:
-        if all(backend.accepts(a) for a in args):
-            return backend
-
-    raise TypeError
-
-
-def int_check(i, dtype=None):
-
-    if not isinstance(i, numbers.Integral):
-        raise TypeError
-    if dtype is not None:
-        if not np.can_cast(i, dtype, casting="safe"):
-            raise ValueError
-        i = np.array(i, dtype)[()]
-    return i
-
-
-def array_check(a):
-    array_attrs = "ndim", "shape", "dtype"
-    if not all(hasattr(a, k) for k in array_attrs):
-        raise TypeError
-
-
-def genotype_tensor_check(gt):
-
-    # Check type.
-    array_check(gt)
-
-    # Check dtype.
-    if gt.dtype != np.dtype("i1"):
-        raise TypeError
-
-    # Check number of dimensions.
-    if gt.ndim != 3:
-        raise ValueError
+genotype_tensor_is_called_dispatcher = Dispatcher("genotype_tensor_is_called")
 
 
 def genotype_tensor_is_called(gt):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_called(gt)
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    return genotype_tensor_is_called_dispatcher(gt)
+
+
+genotype_tensor_is_missing_dispatcher = Dispatcher("genotype_tensor_is_missing")
 
 
 def genotype_tensor_is_missing(gt):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_missing(gt)
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    return genotype_tensor_is_missing_dispatcher(gt)
+
+
+genotype_tensor_is_hom_dispatcher = Dispatcher("genotype_tensor_is_hom")
 
 
 def genotype_tensor_is_hom(gt):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_hom(gt)
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    return genotype_tensor_is_hom_dispatcher(gt)
+
+
+genotype_tensor_is_het_dispatcher = Dispatcher("genotype_tensor_is_het")
 
 
 def genotype_tensor_is_het(gt):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_het(gt)
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    return genotype_tensor_is_het_dispatcher(gt)
+
+
+genotype_tensor_is_call_dispatcher = Dispatcher("genotype_tensor_is_call")
 
 
 def genotype_tensor_is_call(gt, call):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
-    if not isinstance(call, (list, tuple, np.ndarray)):
-        raise TypeError
-    for c in call:
-        int_check(c, "i1")
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    call : array_like, int8, shape (ploidy,)
+
+    Returns
+    -------
+    out: array_like, bool, shape (n_variants, n_samples)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
     call = np.asarray(call, dtype="i1")
-    if call.shape[0] != gt.shape[2]:
-        raise ValueError
-    call = call.astype("i1")
+    return genotype_tensor_is_call_dispatcher(gt, call)
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_is_call(gt, call)
+
+genotype_tensor_count_alleles_dispatcher = Dispatcher(
+    "genotype_tensor_count_alleles"
+)
 
 
 def genotype_tensor_count_alleles(gt, max_allele):
+    """
+    TODO
 
-    # TODO support subpop arg
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    max_allele : int
 
-    # Check arguments.
-    genotype_tensor_check(gt)
-    max_allele = int_check(max_allele, "i1")
+    Returns
+    -------
+    ac: array_like, int32, shape (n_variants, max_allele + 1)
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_count_alleles(gt, max_allele)
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    max_allele = coerce_scalar(max_allele, "i1")
+    return genotype_tensor_count_alleles_dispatcher(gt, max_allele)
+
+
+genotype_tensor_to_allele_counts_dispatcher = Dispatcher(
+    "genotype_tensor_to_allele_counts"
+)
 
 
 def genotype_tensor_to_allele_counts(gt, max_allele):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
-    max_allele = int_check(max_allele, "i1")
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    max_allele : int
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_to_allele_counts(gt, max_allele)
+    Returns
+    -------
+    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    max_allele = coerce_scalar(max_allele, "i1")
+    return genotype_tensor_to_allele_counts_dispatcher(gt, max_allele)
+
+
+genotype_tensor_to_allele_counts_melt_dispatcher = Dispatcher(
+    "genotype_tensor_to_allele_counts_melt"
+)
 
 
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
+    """
+    TODO
 
-    # Check arguments.
-    genotype_tensor_check(gt)
-    max_allele = int_check(max_allele, "i1")
+    Parameters
+    ----------
+    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    max_allele : int
 
-    # Dispatch.
-    backend = get_backend(gt)
-    return backend.genotype_tensor_to_allele_counts_melt(gt, max_allele)
+    Returns
+    -------
+    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+
+    """
+
+    check_array_like(gt, dtype="i1", ndim=3)
+    max_allele = coerce_scalar(max_allele, "i1")
+    return genotype_tensor_to_allele_counts_melt_dispatcher(gt, max_allele)
 
 
 # genotype array
@@ -148,53 +200,27 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 # TODO map_alleles
 
 
-VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]
-
-
-def get_variants_array_names(variants, names=None):
-
-    # Discover array keys.
-    all_names = sorted(variants)
-
-    if names is None:
-        # Return all names, reordering so VCF fixed fields are first.
-        names = [k for k in VCF_FIXED_FIELDS if k in all_names]
-        names += [k for k in all_names if k.startswith("FILTER")]
-        names += [k for k in all_names if k not in names]
-
-    else:
-        # Check requested keys are present in data.
-        for n in names:
-            if n not in all_names:
-                raise ValueError
-
-    return names
+variants_to_dataframe_dispatcher = Dispatcher("variants_to_dataframe")
 
 
 def variants_to_dataframe(variants, columns=None):
 
-    # Check variants argument.
-    if not isinstance(variants, Mapping):
-        raise TypeError
+    # Check input types.
+    check_mapping(variants, str)
+    check_list_or_tuple(columns, str, optional=True)
 
-    # Check columns argument.
-    if columns is not None:
-        if not isinstance(columns, (list, tuple)):
-            raise TypeError
-        if any(not isinstance(k, str) for k in columns):
-            raise TypeError
-
-    # Determine array keys to build the dataframe from.
+    # Check requested columns.
     columns = get_variants_array_names(variants, names=columns)
-    assert len(columns) > 0
 
     # Peek at one of the arrays to determine dispatch path, assume all arrays
     # will be of the same type.
     a = variants[columns[0]]
 
-    # Dispatch.
-    backend = get_backend(a)
-    return backend.variants_to_dataframe(variants, columns=columns)
+    # Manually dispatch.
+    f = variants_to_dataframe_dispatcher.dispatch(type(a))
+    if f is None:
+        raise NotImplementedError
+    return f(variants, columns)
 
 
 class GroupSelection(Mapping):
@@ -220,66 +246,59 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
+select_slice_dispatcher = Dispatcher("select_slice")
+
+
 def select_slice(o, start=None, stop=None, step=None, axis=0):
+    """TODO"""
 
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupSelection(
-            o, select_slice, start=start, stop=stop, step=step, axis=axis
-        )
-
-    # Deal with arrays.
-    array_check(o)
-
-    # Construct full selection for all array dimensions.
-    item = tuple(
-        slice(start, stop, step) if i == axis else slice(None)
-        for i in range(o.ndim)
+    return select_slice_dispatcher(
+        o, start=start, stop=stop, step=step, axis=axis
     )
 
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.getitem(o, item)
+
+def group_select_slice(o, start=None, stop=None, step=None, axis=0):
+    return GroupSelection(
+        o, select_slice, start=start, stop=stop, step=step, axis=axis
+    )
+
+
+select_slice_dispatcher.add((Mapping,), group_select_slice)
+
+
+select_indices_dispatcher = Dispatcher("select_indices")
 
 
 def select_indices(o, indices, axis=0):
+    """TODO"""
 
-    # Check args.
-    int_check(axis)
+    return select_indices_dispatcher(o, indices, axis=axis)
 
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupSelection(o, select_indices, indices=indices, axis=axis)
 
-    # Deal with arrays.
-    array_check(o)
+def group_select_indices(o, indices, axis=0):
+    return GroupSelection(o, select_indices, indices, axis=axis)
 
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.take(o, indices, axis=axis)
+
+select_indices_dispatcher.add((Mapping, object), group_select_indices)
+
+
+select_mask_dispatcher = Dispatcher("select_mask")
 
 
 def select_mask(o, mask, axis=0):
+    """TODO"""
 
-    # Check args.
-    int_check(axis)
-
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupSelection(o, select_mask, mask=mask, axis=axis)
-
-    # Deal with arrays.
-    array_check(o)
-
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.compress(mask, o, axis=axis)
+    return select_mask_dispatcher(o, mask, axis=axis)
 
 
-def select_range(o, index, begin, end, axis=0):
+def group_select_mask(o, mask, axis=0):
+    return GroupSelection(o, select_mask, mask, axis=axis)
 
-    # Check args.
-    int_check(axis)
+
+select_mask_dispatcher.add((Mapping, object), group_select_mask)
+
+
+def select_range(o, index, begin=None, end=None, axis=0):
 
     # Obtain index as a numpy array.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -289,8 +308,11 @@ def select_range(o, index, begin, end, axis=0):
         index = np.asarray(index)
 
     # Locate slice indices.
-    start = np.searchsorted(index, begin, side="left")
-    stop = np.searchsorted(index, end, side="right")
+    start = stop = None
+    if begin is not None:
+        start = np.searchsorted(index, begin, side="left")
+    if end is not None:
+        stop = np.searchsorted(index, end, side="right")
 
     # Delegate.
     return select_slice(o, start=start, stop=stop, axis=axis)
@@ -314,6 +336,22 @@ def select_values(o, index, query, axis=0):
 
     # Delegate.
     return select_indices(o, indices, axis=axis)
+
+
+concatenate_dispatcher = Dispatcher("concatenate")
+
+
+def concatenate(seq, axis=0):
+
+    # Check inputs.
+    check_list_or_tuple(seq, min_length=2)
+
+    # Manually dispatch on type of first object in `seq`.
+    o = seq[0]
+    f = concatenate_dispatcher.dispatch(type(o))
+    if f is None:
+        raise NotImplementedError
+    return f(seq, axis=axis)
 
 
 class GroupConcatenation(Mapping):
@@ -343,48 +381,11 @@ class GroupConcatenation(Mapping):
         return iter(sorted(self._key_set()))
 
 
-def concatenate(seq, axis=0):
-
-    if not isinstance(seq, (list, tuple)):
-        raise TypeError
-    if len(seq) < 2:
-        raise ValueError
-
-    # What type of thing are we concatenating?
-    o = seq[0]
-
-    # Deal with groups.
-    if isinstance(o, Mapping):
-        return GroupConcatenation(seq, axis=axis)
-
-    # Dispatch.
-    backend = get_backend(o)
-    return backend.concatenate(seq, axis=axis)
+def group_concatenate(seq, axis=0):
+    return GroupConcatenation(seq, axis=axis)
 
 
-class DictGroup(Mapping):
-    def __init__(self, root):
-        self._root = root
-
-    def __getitem__(self, item):
-        path = item.split("/")
-        assert len(path) > 0
-        node = self._root
-        for p in path:
-            node = node[p]
-        if isinstance(node, dict):
-            # Wrap so we get consistent behaviour.
-            node = DictGroup(node)
-        return node
-
-    def keys(self):
-        return self._root.keys()
-
-    def __len__(self):
-        return len(self._root)
-
-    def __iter__(self):
-        return iter(self._root)
+concatenate_dispatcher.add((Mapping,), group_concatenate)
 
 
 # TODO HaplotypeArray

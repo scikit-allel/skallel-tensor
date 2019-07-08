@@ -5,7 +5,7 @@ import dask.array as da
 import zarr
 
 
-from skallel_tensor.api import (
+from skallel_tensor import (
     GroupSelection,
     DictGroup,
     select_slice,
@@ -27,7 +27,7 @@ def test_select_slice():
     # Numpy array.
     for a in pos, gt:
         expect = a[10:20:2]
-        actual = select_slice(a, 10, 20, 2, axis=0)
+        actual = select_slice(a, start=10, stop=20, step=2, axis=0)
         assert isinstance(actual, np.ndarray)
         assert_array_equal(expect, actual)
 
@@ -35,13 +35,13 @@ def test_select_slice():
     for a in pos, gt:
         expect = a[10:20:2]
         d = da.from_array(a)
-        actual = select_slice(d, 10, 20, 2, axis=0)
+        actual = select_slice(d, start=10, stop=20, step=2, axis=0)
         assert isinstance(actual, da.Array)
         assert_array_equal(expect, actual.compute())
 
     # Numpy group.
     g = DictGroup({"variants": {"POS": pos}, "calldata": {"GT": gt}})
-    actual = select_slice(g, 10, 20, 2, axis=0)
+    actual = select_slice(g, start=10, stop=20, step=2, axis=0)
     assert isinstance(actual, GroupSelection)
     assert isinstance(actual["variants"]["POS"], np.ndarray)
     assert isinstance(actual["calldata"]["GT"], np.ndarray)
@@ -64,7 +64,7 @@ def test_select_slice():
     g = zarr.group()
     g.create_dataset("variants/POS", data=pos)
     g.create_dataset("calldata/GT", data=gt)
-    actual = select_slice(g, 10, 20, 2, axis=0)
+    actual = select_slice(g, start=10, stop=20, step=2, axis=0)
     assert isinstance(actual, GroupSelection)
     assert isinstance(actual["variants"]["POS"], da.Array)
     assert isinstance(actual["calldata"]["GT"], da.Array)
@@ -139,6 +139,10 @@ def test_select_mask():
         expect = a.compress(mask, axis=0)
         d = da.from_array(a)
         actual = select_mask(d, mask, axis=0)
+        assert isinstance(actual, da.Array)
+        assert_array_equal(expect, actual.compute())
+        # With mask as dask array.
+        actual = select_mask(d, da.from_array(mask), axis=0)
         assert isinstance(actual, da.Array)
         assert_array_equal(expect, actual.compute())
 
@@ -338,3 +342,6 @@ def test_concatenate():
         concatenate({"gt": gt}, axis=0)
     with pytest.raises(ValueError):
         concatenate([gt], axis=0)
+    with pytest.raises(NotImplementedError):
+        x = [1, 2, 3, 4]
+        concatenate([x, x], axis=0)

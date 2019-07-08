@@ -45,7 +45,7 @@ class TimeGenotypeTensor:
         ).compute()
 
     def time_count_alleles_numpy(self):
-        numpy_backend.genotype_tensor_count_alleles(self.data, max_allele=3)
+        numpy_backend.genotype_tensor_count_alleles(self.data, 3)
 
     def time_count_alleles_dask(self):
         dask_backend.genotype_tensor_count_alleles(
@@ -53,19 +53,17 @@ class TimeGenotypeTensor:
         ).compute()
 
     def time_to_allele_counts_numpy(self):
-        numpy_backend.genotype_tensor_to_allele_counts(self.data, max_allele=3)
+        numpy_backend.genotype_tensor_to_allele_counts(self.data, 3)
 
     def time_to_allele_counts_dask(self):
         dask_backend.genotype_tensor_to_allele_counts(
-            self.data_dask, max_allele=3
+            self.data_dask, 3
         ).compute()
 
     def time_to_allele_counts_melt_numpy(self):
-        numpy_backend.genotype_tensor_to_allele_counts_melt(
-            self.data, max_allele=3
-        )
+        numpy_backend.genotype_tensor_to_allele_counts_melt(self.data, 3)
 
     def time_to_allele_counts_melt_dask(self):
         dask_backend.genotype_tensor_to_allele_counts_melt(
-            self.data_dask, max_allele=3
+            self.data_dask, 3
         ).compute()

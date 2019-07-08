@@ -1,6 +1,7 @@
 # Pinned requirements used for CI and development environments.
 #
 # library requirements
+multipledispatch==0.6.0
 numba==0.44.1
 numpy==1.16.4
 dask[complete]==2.0.0
@@ -15,4 +16,5 @@ coverage==4.5.3
 coveralls==1.8.1
 setuptools-scm==3.3.3
 asv==0.4.1
+h5py==2.9.0
 zarr==2.3.2

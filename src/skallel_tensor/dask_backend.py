@@ -1,31 +1,26 @@
+import numbers
 import warnings
 import numpy as np
 import dask.array as da
 import dask.dataframe as dd
-from . import numpy_backend
+from . import api, numpy_backend, utils
 
 
-def quacks_like_h5py_dataset(a):
-    """Duck typing for objects that behave like an HDF5 dataset or Zarr array.
-    """
-    return (
-        hasattr(a, "ndim")
-        and hasattr(a, "dtype")
-        and hasattr(a, "shape")
-        and hasattr(a, "chunks")
-        and len(a.chunks) == len(a.shape) == a.ndim
-        and all(isinstance(n, int) for n in a.chunks)
-    )
+daskish_array_types = (da.Array,)
+try:
+    # noinspection PyUnresolvedReferences
+    import h5py
 
+    daskish_array_types += (h5py.Dataset,)
+except ImportError:  # pragma: no cover
+    pass
+try:
+    # noinspection PyUnresolvedReferences
+    import zarr
 
-def accepts(a):
-    if isinstance(a, np.ndarray):
-        return True
-    if isinstance(a, da.Array):
-        return True
-    if quacks_like_h5py_dataset(a):
-        return True
-    return False
+    daskish_array_types += (zarr.Array,)
+except ImportError:  # pragma: no cover
+    pass
 
 
 def ensure_dask_array(a):
@@ -37,24 +32,57 @@ def ensure_dask_array(a):
         return da.from_array(a)
 
 
-def getitem(a, item):
+def ensure_dask_or_numpy_array(a):
+    if isinstance(a, np.ndarray):
+        # Pass through.
+        return a
+    else:
+        return ensure_dask_array(a)
+
+
+def select_slice(a, start=None, stop=None, step=None, axis=0):
     a = ensure_dask_array(a)
+    item = utils.expand_slice(
+        start=start, stop=stop, step=step, axis=axis, ndim=a.ndim
+    )
     return a[item]
 
 
-def take(a, indices, axis):
+api.select_slice_dispatcher.add((daskish_array_types,), select_slice)
+
+
+def select_indices(a, indices, axis=0):
     a = ensure_dask_array(a)
+    indices = ensure_dask_or_numpy_array(indices)
     return da.take(a, indices, axis=axis)
 
 
-def compress(condition, a, axis):
+api.select_indices_dispatcher.add(
+    (daskish_array_types, np.ndarray), select_indices
+)
+api.select_indices_dispatcher.add(
+    (daskish_array_types, daskish_array_types), select_indices
+)
+
+
+def select_mask(a, mask, axis=0):
     a = ensure_dask_array(a)
-    return da.compress(condition, a, axis=axis)
+    mask = ensure_dask_or_numpy_array(mask)
+    return da.compress(mask, a, axis=axis)
 
 
-def concatenate(seq, axis):
+api.select_mask_dispatcher.add((daskish_array_types, np.ndarray), select_mask)
+api.select_mask_dispatcher.add(
+    (daskish_array_types, daskish_array_types), select_mask
+)
+
+
+def concatenate(seq, axis=0):
     seq = [ensure_dask_array(a) for a in seq]
     return da.concatenate(seq, axis=axis)
+
+
+api.concatenate_dispatcher.add((daskish_array_types,), concatenate)
 
 
 def genotype_tensor_is_called(gt):
@@ -65,12 +93,22 @@ def genotype_tensor_is_called(gt):
     return out
 
 
+api.genotype_tensor_is_called_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_called
+)
+
+
 def genotype_tensor_is_missing(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
         numpy_backend.genotype_tensor_is_missing, gt, drop_axis=2, dtype=bool
     )
     return out
+
+
+api.genotype_tensor_is_missing_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_missing
+)
 
 
 def genotype_tensor_is_hom(gt):
@@ -81,6 +119,11 @@ def genotype_tensor_is_hom(gt):
     return out
 
 
+api.genotype_tensor_is_hom_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_hom
+)
+
+
 def genotype_tensor_is_het(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
@@ -89,12 +132,22 @@ def genotype_tensor_is_het(gt):
     return out
 
 
+api.genotype_tensor_is_het_dispatcher.add(
+    (daskish_array_types,), genotype_tensor_is_het
+)
+
+
 def genotype_tensor_is_call(gt, call):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
         numpy_backend.genotype_tensor_is_call, gt, call, drop_axis=2, dtype=bool
     )
     return out
+
+
+api.genotype_tensor_is_call_dispatcher.add(
+    (daskish_array_types, np.ndarray), genotype_tensor_is_call
+)
 
 
 def _map_genotype_tensor_count_alleles(chunk, max_allele):
@@ -126,6 +179,11 @@ def genotype_tensor_count_alleles(gt, max_allele):
     return out
 
 
+api.genotype_tensor_count_alleles_dispatcher.add(
+    (daskish_array_types, numbers.Integral), genotype_tensor_count_alleles
+)
+
+
 def genotype_tensor_to_allele_counts(gt, max_allele):
     gt = ensure_dask_array(gt)
 
@@ -142,6 +200,11 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
     )
 
     return out
+
+
+api.genotype_tensor_to_allele_counts_dispatcher.add(
+    (daskish_array_types, numbers.Integral), genotype_tensor_to_allele_counts
+)
 
 
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
@@ -162,6 +225,12 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     )
 
     return out
+
+
+api.genotype_tensor_to_allele_counts_melt_dispatcher.add(
+    (daskish_array_types, numbers.Integral),
+    genotype_tensor_to_allele_counts_melt,
+)
 
 
 def variants_to_dataframe(variants, columns):
@@ -197,3 +266,8 @@ def variants_to_dataframe(variants, columns):
     df = dd.concat(df_cols, axis=1)
 
     return df
+
+
+api.variants_to_dataframe_dispatcher.add(
+    (daskish_array_types,), variants_to_dataframe
+)

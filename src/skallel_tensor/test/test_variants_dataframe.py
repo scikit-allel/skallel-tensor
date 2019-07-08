@@ -116,6 +116,13 @@ def test_variants_to_dataframe_exceptions():
         variants_to_dataframe(variants_numpy, columns="foo")
     with pytest.raises(TypeError):
         variants_to_dataframe(variants_numpy, columns=[42])
+    with pytest.raises(TypeError):
+        variants_to_dataframe({0: np.arange(10)})
+
+    # Unknown dispatch type.
+    variants_other = {"bar": [1, 2, 3, 4]}
+    with pytest.raises(NotImplementedError):
+        variants_to_dataframe(variants_other)
 
     # Field not present in data.
     with pytest.raises(ValueError):
