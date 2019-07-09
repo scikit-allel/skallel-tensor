@@ -212,3 +212,65 @@ def variants_to_dataframe(variants, columns):
 
 
 api.variants_to_dataframe_dispatcher.add((np.ndarray,), variants_to_dataframe)
+
+
+@numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True)
+def allele_counts_to_frequencies(ac):
+    out = np.empty(ac.shape, dtype=np.float32)
+    for i in range(ac.shape[0]):
+        n = 0
+        for j in range(ac.shape[1]):
+            n += ac[i, j]
+        if n > 0:
+            for j in range(ac.shape[1]):
+                out[i, j] = ac[i, j] / n
+        else:
+            for j in range(ac.shape[1]):
+                out[i, j] = np.nan
+    return out
+
+
+@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
+def allele_counts_allelism(ac):
+    out = np.zeros(ac.shape[0], dtype=np.int8)
+    for i in range(ac.shape[0]):
+        for j in range(ac.shape[1]):
+            if ac[i, j] > 0:
+                out[i] += 1
+    return out
+
+
+@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
+def allele_counts_max_allele(ac):
+    out = np.empty(ac.shape[0], dtype=np.int8)
+    for i in range(ac.shape[0]):
+        m = -1
+        for j in range(ac.shape[1]):
+            if ac[i, j] > 0:
+                m = j
+        out[i] = m
+    return out
+
+
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
+def allele_counts_is_segregating(ac):
+    out = np.zeros(ac.shape[0], dtype=np.bool_)
+    for i in range(ac.shape[0]):
+        n = 0
+        for j in range(ac.shape[1]):
+            if ac[i, j] > 0:
+                n += 1
+        if n > 1:
+            out[i] = True
+    return out
+
+
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
+def allele_counts_is_variant(ac):
+    out = np.zeros(ac.shape[0], dtype=np.bool_)
+    for i in range(ac.shape[0]):
+        for j in range(1, ac.shape[1]):
+            if ac[i, j] > 0:
+                out[i] = True
+                break
+    return out

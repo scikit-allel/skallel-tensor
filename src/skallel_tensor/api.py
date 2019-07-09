@@ -420,5 +420,17 @@ concatenate_dispatcher.add((Mapping,), group_concatenate)
 # TODO display
 
 
+allele_counts_is_segregating_dispatcher = Dispatcher(
+    "allele_counts_is_segregating"
+)
+
+
+def allele_counts_is_segregating(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype="i4", ndim=2)
+    allele_counts_is_segregating_dispatcher(ac)
+
+
 # TODO GenotypeAlleleCountsArray
 # TODO ???
