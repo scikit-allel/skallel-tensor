@@ -180,7 +180,7 @@ def test_select_range():
     # Numpy array.
     for a in pos, gt:
         expect = a[10:20]
-        actual = select_range(a, pos, 30, 60, axis=0)
+        actual = select_range(a, pos, begin=30, end=60, axis=0)
         assert isinstance(actual, np.ndarray)
         assert_array_equal(expect, actual)
 
@@ -188,13 +188,13 @@ def test_select_range():
     for a in pos, gt:
         expect = a[10:20]
         d = da.from_array(a)
-        actual = select_range(d, pos, 30, 60, axis=0)
+        actual = select_range(d, pos, begin=30, end=60, axis=0)
         assert isinstance(actual, da.Array)
         assert_array_equal(expect, actual.compute())
 
     # Numpy group.
     g = DictGroup({"variants": {"POS": pos}, "calldata": {"GT": gt}})
-    actual = select_range(g, "variants/POS", 30, 60, axis=0)
+    actual = select_range(g, "variants/POS", begin=30, end=60, axis=0)
     assert isinstance(actual, GroupSelection)
     assert isinstance(actual["variants"]["POS"], np.ndarray)
     assert isinstance(actual["calldata"]["GT"], np.ndarray)
@@ -205,7 +205,7 @@ def test_select_range():
     g = zarr.group()
     g.create_dataset("variants/POS", data=pos)
     g.create_dataset("calldata/GT", data=gt)
-    actual = select_range(g, "variants/POS", 30, 60, axis=0)
+    actual = select_range(g, "variants/POS", begin=30, end=60, axis=0)
     assert isinstance(actual, GroupSelection)
     assert isinstance(actual["variants"]["POS"], da.Array)
     assert isinstance(actual["calldata"]["GT"], da.Array)

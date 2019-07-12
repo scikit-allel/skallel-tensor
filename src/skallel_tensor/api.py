@@ -99,7 +99,7 @@ def genotypes_is_het(gt):
 genotypes_3d_is_call_dispatcher = Dispatcher("genotypes_3d_is_call")
 
 
-def genotypes_is_call(gt, call):
+def genotypes_is_call(gt, *, call):
     """
     TODO
 
@@ -122,7 +122,7 @@ def genotypes_is_call(gt, call):
 genotypes_3d_count_alleles_dispatcher = Dispatcher("genotypes_3d_count_alleles")
 
 
-def genotypes_count_alleles(gt, max_allele):
+def genotypes_count_alleles(gt, *, max_allele):
     """
     TODO
 
@@ -147,7 +147,7 @@ genotypes_3d_to_allele_counts_dispatcher = Dispatcher(
 )
 
 
-def genotypes_to_allele_counts(gt, max_allele):
+def genotypes_to_allele_counts(gt, *, max_allele):
     """
     TODO
 
@@ -172,7 +172,7 @@ genotypes_3d_to_allele_counts_melt_dispatcher = Dispatcher(
 )
 
 
-def genotypes_to_allele_counts_melt(gt, max_allele):
+def genotypes_to_allele_counts_melt(gt, *, max_allele):
     """
     TODO
 
@@ -267,13 +267,13 @@ select_slice_dispatcher.add((Mapping,), group_select_slice)
 select_indices_dispatcher = Dispatcher("select_indices")
 
 
-def select_indices(o, indices, axis=0):
+def select_indices(o, indices, *, axis=0):
     """TODO"""
 
     return select_indices_dispatcher(o, indices, axis=axis)
 
 
-def group_select_indices(o, indices, axis=0):
+def group_select_indices(o, indices, *, axis=0):
     return GroupSelection(o, select_indices, indices, axis=axis)
 
 
@@ -283,20 +283,20 @@ select_indices_dispatcher.add((Mapping, object), group_select_indices)
 select_mask_dispatcher = Dispatcher("select_mask")
 
 
-def select_mask(o, mask, axis=0):
+def select_mask(o, mask, *, axis=0):
     """TODO"""
 
     return select_mask_dispatcher(o, mask, axis=axis)
 
 
-def group_select_mask(o, mask, axis=0):
+def group_select_mask(o, mask, *, axis=0):
     return GroupSelection(o, select_mask, mask, axis=axis)
 
 
 select_mask_dispatcher.add((Mapping, object), group_select_mask)
 
 
-def select_range(o, index, begin=None, end=None, axis=0):
+def select_range(o, index, *, begin=None, end=None, axis=0):
 
     # Obtain index as a numpy array.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -316,7 +316,7 @@ def select_range(o, index, begin=None, end=None, axis=0):
     return select_slice(o, start=start, stop=stop, axis=axis)
 
 
-def select_values(o, index, query, axis=0):
+def select_values(o, index, query, *, axis=0):
 
     # Obtain index as pandas index.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -339,7 +339,7 @@ def select_values(o, index, query, axis=0):
 concatenate_dispatcher = Dispatcher("concatenate")
 
 
-def concatenate(seq, axis=0):
+def concatenate(seq, *, axis=0):
 
     # Check inputs.
     check_list_or_tuple(seq, min_length=2)
@@ -379,7 +379,7 @@ class GroupConcatenation(Mapping):
         return iter(sorted(self._key_set()))
 
 
-def group_concatenate(seq, axis=0):
+def group_concatenate(seq, *, axis=0):
     return GroupConcatenation(seq, axis=axis)
 
 
