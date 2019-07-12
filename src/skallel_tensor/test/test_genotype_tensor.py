@@ -6,14 +6,14 @@ import zarr
 
 
 from skallel_tensor import (
-    genotype_tensor_is_called,
-    genotype_tensor_is_missing,
-    genotype_tensor_is_hom,
-    genotype_tensor_is_het,
-    genotype_tensor_is_call,
-    genotype_tensor_count_alleles,
-    genotype_tensor_to_allele_counts,
-    genotype_tensor_to_allele_counts_melt,
+    genotypes_is_called,
+    genotypes_is_missing,
+    genotypes_is_hom,
+    genotypes_is_het,
+    genotypes_is_call,
+    genotypes_count_alleles,
+    genotypes_to_allele_counts,
+    genotypes_to_allele_counts_melt,
 )
 
 
@@ -25,42 +25,42 @@ def test_is_called():
     expect = np.array([[True, True, True], [False, False, False]], dtype=bool)
 
     # Test numpy array.
-    actual = genotype_tensor_is_called(data)
+    actual = genotypes_is_called(data)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_called(data_dask)
+    actual = genotypes_is_called(data_dask)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
     # Test zarr array.
     data_zarr = zarr.array(data)
-    actual = genotype_tensor_is_called(data_zarr)
+    actual = genotypes_is_called(data_zarr)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
     # Bad type.
     data = [[[0, 1], [2, 3]], [[4, 5], [6, 7]]]
     with pytest.raises(TypeError):
-        genotype_tensor_is_called(data)
+        genotypes_is_called(data)
 
     # Bad dtype.
     for dtype in "i2", "i4", "i8", "u1", "u2", "u4", "u8", "f2", "f4", "f8":
         data = np.array([[[0, 1], [2, 3]], [[4, 5], [6, 7]]], dtype=dtype)
         with pytest.raises(TypeError):
-            genotype_tensor_is_called(data)
+            genotypes_is_called(data)
 
     # Bad ndim.
     data = np.array([[0, 1], [2, 3]], dtype="i1")
     with pytest.raises(ValueError):
-        genotype_tensor_is_called(data)
+        genotypes_is_called(data)
 
     # Bad ndim.
     data = np.array([0, 1], dtype="i1")
     with pytest.raises(ValueError):
-        genotype_tensor_is_called(data)
+        genotypes_is_called(data)
 
 
 def test_is_missing():
@@ -71,13 +71,13 @@ def test_is_missing():
     expect = np.array([[False, False, False], [True, True, True]], dtype=bool)
 
     # Test numpy array.
-    actual = genotype_tensor_is_missing(data)
+    actual = genotypes_is_missing(data)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_missing(data_dask)
+    actual = genotypes_is_missing(data_dask)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -90,13 +90,13 @@ def test_is_hom():
     expect = np.array([[True, False, True], [False, False, False]], dtype=bool)
 
     # Test numpy array.
-    actual = genotype_tensor_is_hom(data)
+    actual = genotypes_is_hom(data)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_hom(data_dask)
+    actual = genotypes_is_hom(data_dask)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -109,13 +109,13 @@ def test_is_het():
     expect = np.array([[False, True, True], [False, False, False]], dtype=bool)
 
     # Test numpy array.
-    actual = genotype_tensor_is_het(data)
+    actual = genotypes_is_het(data)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_het(data_dask)
+    actual = genotypes_is_het(data_dask)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -132,13 +132,13 @@ def test_is_het_triploid():
     expect = np.array([[False, True, True], [False, True, False]], dtype=bool)
 
     # Test numpy array.
-    actual = genotype_tensor_is_het(data)
+    actual = genotypes_is_het(data)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_het(data_dask)
+    actual = genotypes_is_het(data_dask)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
@@ -152,23 +152,23 @@ def test_is_call():
 
     # Test numpy array.
     for call in (1, 0), [1, 0], np.array([1, 0]):
-        actual = genotype_tensor_is_call(data, call=call)
+        actual = genotypes_is_call(data, call=call)
         assert isinstance(actual, np.ndarray)
         assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_is_call(data_dask, call=np.array([1, 0]))
+    actual = genotypes_is_call(data_dask, call=np.array([1, 0]))
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
     # # Test exceptions.
     # with pytest.raises(TypeError):
-    #     genotype_tensor_is_call(data, "foo")
+    #     genotypes_is_call(data, "foo")
     # with pytest.raises(TypeError):
-    #     genotype_tensor_is_call(data, [[0, 1], [2, 3]])
+    #     genotypes_is_call(data, [[0, 1], [2, 3]])
     # with pytest.raises(ValueError):
-    #     genotype_tensor_is_call(data, (0, 1, 2))
+    #     genotypes_is_call(data, (0, 1, 2))
 
 
 def test_count_alleles():
@@ -179,23 +179,23 @@ def test_count_alleles():
     expect = np.array([[3, 1, 2], [1, 1, 0]], dtype="i4")
 
     # Test numpy array.
-    actual = genotype_tensor_count_alleles(data, max_allele=2)
+    actual = genotypes_count_alleles(data, max_allele=2)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_count_alleles(data_dask, max_allele=2)
+    actual = genotypes_count_alleles(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
     # Test exceptions.
     with pytest.raises(TypeError):
-        genotype_tensor_count_alleles(data, max_allele="foo")
+        genotypes_count_alleles(data, max_allele="foo")
     with pytest.raises(TypeError):
-        genotype_tensor_count_alleles(data, max_allele=[1])
+        genotypes_count_alleles(data, max_allele=[1])
     with pytest.raises(ValueError):
-        genotype_tensor_count_alleles(data, max_allele=128)
+        genotypes_count_alleles(data, max_allele=128)
 
 
 def test_to_allele_counts():
@@ -209,23 +209,23 @@ def test_to_allele_counts():
     )
 
     # Test numpy array.
-    actual = genotype_tensor_to_allele_counts(data, max_allele=2)
+    actual = genotypes_to_allele_counts(data, max_allele=2)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_to_allele_counts(data_dask, max_allele=2)
+    actual = genotypes_to_allele_counts(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
     # Test exceptions.
     with pytest.raises(TypeError):
-        genotype_tensor_to_allele_counts(data, max_allele="foo")
+        genotypes_to_allele_counts(data, max_allele="foo")
     with pytest.raises(TypeError):
-        genotype_tensor_to_allele_counts(data, max_allele=[1])
+        genotypes_to_allele_counts(data, max_allele=[1])
     with pytest.raises(ValueError):
-        genotype_tensor_to_allele_counts(data, max_allele=128)
+        genotypes_to_allele_counts(data, max_allele=128)
 
 
 def test_to_allele_counts_melt():
@@ -239,18 +239,18 @@ def test_to_allele_counts_melt():
     )
 
     # Test numpy array.
-    actual = genotype_tensor_to_allele_counts_melt(data, max_allele=2)
+    actual = genotypes_to_allele_counts_melt(data, max_allele=2)
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
     # Test dask array.
     data_dask = da.from_array(data, chunks=(1, 1, -1))
-    actual = genotype_tensor_to_allele_counts_melt(data_dask, max_allele=2)
+    actual = genotypes_to_allele_counts_melt(data_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
     # Test exceptions.
     # with pytest.raises(TypeError):
-    #     genotype_tensor_to_allele_counts_melt(data, max_allele="foo")
+    #     genotypes_to_allele_counts_melt(data, max_allele="foo")
     # with pytest.raises(ValueError):
-    #     genotype_tensor_to_allele_counts_melt(data, max_allele=128)
+    #     genotypes_to_allele_counts_melt(data, max_allele=128)

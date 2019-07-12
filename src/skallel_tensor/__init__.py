@@ -3,14 +3,14 @@ from .version import version as __version__
 
 
 from .api import (
-    genotype_tensor_is_called,
-    genotype_tensor_is_missing,
-    genotype_tensor_is_hom,
-    genotype_tensor_is_het,
-    genotype_tensor_is_call,
-    genotype_tensor_count_alleles,
-    genotype_tensor_to_allele_counts,
-    genotype_tensor_to_allele_counts_melt,
+    genotypes_is_called,
+    genotypes_is_missing,
+    genotypes_is_hom,
+    genotypes_is_het,
+    genotypes_is_call,
+    genotypes_count_alleles,
+    genotypes_to_allele_counts,
+    genotypes_to_allele_counts_melt,
     GroupSelection,
     select_slice,
     select_indices,

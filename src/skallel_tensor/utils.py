@@ -19,8 +19,11 @@ def check_array_like(a, dtype=None, ndim=None):
             raise TypeError
     if dtype is not None and a.dtype != np.dtype(dtype):
         raise TypeError
-    if ndim is not None and a.ndim != ndim:
-        raise ValueError
+    if ndim is not None:
+        if isinstance(ndim, (list, tuple)) and a.ndim not in ndim:
+            raise ValueError
+        elif ndim != a.ndim:
+            raise ValueError
 
 
 VCF_FIXED_FIELDS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL"]

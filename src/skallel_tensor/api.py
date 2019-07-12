@@ -12,10 +12,10 @@ from .utils import (
 )
 
 
-genotype_tensor_is_called_dispatcher = Dispatcher("genotype_tensor_is_called")
+genotypes_3d_is_called_dispatcher = Dispatcher("genotypes_3d_is_called")
 
 
-def genotype_tensor_is_called(gt):
+def genotypes_is_called(gt):
     """
     TODO
 
@@ -30,13 +30,13 @@ def genotype_tensor_is_called(gt):
     """
 
     check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_called_dispatcher(gt)
+    return genotypes_3d_is_called_dispatcher(gt)
 
 
-genotype_tensor_is_missing_dispatcher = Dispatcher("genotype_tensor_is_missing")
+genotypes_3d_is_missing_dispatcher = Dispatcher("genotypes_3d_is_missing")
 
 
-def genotype_tensor_is_missing(gt):
+def genotypes_is_missing(gt):
     """
     TODO
 
@@ -51,13 +51,13 @@ def genotype_tensor_is_missing(gt):
     """
 
     check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_missing_dispatcher(gt)
+    return genotypes_3d_is_missing_dispatcher(gt)
 
 
-genotype_tensor_is_hom_dispatcher = Dispatcher("genotype_tensor_is_hom")
+genotypes_3d_is_hom_dispatcher = Dispatcher("genotypes_3d_is_hom")
 
 
-def genotype_tensor_is_hom(gt):
+def genotypes_is_hom(gt):
     """
     TODO
 
@@ -72,13 +72,13 @@ def genotype_tensor_is_hom(gt):
     """
 
     check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_hom_dispatcher(gt)
+    return genotypes_3d_is_hom_dispatcher(gt)
 
 
-genotype_tensor_is_het_dispatcher = Dispatcher("genotype_tensor_is_het")
+genotypes_3d_is_het_dispatcher = Dispatcher("genotypes_3d_is_het")
 
 
-def genotype_tensor_is_het(gt):
+def genotypes_is_het(gt):
     """
     TODO
 
@@ -93,13 +93,13 @@ def genotype_tensor_is_het(gt):
     """
 
     check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_het_dispatcher(gt)
+    return genotypes_3d_is_het_dispatcher(gt)
 
 
-genotype_tensor_is_call_dispatcher = Dispatcher("genotype_tensor_is_call")
+genotypes_3d_is_call_dispatcher = Dispatcher("genotypes_3d_is_call")
 
 
-def genotype_tensor_is_call(gt, call):
+def genotypes_is_call(gt, call):
     """
     TODO
 
@@ -116,15 +116,13 @@ def genotype_tensor_is_call(gt, call):
 
     check_array_like(gt, dtype="i1", ndim=3)
     call = np.asarray(call, dtype="i1")
-    return genotype_tensor_is_call_dispatcher(gt, call)
+    return genotypes_3d_is_call_dispatcher(gt, call)
 
 
-genotype_tensor_count_alleles_dispatcher = Dispatcher(
-    "genotype_tensor_count_alleles"
-)
+genotypes_3d_count_alleles_dispatcher = Dispatcher("genotypes_3d_count_alleles")
 
 
-def genotype_tensor_count_alleles(gt, max_allele):
+def genotypes_count_alleles(gt, max_allele):
     """
     TODO
 
@@ -141,15 +139,15 @@ def genotype_tensor_count_alleles(gt, max_allele):
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotype_tensor_count_alleles_dispatcher(gt, max_allele)
+    return genotypes_3d_count_alleles_dispatcher(gt, max_allele)
 
 
-genotype_tensor_to_allele_counts_dispatcher = Dispatcher(
-    "genotype_tensor_to_allele_counts"
+genotypes_3d_to_allele_counts_dispatcher = Dispatcher(
+    "genotypes_3d_to_allele_counts"
 )
 
 
-def genotype_tensor_to_allele_counts(gt, max_allele):
+def genotypes_to_allele_counts(gt, max_allele):
     """
     TODO
 
@@ -166,15 +164,15 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotype_tensor_to_allele_counts_dispatcher(gt, max_allele)
+    return genotypes_3d_to_allele_counts_dispatcher(gt, max_allele)
 
 
-genotype_tensor_to_allele_counts_melt_dispatcher = Dispatcher(
-    "genotype_tensor_to_allele_counts_melt"
+genotypes_3d_to_allele_counts_melt_dispatcher = Dispatcher(
+    "genotypes_3d_to_allele_counts_melt"
 )
 
 
-def genotype_tensor_to_allele_counts_melt(gt, max_allele):
+def genotypes_to_allele_counts_melt(gt, max_allele):
     """
     TODO
 
@@ -191,7 +189,7 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotype_tensor_to_allele_counts_melt_dispatcher(gt, max_allele)
+    return genotypes_3d_to_allele_counts_melt_dispatcher(gt, max_allele)
 
 
 # genotype array
@@ -420,7 +418,7 @@ concatenate_dispatcher.add((Mapping,), group_concatenate)
 # TODO display
 
 
-allele_counts_is_segregating_dispatcher = Dispatcher(
+allele_counts_2d_is_segregating_dispatcher = Dispatcher(
     "allele_counts_is_segregating"
 )
 
@@ -429,7 +427,7 @@ def allele_counts_is_segregating(ac):
     """TODO"""
 
     check_array_like(ac, dtype="i4", ndim=2)
-    allele_counts_is_segregating_dispatcher(ac)
+    allele_counts_2d_is_segregating_dispatcher(ac)
 
 
 # TODO GenotypeAlleleCountsArray

@@ -38,7 +38,7 @@ api.concatenate_dispatcher.add((np.ndarray,), concatenate)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
-def genotype_tensor_is_called(gt):
+def genotypes_3d_is_called(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -53,13 +53,11 @@ def genotype_tensor_is_called(gt):
     return out
 
 
-api.genotype_tensor_is_called_dispatcher.add(
-    (np.ndarray,), genotype_tensor_is_called
-)
+api.genotypes_3d_is_called_dispatcher.add((np.ndarray,), genotypes_3d_is_called)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
-def genotype_tensor_is_missing(gt):
+def genotypes_3d_is_missing(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -74,13 +72,13 @@ def genotype_tensor_is_missing(gt):
     return out
 
 
-api.genotype_tensor_is_missing_dispatcher.add(
-    (np.ndarray,), genotype_tensor_is_missing
+api.genotypes_3d_is_missing_dispatcher.add(
+    (np.ndarray,), genotypes_3d_is_missing
 )
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
-def genotype_tensor_is_hom(gt):
+def genotypes_3d_is_hom(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -99,11 +97,11 @@ def genotype_tensor_is_hom(gt):
     return out
 
 
-api.genotype_tensor_is_hom_dispatcher.add((np.ndarray,), genotype_tensor_is_hom)
+api.genotypes_3d_is_hom_dispatcher.add((np.ndarray,), genotypes_3d_is_hom)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
-def genotype_tensor_is_het(gt):
+def genotypes_3d_is_het(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -121,7 +119,7 @@ def genotype_tensor_is_het(gt):
     return out
 
 
-api.genotype_tensor_is_het_dispatcher.add((np.ndarray,), genotype_tensor_is_het)
+api.genotypes_3d_is_het_dispatcher.add((np.ndarray,), genotypes_3d_is_het)
 
 
 @numba.njit(
@@ -129,7 +127,7 @@ api.genotype_tensor_is_het_dispatcher.add((np.ndarray,), genotype_tensor_is_het)
     nogil=True,
     parallel=True,
 )
-def genotype_tensor_is_call(gt, call):
+def genotypes_3d_is_call(gt, call):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -144,8 +142,8 @@ def genotype_tensor_is_call(gt, call):
     return out
 
 
-api.genotype_tensor_is_call_dispatcher.add(
-    (np.ndarray, np.ndarray), genotype_tensor_is_call
+api.genotypes_3d_is_call_dispatcher.add(
+    (np.ndarray, np.ndarray), genotypes_3d_is_call
 )
 
 
@@ -154,7 +152,7 @@ api.genotype_tensor_is_call_dispatcher.add(
     nogil=True,
     parallel=True,
 )
-def genotype_tensor_count_alleles(gt, max_allele):
+def genotypes_3d_count_alleles(gt, max_allele):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -168,8 +166,8 @@ def genotype_tensor_count_alleles(gt, max_allele):
     return out
 
 
-api.genotype_tensor_count_alleles_dispatcher.add(
-    (np.ndarray, numbers.Integral), genotype_tensor_count_alleles
+api.genotypes_3d_count_alleles_dispatcher.add(
+    (np.ndarray, numbers.Integral), genotypes_3d_count_alleles
 )
 
 
@@ -178,7 +176,7 @@ api.genotype_tensor_count_alleles_dispatcher.add(
     parallel=True,
     nogil=True,
 )
-def genotype_tensor_to_allele_counts(gt, max_allele):
+def genotypes_3d_to_allele_counts(gt, max_allele):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -192,15 +190,15 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
     return out
 
 
-api.genotype_tensor_to_allele_counts_dispatcher.add(
-    (np.ndarray, numbers.Integral), genotype_tensor_to_allele_counts
+api.genotypes_3d_to_allele_counts_dispatcher.add(
+    (np.ndarray, numbers.Integral), genotypes_3d_to_allele_counts
 )
 
 
 @numba.njit(
     numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True, parallel=True
 )
-def genotype_tensor_to_allele_counts_melt(gt, max_allele):
+def genotypes_3d_to_allele_counts_melt(gt, max_allele):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -214,8 +212,8 @@ def genotype_tensor_to_allele_counts_melt(gt, max_allele):
     return out
 
 
-api.genotype_tensor_to_allele_counts_melt_dispatcher.add(
-    (np.ndarray, numbers.Integral), genotype_tensor_to_allele_counts_melt
+api.genotypes_3d_to_allele_counts_melt_dispatcher.add(
+    (np.ndarray, numbers.Integral), genotypes_3d_to_allele_counts_melt
 )
 
 
@@ -253,7 +251,7 @@ api.variants_to_dataframe_dispatcher.add((np.ndarray,), variants_to_dataframe)
 
 
 @numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True, parallel=True)
-def allele_counts_to_frequencies(ac):
+def allele_counts_2d_to_frequencies(ac):
     out = np.empty(ac.shape, dtype=np.float32)
     for i in numba.prange(ac.shape[0]):
         n = 0
@@ -269,7 +267,7 @@ def allele_counts_to_frequencies(ac):
 
 
 @numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True, parallel=True)
-def allele_counts_allelism(ac):
+def allele_counts_2d_allelism(ac):
     out = np.zeros(ac.shape[0], dtype=np.int8)
     for i in numba.prange(ac.shape[0]):
         for j in range(ac.shape[1]):
@@ -279,7 +277,7 @@ def allele_counts_allelism(ac):
 
 
 @numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True, parallel=True)
-def allele_counts_max_allele(ac):
+def allele_counts_2d_max_allele(ac):
     out = np.empty(ac.shape[0], dtype=np.int8)
     for i in numba.prange(ac.shape[0]):
         m = -1
@@ -291,7 +289,7 @@ def allele_counts_max_allele(ac):
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
-def allele_counts_is_segregating(ac):
+def allele_counts_2d_is_segregating(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
     for i in numba.prange(ac.shape[0]):
         n = 0
@@ -304,7 +302,7 @@ def allele_counts_is_segregating(ac):
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
-def allele_counts_is_variant(ac):
+def allele_counts_2d_is_variant(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
     for i in numba.prange(ac.shape[0]):
         for j in range(1, ac.shape[1]):
@@ -315,7 +313,7 @@ def allele_counts_is_variant(ac):
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
-def allele_counts_is_non_variant(ac):
+def allele_counts_2d_is_non_variant(ac):
     out = np.ones(ac.shape[0], dtype=np.bool_)
     for i in numba.prange(ac.shape[0]):
         for j in range(1, ac.shape[1]):
