@@ -37,13 +37,13 @@ def concatenate(seq, axis=0):
 api.concatenate_dispatcher.add((np.ndarray,), concatenate)
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
 def genotypes_3d_is_called(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.ones((m, n), dtype=np.bool_)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             for k in range(p):
                 if gt[i, j, k] < 0:
@@ -56,13 +56,13 @@ def genotypes_3d_is_called(gt):
 api.genotypes_3d_is_called_dispatcher.add((np.ndarray,), genotypes_3d_is_called)
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
 def genotypes_3d_is_missing(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m, n), dtype=np.bool_)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             for k in range(gt.shape[p]):
                 if gt[i, j, k] < 0:
@@ -77,13 +77,13 @@ api.genotypes_3d_is_missing_dispatcher.add(
 )
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
 def genotypes_3d_is_hom(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.ones((m, n), dtype=np.bool_)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             first_allele = gt[i, j, 0]
             if first_allele < 0:
@@ -100,13 +100,13 @@ def genotypes_3d_is_hom(gt):
 api.genotypes_3d_is_hom_dispatcher.add((np.ndarray,), genotypes_3d_is_hom)
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
 def genotypes_3d_is_het(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m, n), dtype=np.bool_)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             first_allele = gt[i, j, 0]
             if first_allele >= 0:
@@ -132,7 +132,7 @@ def genotypes_3d_is_call(gt, call):
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.ones((m, n), dtype=np.bool_)
-    for i in numba.prange(gt.shape[0]):
+    for i in range(gt.shape[0]):
         for j in range(gt.shape[1]):
             for k in range(gt.shape[2]):
                 if gt[i, j, k] != call[k]:
@@ -157,7 +157,7 @@ def genotypes_3d_count_alleles(gt, max_allele):
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m, max_allele + 1), dtype=np.int32)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             for k in range(p):
                 allele = gt[i, j, k]
@@ -181,7 +181,7 @@ def genotypes_3d_to_allele_counts(gt, max_allele):
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m, n, max_allele + 1), dtype=np.int8)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             for k in range(p):
                 allele = gt[i, j, k]
@@ -195,15 +195,13 @@ api.genotypes_3d_to_allele_counts_dispatcher.add(
 )
 
 
-@numba.njit(
-    numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True, parallel=True
-)
+@numba.njit(numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
 def genotypes_3d_to_allele_counts_melt(gt, max_allele):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m * (max_allele + 1), n), dtype=np.int8)
-    for i in numba.prange(m):
+    for i in range(m):
         for j in range(n):
             for k in range(p):
                 allele = gt[i, j, k]
@@ -250,10 +248,10 @@ def variants_to_dataframe(variants, columns):
 api.variants_to_dataframe_dispatcher.add((np.ndarray,), variants_to_dataframe)
 
 
-@numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True, parallel=True)
+@numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_to_frequencies(ac):
     out = np.empty(ac.shape, dtype=np.float32)
-    for i in numba.prange(ac.shape[0]):
+    for i in range(ac.shape[0]):
         n = 0
         for j in range(ac.shape[1]):
             n += ac[i, j]
@@ -266,20 +264,20 @@ def allele_counts_2d_to_frequencies(ac):
     return out
 
 
-@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True, parallel=True)
+@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_allelism(ac):
     out = np.zeros(ac.shape[0], dtype=np.int8)
-    for i in numba.prange(ac.shape[0]):
+    for i in range(ac.shape[0]):
         for j in range(ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] += 1
     return out
 
 
-@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True, parallel=True)
+@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_max_allele(ac):
     out = np.empty(ac.shape[0], dtype=np.int8)
-    for i in numba.prange(ac.shape[0]):
+    for i in range(ac.shape[0]):
         m = -1
         for j in range(ac.shape[1]):
             if ac[i, j] > 0:
@@ -288,10 +286,10 @@ def allele_counts_2d_max_allele(ac):
     return out
 
 
-@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_is_segregating(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
-    for i in numba.prange(ac.shape[0]):
+    for i in range(ac.shape[0]):
         n = 0
         for j in range(ac.shape[1]):
             if ac[i, j] > 0:
@@ -301,10 +299,10 @@ def allele_counts_2d_is_segregating(ac):
     return out
 
 
-@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_is_variant(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
-    for i in numba.prange(ac.shape[0]):
+    for i in range(ac.shape[0]):
         for j in range(1, ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] = True
@@ -312,10 +310,10 @@ def allele_counts_2d_is_variant(ac):
     return out
 
 
-@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_is_non_variant(ac):
     out = np.ones(ac.shape[0], dtype=np.bool_)
-    for i in numba.prange(ac.shape[0]):
+    for i in range(ac.shape[0]):
         for j in range(1, ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] = False

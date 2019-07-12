@@ -3,12 +3,12 @@ import dask.array as da
 from skallel_tensor import numpy_backend, dask_backend
 
 
-class TimeGenotypes:
+class TimeGenotypes3D:
     """Timing benchmarks for genotype tensor functions."""
 
     def setup(self):
-        self.data = np.random.randint(-1, 4, size=(50000, 1000, 2), dtype="i1")
-        self.data_dask = da.from_array(self.data, chunks=(5000, 200, 2))
+        self.data = np.random.randint(-1, 4, size=(10000, 1000, 2), dtype="i1")
+        self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
 
     def time_is_called_numpy(self):
         numpy_backend.genotypes_3d_is_called(self.data)
@@ -71,7 +71,7 @@ class TimeGenotypes:
         ).compute()
 
 
-class TimeAlleleCounts:
+class TimeAlleleCounts2D:
     """Timing benchmarks for allele counts functions."""
 
     def setup(self):
