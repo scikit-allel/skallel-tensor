@@ -85,7 +85,7 @@ def genotype_tensor_is_hom(gt):
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.ones((m, n), dtype=np.bool_)
-    for i in range(m):
+    for i in numba.prange(m):
         for j in range(n):
             first_allele = gt[i, j, 0]
             if first_allele < 0:
@@ -108,7 +108,7 @@ def genotype_tensor_is_het(gt):
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m, n), dtype=np.bool_)
-    for i in range(m):
+    for i in numba.prange(m):
         for j in range(n):
             first_allele = gt[i, j, 0]
             if first_allele >= 0:
@@ -183,7 +183,7 @@ def genotype_tensor_to_allele_counts(gt, max_allele):
     n = gt.shape[1]
     p = gt.shape[2]
     out = np.zeros((m, n, max_allele + 1), dtype=np.int8)
-    for i in range(m):
+    for i in numba.prange(m):
         for j in range(n):
             for k in range(p):
                 allele = gt[i, j, k]
@@ -252,10 +252,10 @@ def variants_to_dataframe(variants, columns):
 api.variants_to_dataframe_dispatcher.add((np.ndarray,), variants_to_dataframe)
 
 
-@numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True)
+@numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True, parallel=True)
 def allele_counts_to_frequencies(ac):
     out = np.empty(ac.shape, dtype=np.float32)
-    for i in range(ac.shape[0]):
+    for i in numba.prange(ac.shape[0]):
         n = 0
         for j in range(ac.shape[1]):
             n += ac[i, j]
@@ -268,20 +268,20 @@ def allele_counts_to_frequencies(ac):
     return out
 
 
-@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
+@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True, parallel=True)
 def allele_counts_allelism(ac):
     out = np.zeros(ac.shape[0], dtype=np.int8)
-    for i in range(ac.shape[0]):
+    for i in numba.prange(ac.shape[0]):
         for j in range(ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] += 1
     return out
 
 
-@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
+@numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True, parallel=True)
 def allele_counts_max_allele(ac):
     out = np.empty(ac.shape[0], dtype=np.int8)
-    for i in range(ac.shape[0]):
+    for i in numba.prange(ac.shape[0]):
         m = -1
         for j in range(ac.shape[1]):
             if ac[i, j] > 0:
@@ -290,10 +290,10 @@ def allele_counts_max_allele(ac):
     return out
 
 
-@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
 def allele_counts_is_segregating(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
-    for i in range(ac.shape[0]):
+    for i in numba.prange(ac.shape[0]):
         n = 0
         for j in range(ac.shape[1]):
             if ac[i, j] > 0:
@@ -303,10 +303,10 @@ def allele_counts_is_segregating(ac):
     return out
 
 
-@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
 def allele_counts_is_variant(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
-    for i in range(ac.shape[0]):
+    for i in numba.prange(ac.shape[0]):
         for j in range(1, ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] = True
@@ -314,10 +314,10 @@ def allele_counts_is_variant(ac):
     return out
 
 
-@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True, parallel=True)
 def allele_counts_is_non_variant(ac):
     out = np.ones(ac.shape[0], dtype=np.bool_)
-    for i in range(ac.shape[0]):
+    for i in numba.prange(ac.shape[0]):
         for j in range(1, ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] = False

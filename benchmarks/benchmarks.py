@@ -75,8 +75,8 @@ class TimeAlleleCounts:
     """Timing benchmarks for allele counts functions."""
 
     def setup(self):
-        self.data = np.random.randint(0, 100, size=(1000000, 4), dtype="i4")
-        self.data_dask = da.from_array(self.data, chunks=(10000, -1))
+        self.data = np.random.randint(0, 100, size=(10000000, 4), dtype="i4")
+        self.data_dask = da.from_array(self.data, chunks=(100000, -1))
 
     def time_to_frequencies(self):
         numpy_backend.allele_counts_to_frequencies(self.data)
