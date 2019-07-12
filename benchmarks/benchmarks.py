@@ -7,8 +7,8 @@ class TimeGenotypeTensor:
     """Timing benchmarks for genotype tensor functions."""
 
     def setup(self):
-        self.data = np.random.randint(-1, 4, size=(10000, 1000, 2), dtype="i1")
-        self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
+        self.data = np.random.randint(-1, 4, size=(50000, 1000, 2), dtype="i1")
+        self.data_dask = da.from_array(self.data, chunks=(5000, 200, 2))
 
     def time_is_called_numpy(self):
         numpy_backend.genotype_tensor_is_called(self.data)
@@ -88,6 +88,9 @@ class TimeAlleleCounts:
         numpy_backend.allele_counts_max_allele(self.data)
 
     def time_is_variant(self):
+        numpy_backend.allele_counts_is_variant(self.data)
+
+    def time_is_non_variant(self):
         numpy_backend.allele_counts_is_variant(self.data)
 
     def time_is_segregating(self):

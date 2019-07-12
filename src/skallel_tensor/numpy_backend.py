@@ -37,12 +37,15 @@ def concatenate(seq, axis=0):
 api.concatenate_dispatcher.add((np.ndarray,), concatenate)
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
 def genotype_tensor_is_called(gt):
-    out = np.ones(gt.shape[:2], dtype=np.bool_)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
-            for k in range(gt.shape[2]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.ones((m, n), dtype=np.bool_)
+    for i in numba.prange(m):
+        for j in range(n):
+            for k in range(p):
                 if gt[i, j, k] < 0:
                     out[i, j] = False
                     # No need to check other alleles.
@@ -55,12 +58,15 @@ api.genotype_tensor_is_called_dispatcher.add(
 )
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
 def genotype_tensor_is_missing(gt):
-    out = np.zeros(gt.shape[:2], dtype=np.bool_)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
-            for k in range(gt.shape[2]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.zeros((m, n), dtype=np.bool_)
+    for i in numba.prange(m):
+        for j in range(n):
+            for k in range(gt.shape[p]):
                 if gt[i, j, k] < 0:
                     out[i, j] = True
                     # No need to check other alleles.
@@ -73,16 +79,19 @@ api.genotype_tensor_is_missing_dispatcher.add(
 )
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
 def genotype_tensor_is_hom(gt):
-    out = np.ones(gt.shape[:2], dtype=np.bool_)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.ones((m, n), dtype=np.bool_)
+    for i in range(m):
+        for j in range(n):
             first_allele = gt[i, j, 0]
             if first_allele < 0:
                 out[i, j] = False
             else:
-                for k in range(1, gt.shape[2]):
+                for k in range(1, p):
                     if gt[i, j, k] != first_allele:
                         out[i, j] = False
                         # No need to check other alleles.
@@ -93,14 +102,17 @@ def genotype_tensor_is_hom(gt):
 api.genotype_tensor_is_hom_dispatcher.add((np.ndarray,), genotype_tensor_is_hom)
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True, parallel=True)
 def genotype_tensor_is_het(gt):
-    out = np.zeros(gt.shape[:2], dtype=np.bool_)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.zeros((m, n), dtype=np.bool_)
+    for i in range(m):
+        for j in range(n):
             first_allele = gt[i, j, 0]
             if first_allele >= 0:
-                for k in range(1, gt.shape[2]):
+                for k in range(1, p):
                     allele = gt[i, j, k]
                     if allele >= 0 and allele != first_allele:
                         out[i, j] = True
@@ -112,10 +124,17 @@ def genotype_tensor_is_het(gt):
 api.genotype_tensor_is_het_dispatcher.add((np.ndarray,), genotype_tensor_is_het)
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]), nogil=True)
+@numba.njit(
+    numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]),
+    nogil=True,
+    parallel=True,
+)
 def genotype_tensor_is_call(gt, call):
-    out = np.ones(gt.shape[:2], dtype=np.bool_)
-    for i in range(gt.shape[0]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.ones((m, n), dtype=np.bool_)
+    for i in numba.prange(gt.shape[0]):
         for j in range(gt.shape[1]):
             for k in range(gt.shape[2]):
                 if gt[i, j, k] != call[k]:
@@ -130,12 +149,19 @@ api.genotype_tensor_is_call_dispatcher.add(
 )
 
 
-@numba.njit(numba.int32[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
+@numba.njit(
+    numba.int32[:, :](numba.int8[:, :, :], numba.int8),
+    nogil=True,
+    parallel=True,
+)
 def genotype_tensor_count_alleles(gt, max_allele):
-    out = np.zeros((gt.shape[0], max_allele + 1), dtype=np.int32)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
-            for k in range(gt.shape[2]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.zeros((m, max_allele + 1), dtype=np.int32)
+    for i in numba.prange(m):
+        for j in range(n):
+            for k in range(p):
                 allele = gt[i, j, k]
                 if 0 <= allele <= max_allele:
                     out[i, allele] += 1
@@ -147,12 +173,19 @@ api.genotype_tensor_count_alleles_dispatcher.add(
 )
 
 
-@numba.njit(numba.int8[:, :, :](numba.int8[:, :, :], numba.int8), nogil=True)
+@numba.njit(
+    numba.int8[:, :, :](numba.int8[:, :, :], numba.int8),
+    parallel=True,
+    nogil=True,
+)
 def genotype_tensor_to_allele_counts(gt, max_allele):
-    out = np.zeros((gt.shape[0], gt.shape[1], max_allele + 1), dtype=np.int8)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
-            for k in range(gt.shape[2]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.zeros((m, n, max_allele + 1), dtype=np.int8)
+    for i in range(m):
+        for j in range(n):
+            for k in range(p):
                 allele = gt[i, j, k]
                 if 0 <= allele <= max_allele:
                     out[i, j, allele] += 1
@@ -164,12 +197,17 @@ api.genotype_tensor_to_allele_counts_dispatcher.add(
 )
 
 
-@numba.njit(numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
+@numba.njit(
+    numba.int8[:, :](numba.int8[:, :, :], numba.int8), nogil=True, parallel=True
+)
 def genotype_tensor_to_allele_counts_melt(gt, max_allele):
-    out = np.zeros((gt.shape[0] * (max_allele + 1), gt.shape[1]), dtype=np.int8)
-    for i in range(gt.shape[0]):
-        for j in range(gt.shape[1]):
-            for k in range(gt.shape[2]):
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    out = np.zeros((m * (max_allele + 1), n), dtype=np.int8)
+    for i in numba.prange(m):
+        for j in range(n):
+            for k in range(p):
                 allele = gt[i, j, k]
                 if 0 <= allele <= max_allele:
                     out[(i * (max_allele + 1)) + allele, j] += 1
@@ -272,5 +310,16 @@ def allele_counts_is_variant(ac):
         for j in range(1, ac.shape[1]):
             if ac[i, j] > 0:
                 out[i] = True
+                break
+    return out
+
+
+@numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
+def allele_counts_is_non_variant(ac):
+    out = np.ones(ac.shape[0], dtype=np.bool_)
+    for i in range(ac.shape[0]):
+        for j in range(1, ac.shape[1]):
+            if ac[i, j] > 0:
+                out[i] = False
                 break
     return out
