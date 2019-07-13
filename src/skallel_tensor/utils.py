@@ -20,8 +20,9 @@ def check_array_like(a, dtype=None, ndim=None):
     if dtype is not None and a.dtype != np.dtype(dtype):
         raise TypeError
     if ndim is not None:
-        if isinstance(ndim, (list, tuple)) and a.ndim not in ndim:
-            raise ValueError
+        if isinstance(ndim, set):
+            if a.ndim not in ndim:
+                raise ValueError
         elif ndim != a.ndim:
             raise ValueError
 

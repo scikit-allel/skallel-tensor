@@ -10,37 +10,37 @@ class TimeGenotypes3D:
         self.data = np.random.randint(-1, 4, size=(10000, 1000, 2), dtype="i1")
         self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
 
-    def time_is_called_numpy(self):
-        numpy_backend.genotypes_3d_is_called(self.data)
+    def time_locate_called_numpy(self):
+        numpy_backend.genotypes_3d_locate_called(self.data)
 
-    def time_is_called_dask(self):
-        dask_backend.genotypes_3d_is_called(self.data_dask).compute()
+    def time_locate_called_dask(self):
+        dask_backend.genotypes_3d_locate_called(self.data_dask).compute()
 
-    def time_is_missing_numpy(self):
-        numpy_backend.genotypes_3d_is_missing(self.data)
+    def time_locate_missing_numpy(self):
+        numpy_backend.genotypes_3d_locate_missing(self.data)
 
-    def time_is_missing_dask(self):
-        dask_backend.genotypes_3d_is_missing(self.data_dask).compute()
+    def time_locate_missing_dask(self):
+        dask_backend.genotypes_3d_locate_missing(self.data_dask).compute()
 
-    def time_is_hom_numpy(self):
-        numpy_backend.genotypes_3d_is_hom(self.data)
+    def time_locate_hom_numpy(self):
+        numpy_backend.genotypes_3d_locate_hom(self.data)
 
-    def time_is_hom_dask(self):
-        dask_backend.genotypes_3d_is_hom(self.data_dask).compute()
+    def time_locate_hom_dask(self):
+        dask_backend.genotypes_3d_locate_hom(self.data_dask).compute()
 
-    def time_is_het_numpy(self):
-        numpy_backend.genotypes_3d_is_het(self.data)
+    def time_locate_het_numpy(self):
+        numpy_backend.genotypes_3d_locate_het(self.data)
 
-    def time_is_het_dask(self):
-        dask_backend.genotypes_3d_is_het(self.data_dask).compute()
+    def time_locate_het_dask(self):
+        dask_backend.genotypes_3d_locate_het(self.data_dask).compute()
 
-    def time_is_call_numpy(self):
-        numpy_backend.genotypes_3d_is_call(
+    def time_locate_call_numpy(self):
+        numpy_backend.genotypes_3d_locate_call(
             self.data, np.array([0, 1], dtype="i1")
         )
 
-    def time_is_call_dask(self):
-        dask_backend.genotypes_3d_is_call(
+    def time_locate_call_dask(self):
+        dask_backend.genotypes_3d_locate_call(
             self.data_dask, np.array([0, 1], dtype="i1")
         ).compute()
 
@@ -87,11 +87,11 @@ class TimeAlleleCounts2D:
     def time_max_allele(self):
         numpy_backend.allele_counts_2d_max_allele(self.data)
 
-    def time_is_variant(self):
-        numpy_backend.allele_counts_2d_is_variant(self.data)
+    def time_locate_variant(self):
+        numpy_backend.allele_counts_2d_locate_variant(self.data)
 
-    def time_is_non_variant(self):
-        numpy_backend.allele_counts_2d_is_variant(self.data)
+    def time_locate_non_variant(self):
+        numpy_backend.allele_counts_2d_locate_variant(self.data)
 
-    def time_is_segregating(self):
-        numpy_backend.allele_counts_2d_is_segregating(self.data)
+    def time_locate_segregating(self):
+        numpy_backend.allele_counts_2d_locate_segregating(self.data)

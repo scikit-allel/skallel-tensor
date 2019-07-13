@@ -37,8 +37,27 @@ def concatenate(seq, axis=0):
 api.concatenate_dispatcher.add((np.ndarray,), concatenate)
 
 
+@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+def genotypes_2d_locate_called(gt):
+    n = gt.shape[0]
+    p = gt.shape[1]
+    out = np.ones(n, dtype=np.bool_)
+    for i in range(n):
+        for j in range(p):
+            if gt[i, j] < 0:
+                out[i] = False
+                # No need to check other alleles.
+                break
+    return out
+
+
+api.genotypes_2d_locate_called_dispatcher.add(
+    (np.ndarray,), genotypes_2d_locate_called
+)
+
+
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotypes_3d_is_called(gt):
+def genotypes_3d_locate_called(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -53,11 +72,32 @@ def genotypes_3d_is_called(gt):
     return out
 
 
-api.genotypes_3d_is_called_dispatcher.add((np.ndarray,), genotypes_3d_is_called)
+api.genotypes_3d_locate_called_dispatcher.add(
+    (np.ndarray,), genotypes_3d_locate_called
+)
+
+
+@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+def genotypes_2d_locate_missing(gt):
+    n = gt.shape[0]
+    p = gt.shape[1]
+    out = np.zeros(n, dtype=np.bool_)
+    for i in range(n):
+        for j in range(p):
+            if gt[i, j] < 0:
+                out[i] = True
+                # No need to check other alleles.
+                break
+    return out
+
+
+api.genotypes_2d_locate_missing_dispatcher.add(
+    (np.ndarray,), genotypes_2d_locate_missing
+)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotypes_3d_is_missing(gt):
+def genotypes_3d_locate_missing(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -72,13 +112,36 @@ def genotypes_3d_is_missing(gt):
     return out
 
 
-api.genotypes_3d_is_missing_dispatcher.add(
-    (np.ndarray,), genotypes_3d_is_missing
+api.genotypes_3d_locate_missing_dispatcher.add(
+    (np.ndarray,), genotypes_3d_locate_missing
+)
+
+
+@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+def genotypes_2d_locate_hom(gt):
+    n = gt.shape[0]
+    p = gt.shape[1]
+    out = np.ones(n, dtype=np.bool_)
+    for i in range(n):
+        first_allele = gt[i, 0]
+        if first_allele < 0:
+            out[i] = False
+        else:
+            for j in range(1, p):
+                if gt[i, j] != first_allele:
+                    out[i] = False
+                    # No need to check other alleles.
+                    break
+    return out
+
+
+api.genotypes_2d_locate_hom_dispatcher.add(
+    (np.ndarray,), genotypes_2d_locate_hom
 )
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotypes_3d_is_hom(gt):
+def genotypes_3d_locate_hom(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -97,11 +160,35 @@ def genotypes_3d_is_hom(gt):
     return out
 
 
-api.genotypes_3d_is_hom_dispatcher.add((np.ndarray,), genotypes_3d_is_hom)
+api.genotypes_3d_locate_hom_dispatcher.add(
+    (np.ndarray,), genotypes_3d_locate_hom
+)
+
+
+@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+def genotypes_2d_locate_het(gt):
+    n = gt.shape[0]
+    p = gt.shape[1]
+    out = np.zeros(n, dtype=np.bool_)
+    for i in range(n):
+        first_allele = gt[i, 0]
+        if first_allele >= 0:
+            for j in range(1, p):
+                allele = gt[i, j]
+                if allele >= 0 and allele != first_allele:
+                    out[i] = True
+                    # No need to check other alleles.
+                    break
+    return out
+
+
+api.genotypes_2d_locate_het_dispatcher.add(
+    (np.ndarray,), genotypes_2d_locate_het
+)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotypes_3d_is_het(gt):
+def genotypes_3d_locate_het(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -119,15 +206,32 @@ def genotypes_3d_is_het(gt):
     return out
 
 
-api.genotypes_3d_is_het_dispatcher.add((np.ndarray,), genotypes_3d_is_het)
-
-
-@numba.njit(
-    numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]),
-    nogil=True,
-    parallel=True,
+api.genotypes_3d_locate_het_dispatcher.add(
+    (np.ndarray,), genotypes_3d_locate_het
 )
-def genotypes_3d_is_call(gt, call):
+
+
+@numba.njit(numba.boolean[:](numba.int8[:, :], numba.int8[:]), nogil=True)
+def genotypes_2d_locate_call(gt, call):
+    n = gt.shape[0]
+    p = gt.shape[1]
+    out = np.ones(n, dtype=np.bool_)
+    for i in range(gt.shape[0]):
+        for j in range(gt.shape[1]):
+            if gt[i, j] != call[j]:
+                out[i] = False
+                # No need to check other alleles.
+                break
+    return out
+
+
+api.genotypes_2d_locate_call_dispatcher.add(
+    (np.ndarray, np.ndarray), genotypes_2d_locate_call
+)
+
+
+@numba.njit(numba.boolean[:, :](numba.int8[:, :, :], numba.int8[:]), nogil=True)
+def genotypes_3d_locate_call(gt, call):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -142,16 +246,12 @@ def genotypes_3d_is_call(gt, call):
     return out
 
 
-api.genotypes_3d_is_call_dispatcher.add(
-    (np.ndarray, np.ndarray), genotypes_3d_is_call
+api.genotypes_3d_locate_call_dispatcher.add(
+    (np.ndarray, np.ndarray), genotypes_3d_locate_call
 )
 
 
-@numba.njit(
-    numba.int32[:, :](numba.int8[:, :, :], numba.int8),
-    nogil=True,
-    parallel=True,
-)
+@numba.njit(numba.int32[:, :](numba.int8[:, :, :], numba.int8), nogil=True)
 def genotypes_3d_count_alleles(gt, max_allele):
     m = gt.shape[0]
     n = gt.shape[1]
@@ -167,15 +267,11 @@ def genotypes_3d_count_alleles(gt, max_allele):
 
 
 api.genotypes_3d_count_alleles_dispatcher.add(
-    (np.ndarray, numbers.Integral), genotypes_3d_count_alleles
+    (np.ndarray,), genotypes_3d_count_alleles
 )
 
 
-@numba.njit(
-    numba.int8[:, :, :](numba.int8[:, :, :], numba.int8),
-    parallel=True,
-    nogil=True,
-)
+@numba.njit(numba.int8[:, :, :](numba.int8[:, :, :], numba.int8), nogil=True)
 def genotypes_3d_to_allele_counts(gt, max_allele):
     m = gt.shape[0]
     n = gt.shape[1]
@@ -287,7 +383,7 @@ def allele_counts_2d_max_allele(ac):
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
-def allele_counts_2d_is_segregating(ac):
+def allele_counts_2d_locate_segregating(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
     for i in range(ac.shape[0]):
         n = 0
@@ -300,7 +396,7 @@ def allele_counts_2d_is_segregating(ac):
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
-def allele_counts_2d_is_variant(ac):
+def allele_counts_2d_locate_variant(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
     for i in range(ac.shape[0]):
         for j in range(1, ac.shape[1]):
@@ -311,7 +407,7 @@ def allele_counts_2d_is_variant(ac):
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
-def allele_counts_2d_is_non_variant(ac):
+def allele_counts_2d_locate_non_variant(ac):
     out = np.ones(ac.shape[0], dtype=np.bool_)
     for i in range(ac.shape[0]):
         for j in range(1, ac.shape[1]):

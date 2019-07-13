@@ -12,16 +12,121 @@ from .utils import (
 )
 
 
-genotypes_3d_is_called_dispatcher = Dispatcher("genotypes_3d_is_called")
-
-
-def genotypes_is_called(gt):
-    """
-    TODO
+def genotypes_locate_called(gt):
+    """Locate non-missing genotype calls.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int8
+
+    Returns
+    -------
+    out: array_like, bool
+
+    """
+
+    check_array_like(gt, dtype="i1")
+    if gt.ndim == 2:
+        return genotypes_2d_locate_called_dispatcher(gt)
+    elif gt.ndim == 3:
+        return genotypes_3d_locate_called_dispatcher(gt)
+    else:
+        raise ValueError
+
+
+genotypes_2d_locate_called_dispatcher = Dispatcher("genotypes_2d_locate_called")
+genotypes_3d_locate_called_dispatcher = Dispatcher("genotypes_3d_locate_called")
+
+
+def genotypes_locate_missing(gt):
+    """Locate missing genotype calls.
+
+    Parameters
+    ----------
+    gt : array_like, int8
+
+    Returns
+    -------
+    out: array_like, bool
+
+    """
+
+    check_array_like(gt, dtype="i1")
+    if gt.ndim == 2:
+        return genotypes_2d_locate_missing_dispatcher(gt)
+    elif gt.ndim == 3:
+        return genotypes_3d_locate_missing_dispatcher(gt)
+    else:
+        raise ValueError
+
+
+genotypes_2d_locate_missing_dispatcher = Dispatcher(
+    "genotypes_2d_locate_missing"
+)
+genotypes_3d_locate_missing_dispatcher = Dispatcher(
+    "genotypes_3d_locate_missing"
+)
+
+
+def genotypes_locate_hom(gt):
+    """Locate homozygous genotype calls.
+
+    Parameters
+    ----------
+    gt : array_like, int8
+
+    Returns
+    -------
+    out: array_like, bool
+
+    """
+
+    check_array_like(gt, dtype="i1")
+    if gt.ndim == 2:
+        return genotypes_2d_locate_hom_dispatcher(gt)
+    elif gt.ndim == 3:
+        return genotypes_3d_locate_hom_dispatcher(gt)
+    else:
+        raise ValueError
+
+
+genotypes_2d_locate_hom_dispatcher = Dispatcher("genotypes_2d_locate_hom")
+genotypes_3d_locate_hom_dispatcher = Dispatcher("genotypes_3d_locate_hom")
+
+
+def genotypes_locate_het(gt):
+    """Locate heterozygous genotype calls.
+
+    Parameters
+    ----------
+    gt : array_like, int8
+
+    Returns
+    -------
+    out: array_like, bool
+
+    """
+
+    check_array_like(gt, dtype="i1")
+    if gt.ndim == 2:
+        return genotypes_2d_locate_het_dispatcher(gt)
+    elif gt.ndim == 3:
+        return genotypes_3d_locate_het_dispatcher(gt)
+    else:
+        raise ValueError
+
+
+genotypes_2d_locate_het_dispatcher = Dispatcher("genotypes_2d_locate_het")
+genotypes_3d_locate_het_dispatcher = Dispatcher("genotypes_3d_locate_het")
+
+
+def genotypes_locate_call(gt, *, call):
+    """Locate genotypes with the given `call`.
+
+    Parameters
+    ----------
+    gt : array_like, int8
+    call : array_like, int8
 
     Returns
     -------
@@ -29,136 +134,58 @@ def genotypes_is_called(gt):
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotypes_3d_is_called_dispatcher(gt)
-
-
-genotypes_3d_is_missing_dispatcher = Dispatcher("genotypes_3d_is_missing")
-
-
-def genotypes_is_missing(gt):
-    """
-    TODO
-
-    Parameters
-    ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-
-    Returns
-    -------
-    out: array_like, bool, shape (n_variants, n_samples)
-
-    """
-
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotypes_3d_is_missing_dispatcher(gt)
-
-
-genotypes_3d_is_hom_dispatcher = Dispatcher("genotypes_3d_is_hom")
-
-
-def genotypes_is_hom(gt):
-    """
-    TODO
-
-    Parameters
-    ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-
-    Returns
-    -------
-    out: array_like, bool, shape (n_variants, n_samples)
-
-    """
-
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotypes_3d_is_hom_dispatcher(gt)
-
-
-genotypes_3d_is_het_dispatcher = Dispatcher("genotypes_3d_is_het")
-
-
-def genotypes_is_het(gt):
-    """
-    TODO
-
-    Parameters
-    ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-
-    Returns
-    -------
-    out: array_like, bool, shape (n_variants, n_samples)
-
-    """
-
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotypes_3d_is_het_dispatcher(gt)
-
-
-genotypes_3d_is_call_dispatcher = Dispatcher("genotypes_3d_is_call")
-
-
-def genotypes_is_call(gt, *, call):
-    """
-    TODO
-
-    Parameters
-    ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-    call : array_like, int8, shape (ploidy,)
-
-    Returns
-    -------
-    out: array_like, bool, shape (n_variants, n_samples)
-
-    """
-
-    check_array_like(gt, dtype="i1", ndim=3)
+    check_array_like(gt, dtype="i1")
     call = np.asarray(call, dtype="i1")
-    return genotypes_3d_is_call_dispatcher(gt, call)
+    if call.ndim != 1:
+        raise ValueError
+    if gt.shape[-1] != call.shape[0]:
+        raise ValueError
+
+    if gt.ndim == 2:
+        return genotypes_2d_locate_call_dispatcher(gt, call)
+    elif gt.ndim == 3:
+        return genotypes_3d_locate_call_dispatcher(gt, call)
+    else:
+        raise ValueError
 
 
-genotypes_3d_count_alleles_dispatcher = Dispatcher("genotypes_3d_count_alleles")
+genotypes_2d_locate_call_dispatcher = Dispatcher("genotypes_2d_locate_call")
+genotypes_3d_locate_call_dispatcher = Dispatcher("genotypes_3d_locate_call")
 
 
 def genotypes_count_alleles(gt, *, max_allele):
-    """
-    TODO
+    """Count the number of calls for each allele.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-    max_allele : int
+    gt : array_like, int8, shape
+    max_allele : int8
 
     Returns
     -------
-    ac: array_like, int32, shape (n_variants, max_allele + 1)
+    ac: array_like, int32
 
     """
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotypes_3d_count_alleles_dispatcher(gt, max_allele)
+    return genotypes_3d_count_alleles_dispatcher(gt, max_allele=max_allele)
 
 
-genotypes_3d_to_allele_counts_dispatcher = Dispatcher(
-    "genotypes_3d_to_allele_counts"
-)
+genotypes_3d_count_alleles_dispatcher = Dispatcher("genotypes_3d_count_alleles")
 
 
 def genotypes_to_allele_counts(gt, *, max_allele):
-    """
-    TODO
+    """Convert genotypes to allele counts.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int8
     max_allele : int
 
     Returns
     -------
-    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+    gac: array_like, int32
 
     """
 
@@ -167,23 +194,23 @@ def genotypes_to_allele_counts(gt, *, max_allele):
     return genotypes_3d_to_allele_counts_dispatcher(gt, max_allele)
 
 
-genotypes_3d_to_allele_counts_melt_dispatcher = Dispatcher(
-    "genotypes_3d_to_allele_counts_melt"
+genotypes_3d_to_allele_counts_dispatcher = Dispatcher(
+    "genotypes_3d_to_allele_counts"
 )
 
 
 def genotypes_to_allele_counts_melt(gt, *, max_allele):
-    """
-    TODO
+    """Convert genotypes to allele counts, melting each allele into a
+    separate row.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int8
     max_allele : int
 
     Returns
     -------
-    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+    gac: array_like, int32
 
     """
 
@@ -192,9 +219,13 @@ def genotypes_to_allele_counts_melt(gt, *, max_allele):
     return genotypes_3d_to_allele_counts_melt_dispatcher(gt, max_allele)
 
 
+genotypes_3d_to_allele_counts_melt_dispatcher = Dispatcher(
+    "genotypes_3d_to_allele_counts_melt"
+)
+
+
 # genotype array
 # TODO to_haplotypes
-# TODO display
 # TODO map_alleles
 
 
@@ -418,16 +449,16 @@ concatenate_dispatcher.add((Mapping,), group_concatenate)
 # TODO display
 
 
-allele_counts_2d_is_segregating_dispatcher = Dispatcher(
-    "allele_counts_is_segregating"
+allele_counts_2d_locate_segregating_dispatcher = Dispatcher(
+    "allele_counts_locate_segregating"
 )
 
 
-def allele_counts_is_segregating(ac):
+def allele_counts_locate_segregating(ac):
     """TODO"""
 
     check_array_like(ac, dtype="i4", ndim=2)
-    allele_counts_2d_is_segregating_dispatcher(ac)
+    allele_counts_2d_locate_segregating_dispatcher(ac)
 
 
 # TODO GenotypeAlleleCountsArray

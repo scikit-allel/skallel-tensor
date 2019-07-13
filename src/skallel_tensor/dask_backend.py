@@ -85,68 +85,72 @@ def concatenate(seq, axis=0):
 api.concatenate_dispatcher.add((daskish_array_types,), concatenate)
 
 
-def genotypes_3d_is_called(gt):
+def genotypes_3d_locate_called(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_is_called, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_locate_called, gt, drop_axis=2, dtype=bool
     )
     return out
 
 
-api.genotypes_3d_is_called_dispatcher.add(
-    (daskish_array_types,), genotypes_3d_is_called
+api.genotypes_3d_locate_called_dispatcher.add(
+    (daskish_array_types,), genotypes_3d_locate_called
 )
 
 
-def genotypes_3d_is_missing(gt):
+def genotypes_3d_locate_missing(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_is_missing, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_locate_missing, gt, drop_axis=2, dtype=bool
     )
     return out
 
 
-api.genotypes_3d_is_missing_dispatcher.add(
-    (daskish_array_types,), genotypes_3d_is_missing
+api.genotypes_3d_locate_missing_dispatcher.add(
+    (daskish_array_types,), genotypes_3d_locate_missing
 )
 
 
-def genotypes_3d_is_hom(gt):
+def genotypes_3d_locate_hom(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_is_hom, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_locate_hom, gt, drop_axis=2, dtype=bool
     )
     return out
 
 
-api.genotypes_3d_is_hom_dispatcher.add(
-    (daskish_array_types,), genotypes_3d_is_hom
+api.genotypes_3d_locate_hom_dispatcher.add(
+    (daskish_array_types,), genotypes_3d_locate_hom
 )
 
 
-def genotypes_3d_is_het(gt):
+def genotypes_3d_locate_het(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_is_het, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_locate_het, gt, drop_axis=2, dtype=bool
     )
     return out
 
 
-api.genotypes_3d_is_het_dispatcher.add(
-    (daskish_array_types,), genotypes_3d_is_het
+api.genotypes_3d_locate_het_dispatcher.add(
+    (daskish_array_types,), genotypes_3d_locate_het
 )
 
 
-def genotypes_3d_is_call(gt, call):
+def genotypes_3d_locate_call(gt, call):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_is_call, gt, call, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_locate_call,
+        gt,
+        call,
+        drop_axis=2,
+        dtype=bool,
     )
     return out
 
 
-api.genotypes_3d_is_call_dispatcher.add(
-    (daskish_array_types, np.ndarray), genotypes_3d_is_call
+api.genotypes_3d_locate_call_dispatcher.add(
+    (daskish_array_types, np.ndarray), genotypes_3d_locate_call
 )
 
 
@@ -180,7 +184,7 @@ def genotypes_3d_count_alleles(gt, max_allele):
 
 
 api.genotypes_3d_count_alleles_dispatcher.add(
-    (daskish_array_types, numbers.Integral), genotypes_3d_count_alleles
+    (daskish_array_types,), genotypes_3d_count_alleles
 )
 
 
