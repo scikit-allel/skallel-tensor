@@ -37,17 +37,15 @@ def concatenate(seq, axis=0):
 api.dispatch_concatenate.add((np.ndarray,), concatenate)
 
 
-@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+@numba.njit(numba.int8[:](numba.int8[:, :]), nogil=True)
 def genotypes_2d_to_called_allele_counts(gt):
     n = gt.shape[0]
     p = gt.shape[1]
-    out = np.ones(n, dtype=np.bool_)
+    out = np.zeros(n, dtype=np.int8)
     for i in range(n):
         for j in range(p):
-            if gt[i, j] < 0:
-                out[i] = False
-                # No need to check other alleles.
-                break
+            if gt[i, j] >= 0:
+                out[i] += 1
     return out
 
 
@@ -56,19 +54,17 @@ api.dispatch_genotypes_2d_to_called_allele_counts.add(
 )
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
+@numba.njit(numba.int8[:, :](numba.int8[:, :, :]), nogil=True)
 def genotypes_3d_to_called_allele_counts(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
-    out = np.ones((m, n), dtype=np.bool_)
+    out = np.zeros((m, n), dtype=np.int8)
     for i in range(m):
         for j in range(n):
             for k in range(p):
-                if gt[i, j, k] < 0:
-                    out[i, j] = False
-                    # No need to check other alleles.
-                    break
+                if gt[i, j, k] >= 0:
+                    out[i, j] += 1
     return out
 
 
@@ -77,17 +73,15 @@ api.dispatch_genotypes_3d_to_called_allele_counts.add(
 )
 
 
-@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+@numba.njit(numba.int8[:](numba.int8[:, :]), nogil=True)
 def genotypes_2d_to_missing_allele_counts(gt):
     n = gt.shape[0]
     p = gt.shape[1]
-    out = np.zeros(n, dtype=np.bool_)
+    out = np.zeros(n, dtype=np.int8)
     for i in range(n):
         for j in range(p):
             if gt[i, j] < 0:
-                out[i] = True
-                # No need to check other alleles.
-                break
+                out[i] += 1
     return out
 
 
@@ -96,19 +90,17 @@ api.dispatch_genotypes_2d_to_missing_allele_counts.add(
 )
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
+@numba.njit(numba.int8[:, :](numba.int8[:, :, :]), nogil=True)
 def genotypes_3d_to_missing_allele_counts(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
-    out = np.zeros((m, n), dtype=np.bool_)
+    out = np.zeros((m, n), dtype=np.int8)
     for i in range(m):
         for j in range(n):
             for k in range(gt.shape[p]):
                 if gt[i, j, k] < 0:
-                    out[i, j] = True
-                    # No need to check other alleles.
-                    break
+                    out[i, j] += 1
     return out
 
 

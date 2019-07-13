@@ -332,6 +332,38 @@ api.dispatch_allele_counts_2d_locate_segregating.add(
 )
 
 
+def allele_counts_3d_locate_hom(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_3d_locate_hom,
+        ac,
+        dtype=np.bool_,
+        drop_axis=2,
+    )
+    return out
+
+
+api.dispatch_allele_counts_3d_locate_hom.add(
+    (chunked_array_types,), allele_counts_3d_locate_hom
+)
+
+
+def allele_counts_3d_locate_het(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_3d_locate_het,
+        ac,
+        dtype=np.bool_,
+        drop_axis=2,
+    )
+    return out
+
+
+api.dispatch_allele_counts_3d_locate_het.add(
+    (chunked_array_types,), allele_counts_3d_locate_het
+)
+
+
 def variants_to_dataframe(variants, columns):
 
     # Build dataframe.
