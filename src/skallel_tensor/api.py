@@ -25,7 +25,7 @@ def genotypes_locate_called(gt):
 
     """
 
-    check_array_like(gt, dtype="i1")
+    check_array_like(gt, dtype=np.int8)
     if gt.ndim == 2:
         return dispatch_genotypes_2d_locate_called(gt)
     elif gt.ndim == 3:
@@ -51,7 +51,7 @@ def genotypes_locate_missing(gt):
 
     """
 
-    check_array_like(gt, dtype="i1")
+    check_array_like(gt, dtype=np.int8)
     if gt.ndim == 2:
         return dispatch_genotypes_2d_locate_missing(gt)
     elif gt.ndim == 3:
@@ -77,7 +77,7 @@ def genotypes_locate_hom(gt):
 
     """
 
-    check_array_like(gt, dtype="i1")
+    check_array_like(gt, dtype=np.int8)
     if gt.ndim == 2:
         return dispatch_genotypes_2d_locate_hom(gt)
     elif gt.ndim == 3:
@@ -103,7 +103,7 @@ def genotypes_locate_het(gt):
 
     """
 
-    check_array_like(gt, dtype="i1")
+    check_array_like(gt, dtype=np.int8)
     if gt.ndim == 2:
         return dispatch_genotypes_2d_locate_het(gt)
     elif gt.ndim == 3:
@@ -130,8 +130,8 @@ def genotypes_locate_call(gt, *, call):
 
     """
 
-    check_array_like(gt, dtype="i1")
-    call = np.asarray(call, dtype="i1")
+    check_array_like(gt, dtype=np.int8)
+    call = np.asarray(call, dtype=np.int8)
     if call.ndim != 1:
         raise ValueError
     if gt.shape[-1] != call.shape[0]:
@@ -163,8 +163,8 @@ def genotypes_count_alleles(gt, *, max_allele):
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    max_allele = coerce_scalar(max_allele, "i1")
+    check_array_like(gt, dtype=np.int8, ndim=3)
+    max_allele = coerce_scalar(max_allele, np.int8)
     return dispatch_genotypes_3d_count_alleles(gt, max_allele=max_allele)
 
 
@@ -185,8 +185,8 @@ def genotypes_to_allele_counts(gt, *, max_allele):
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    max_allele = coerce_scalar(max_allele, "i1")
+    check_array_like(gt, dtype=np.int8, ndim=3)
+    max_allele = coerce_scalar(max_allele, np.int8)
     return dispatch_genotypes_3d_to_allele_counts(gt, max_allele)
 
 
@@ -210,8 +210,8 @@ def genotypes_to_allele_counts_melt(gt, *, max_allele):
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    max_allele = coerce_scalar(max_allele, "i1")
+    check_array_like(gt, dtype=np.int8, ndim=3)
+    max_allele = coerce_scalar(max_allele, np.int8)
     return dispatch_genotypes_3d_to_allele_counts_melt(gt, max_allele)
 
 
@@ -225,7 +225,141 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 # TODO map_alleles
 
 
-dispatch_variants_to_dataframe = Dispatcher("variants_to_dataframe")
+# TODO HaplotypeArray
+# TODO locate_called
+# TODO locate_missing
+# TODO locate_ref
+# TODO locate_alt
+# TODO locate_call
+# TODO to_genotypes
+# TODO count_alleles
+# TODO map_alleles
+# TODO prefix_argsort
+# TODO distinct
+# TODO distinct_counts
+# TODO distinct_frequencies
+# TODO display
+
+
+# TODO AlleleCountsArray
+# TODO to_frequencies
+# TODO allelism
+# TODO max_allele
+# TODO locate_called
+# TODO locate_missing
+# TODO locate_hom
+# TODO locate_het
+# TODO locate_call
+# TODO locate_variant
+# TODO locate_non_variant
+# TODO locate_segregating
+# TODO locate_non_segregating
+# TODO locate_biallelic
+# TODO squeeze_biallelic
+# TODO map_alleles
+# TODO display
+
+
+def allele_counts_to_frequencies(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype=np.int32)
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_to_frequencies(ac)
+    elif ac.ndim == 3:
+        raise NotImplementedError
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_to_frequencies = Dispatcher(
+    "allele_counts_2d_to_frequencies"
+)
+
+
+def allele_counts_allelism(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype=np.int32)
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_allelism(ac)
+    elif ac.ndim == 3:
+        raise NotImplementedError
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_allelism = Dispatcher("allele_counts_2d_allelism")
+
+
+def allele_counts_max_allele(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype=np.int32)
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_max_allele(ac)
+    elif ac.ndim == 3:
+        raise NotImplementedError
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_max_allele = Dispatcher("allele_counts_2d_max_allele")
+
+
+def allele_counts_locate_variant(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype=np.int32)
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_locate_variant(ac)
+    elif ac.ndim == 3:
+        raise NotImplementedError
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_locate_variant = Dispatcher(
+    "allele_counts_2d_locate_variant"
+)
+
+
+def allele_counts_locate_non_variant(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype=np.int32)
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_locate_non_variant(ac)
+    elif ac.ndim == 3:
+        raise NotImplementedError
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_locate_non_variant = Dispatcher(
+    "allele_counts_2d_locate_non_variant"
+)
+
+
+def allele_counts_locate_segregating(ac):
+    """TODO"""
+
+    check_array_like(ac, dtype=np.int32)
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_locate_segregating(ac)
+    elif ac.ndim == 3:
+        raise NotImplementedError
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_locate_segregating = Dispatcher(
+    "allele_counts_2d_locate_segregating"
+)
+
+
+# TODO GenotypeAlleleCountsArray
+# TODO ???
 
 
 def variants_to_dataframe(variants, columns=None):
@@ -246,6 +380,9 @@ def variants_to_dataframe(variants, columns=None):
     if f is None:
         raise NotImplementedError
     return f(variants, columns)
+
+
+dispatch_variants_to_dataframe = Dispatcher("variants_to_dataframe")
 
 
 class GroupSelection(Mapping):
@@ -271,15 +408,15 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-dispatch_select_slice = Dispatcher("select_slice")
-
-
 def select_slice(o, start=None, stop=None, step=None, axis=0):
     """TODO"""
 
     return dispatch_select_slice(
         o, start=start, stop=stop, step=step, axis=axis
     )
+
+
+dispatch_select_slice = Dispatcher("select_slice")
 
 
 def group_select_slice(o, start=None, stop=None, step=None, axis=0):
@@ -291,13 +428,13 @@ def group_select_slice(o, start=None, stop=None, step=None, axis=0):
 dispatch_select_slice.add((Mapping,), group_select_slice)
 
 
-dispatch_select_indices = Dispatcher("select_indices")
-
-
 def select_indices(o, indices, *, axis=0):
     """TODO"""
 
     return dispatch_select_indices(o, indices, axis=axis)
+
+
+dispatch_select_indices = Dispatcher("select_indices")
 
 
 def group_select_indices(o, indices, *, axis=0):
@@ -307,13 +444,13 @@ def group_select_indices(o, indices, *, axis=0):
 dispatch_select_indices.add((Mapping, object), group_select_indices)
 
 
-dispatch_select_mask = Dispatcher("select_mask")
-
-
 def select_mask(o, mask, *, axis=0):
     """TODO"""
 
     return dispatch_select_mask(o, mask, axis=axis)
+
+
+dispatch_select_mask = Dispatcher("select_mask")
 
 
 def group_select_mask(o, mask, *, axis=0):
@@ -363,10 +500,19 @@ def select_values(o, index, query, *, axis=0):
     return select_indices(o, indices, axis=axis)
 
 
-dispatch_concatenate = Dispatcher("concatenate")
-
-
 def concatenate(seq, *, axis=0):
+    """Concatenate two or more objects along the given `axis`.
+
+    Parameters
+    ----------
+    seq : sequence of group or array_like
+    axis : int
+
+    Returns
+    -------
+    out : group or array_like
+
+    """
 
     # Check inputs.
     check_list_or_tuple(seq, min_length=2)
@@ -377,6 +523,9 @@ def concatenate(seq, *, axis=0):
     if f is None:
         raise NotImplementedError
     return f(seq, axis=axis)
+
+
+dispatch_concatenate = Dispatcher("concatenate")
 
 
 class GroupConcatenation(Mapping):
@@ -411,54 +560,3 @@ def group_concatenate(seq, *, axis=0):
 
 
 dispatch_concatenate.add((Mapping,), group_concatenate)
-
-
-# TODO HaplotypeArray
-# TODO locate_called
-# TODO locate_missing
-# TODO locate_ref
-# TODO locate_alt
-# TODO locate_call
-# TODO to_genotypes
-# TODO count_alleles
-# TODO map_alleles
-# TODO prefix_argsort
-# TODO distinct
-# TODO distinct_counts
-# TODO distinct_frequencies
-# TODO display
-
-
-# TODO AlleleCountsArray
-# TODO to_frequencies
-# TODO allelism
-# TODO max_allele
-# TODO locate_called
-# TODO locate_missing
-# TODO locate_hom
-# TODO locate_het
-# TODO locate_call
-# TODO locate_variant
-# TODO locate_non_variant
-# TODO locate_segregating
-# TODO locate_non_segregating
-# TODO locate_biallelic
-# TODO squeeze_biallelic
-# TODO map_alleles
-# TODO display
-
-
-def allele_counts_locate_segregating(ac):
-    """TODO"""
-
-    check_array_like(ac, dtype="i4", ndim=2)
-    dispatch_allele_counts_2d_locate_segregating(ac)
-
-
-dispatch_allele_counts_2d_locate_segregating = Dispatcher(
-    "allele_counts_locate_segregating"
-)
-
-
-# TODO GenotypeAlleleCountsArray
-# TODO ???

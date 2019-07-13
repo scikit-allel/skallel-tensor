@@ -6,19 +6,19 @@ import dask.dataframe as dd
 from . import api, numpy_backend, utils
 
 
-daskish_array_types = (da.Array,)
+chunked_array_types = (da.Array,)
 try:
     # noinspection PyUnresolvedReferences
     import h5py
 
-    daskish_array_types += (h5py.Dataset,)
+    chunked_array_types += (h5py.Dataset,)
 except ImportError:  # pragma: no cover
     pass
 try:
     # noinspection PyUnresolvedReferences
     import zarr
 
-    daskish_array_types += (zarr.Array,)
+    chunked_array_types += (zarr.Array,)
 except ImportError:  # pragma: no cover
     pass
 
@@ -48,7 +48,7 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
     return a[item]
 
 
-api.dispatch_select_slice.add((daskish_array_types,), select_slice)
+api.dispatch_select_slice.add((chunked_array_types,), select_slice)
 
 
 def select_indices(a, indices, axis=0):
@@ -58,10 +58,10 @@ def select_indices(a, indices, axis=0):
 
 
 api.dispatch_select_indices.add(
-    (daskish_array_types, np.ndarray), select_indices
+    (chunked_array_types, np.ndarray), select_indices
 )
 api.dispatch_select_indices.add(
-    (daskish_array_types, daskish_array_types), select_indices
+    (chunked_array_types, chunked_array_types), select_indices
 )
 
 
@@ -71,9 +71,9 @@ def select_mask(a, mask, axis=0):
     return da.compress(mask, a, axis=axis)
 
 
-api.dispatch_select_mask.add((daskish_array_types, np.ndarray), select_mask)
+api.dispatch_select_mask.add((chunked_array_types, np.ndarray), select_mask)
 api.dispatch_select_mask.add(
-    (daskish_array_types, daskish_array_types), select_mask
+    (chunked_array_types, chunked_array_types), select_mask
 )
 
 
@@ -82,7 +82,7 @@ def concatenate(seq, axis=0):
     return da.concatenate(seq, axis=axis)
 
 
-api.dispatch_concatenate.add((daskish_array_types,), concatenate)
+api.dispatch_concatenate.add((chunked_array_types,), concatenate)
 
 
 def genotypes_3d_locate_called(gt):
@@ -94,7 +94,7 @@ def genotypes_3d_locate_called(gt):
 
 
 api.dispatch_genotypes_3d_locate_called.add(
-    (daskish_array_types,), genotypes_3d_locate_called
+    (chunked_array_types,), genotypes_3d_locate_called
 )
 
 
@@ -107,7 +107,7 @@ def genotypes_3d_locate_missing(gt):
 
 
 api.dispatch_genotypes_3d_locate_missing.add(
-    (daskish_array_types,), genotypes_3d_locate_missing
+    (chunked_array_types,), genotypes_3d_locate_missing
 )
 
 
@@ -120,7 +120,7 @@ def genotypes_3d_locate_hom(gt):
 
 
 api.dispatch_genotypes_3d_locate_hom.add(
-    (daskish_array_types,), genotypes_3d_locate_hom
+    (chunked_array_types,), genotypes_3d_locate_hom
 )
 
 
@@ -133,7 +133,7 @@ def genotypes_3d_locate_het(gt):
 
 
 api.dispatch_genotypes_3d_locate_het.add(
-    (daskish_array_types,), genotypes_3d_locate_het
+    (chunked_array_types,), genotypes_3d_locate_het
 )
 
 
@@ -150,7 +150,7 @@ def genotypes_3d_locate_call(gt, call):
 
 
 api.dispatch_genotypes_3d_locate_call.add(
-    (daskish_array_types, np.ndarray), genotypes_3d_locate_call
+    (chunked_array_types, np.ndarray), genotypes_3d_locate_call
 )
 
 
@@ -184,7 +184,7 @@ def genotypes_3d_count_alleles(gt, max_allele):
 
 
 api.dispatch_genotypes_3d_count_alleles.add(
-    (daskish_array_types,), genotypes_3d_count_alleles
+    (chunked_array_types,), genotypes_3d_count_alleles
 )
 
 
@@ -207,7 +207,7 @@ def genotypes_3d_to_allele_counts(gt, max_allele):
 
 
 api.dispatch_genotypes_3d_to_allele_counts.add(
-    (daskish_array_types, numbers.Integral), genotypes_3d_to_allele_counts
+    (chunked_array_types, numbers.Integral), genotypes_3d_to_allele_counts
 )
 
 
@@ -232,7 +232,97 @@ def genotypes_3d_to_allele_counts_melt(gt, max_allele):
 
 
 api.dispatch_genotypes_3d_to_allele_counts_melt.add(
-    (daskish_array_types, numbers.Integral), genotypes_3d_to_allele_counts_melt
+    (chunked_array_types, numbers.Integral), genotypes_3d_to_allele_counts_melt
+)
+
+
+def allele_counts_2d_to_frequencies(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_2d_to_frequencies, ac, dtype=np.float32
+    )
+    return out
+
+
+api.dispatch_allele_counts_2d_to_frequencies.add(
+    (chunked_array_types,), allele_counts_2d_to_frequencies
+)
+
+
+def allele_counts_2d_max_allele(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_2d_max_allele,
+        ac,
+        dtype=np.int8,
+        drop_axis=1,
+    )
+    return out
+
+
+api.dispatch_allele_counts_2d_max_allele.add(
+    (chunked_array_types,), allele_counts_2d_max_allele
+)
+
+
+def allele_counts_2d_allelism(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_2d_allelism, ac, dtype=np.int8, drop_axis=1
+    )
+    return out
+
+
+api.dispatch_allele_counts_2d_allelism.add(
+    (chunked_array_types,), allele_counts_2d_allelism
+)
+
+
+def allele_counts_2d_locate_variant(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_2d_locate_variant,
+        ac,
+        dtype=np.bool_,
+        drop_axis=1,
+    )
+    return out
+
+
+api.dispatch_allele_counts_2d_locate_variant.add(
+    (chunked_array_types,), allele_counts_2d_locate_variant
+)
+
+
+def allele_counts_2d_locate_non_variant(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_2d_locate_non_variant,
+        ac,
+        dtype=np.bool_,
+        drop_axis=1,
+    )
+    return out
+
+
+api.dispatch_allele_counts_2d_locate_non_variant.add(
+    (chunked_array_types,), allele_counts_2d_locate_non_variant
+)
+
+
+def allele_counts_2d_locate_segregating(ac):
+    ac = ensure_dask_array(ac)
+    out = da.map_blocks(
+        numpy_backend.allele_counts_2d_locate_segregating,
+        ac,
+        dtype=np.bool_,
+        drop_axis=1,
+    )
+    return out
+
+
+api.dispatch_allele_counts_2d_locate_segregating.add(
+    (chunked_array_types,), allele_counts_2d_locate_segregating
 )
 
 
@@ -272,5 +362,5 @@ def variants_to_dataframe(variants, columns):
 
 
 api.dispatch_variants_to_dataframe.add(
-    (daskish_array_types,), variants_to_dataframe
+    (chunked_array_types,), variants_to_dataframe
 )

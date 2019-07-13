@@ -352,6 +352,11 @@ def allele_counts_2d_to_frequencies(ac):
     return out
 
 
+api.dispatch_allele_counts_2d_to_frequencies.add(
+    (np.ndarray,), allele_counts_2d_to_frequencies
+)
+
+
 @numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_allelism(ac):
     out = np.zeros(ac.shape[0], dtype=np.int8)
@@ -360,6 +365,11 @@ def allele_counts_2d_allelism(ac):
             if ac[i, j] > 0:
                 out[i] += 1
     return out
+
+
+api.dispatch_allele_counts_2d_allelism.add(
+    (np.ndarray,), allele_counts_2d_allelism
+)
 
 
 @numba.njit(numba.int8[:](numba.int32[:, :]), nogil=True)
@@ -372,6 +382,11 @@ def allele_counts_2d_max_allele(ac):
                 m = j
         out[i] = m
     return out
+
+
+api.dispatch_allele_counts_2d_max_allele.add(
+    (np.ndarray,), allele_counts_2d_max_allele
+)
 
 
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
@@ -387,6 +402,11 @@ def allele_counts_2d_locate_segregating(ac):
     return out
 
 
+api.dispatch_allele_counts_2d_locate_segregating.add(
+    (np.ndarray,), allele_counts_2d_locate_segregating
+)
+
+
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_locate_variant(ac):
     out = np.zeros(ac.shape[0], dtype=np.bool_)
@@ -398,6 +418,11 @@ def allele_counts_2d_locate_variant(ac):
     return out
 
 
+api.dispatch_allele_counts_2d_locate_variant.add(
+    (np.ndarray,), allele_counts_2d_locate_variant
+)
+
+
 @numba.njit(numba.boolean[:](numba.int32[:, :]), nogil=True)
 def allele_counts_2d_locate_non_variant(ac):
     out = np.ones(ac.shape[0], dtype=np.bool_)
@@ -407,6 +432,11 @@ def allele_counts_2d_locate_non_variant(ac):
                 out[i] = False
                 break
     return out
+
+
+api.dispatch_allele_counts_2d_locate_non_variant.add(
+    (np.ndarray,), allele_counts_2d_locate_non_variant
+)
 
 
 @numba.njit(numba.int8[:, :](numba.int8[:, :, :]), nogil=True)
