@@ -196,13 +196,13 @@ def test_locate_call():
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
-    # # Test exceptions.
-    # with pytest.raises(TypeError):
-    #     genotypes_locate_call(data, "foo")
-    # with pytest.raises(TypeError):
-    #     genotypes_locate_call(data, [[0, 1], [2, 3]])
-    # with pytest.raises(ValueError):
-    #     genotypes_locate_call(data, (0, 1, 2))
+    # Test exceptions.
+    with pytest.raises(ValueError):
+        genotypes_locate_call(data, call="foo")
+    with pytest.raises(ValueError):
+        genotypes_locate_call(data, call=[[0, 1], [2, 3]])
+    with pytest.raises(ValueError):
+        genotypes_locate_call(data, call=(0, 1, 2))
 
 
 def test_count_alleles():
@@ -257,8 +257,10 @@ def test_to_allele_counts():
 
     # Test exceptions.
     with pytest.raises(TypeError):
+        # noinspection PyTypeChecker
         genotypes_to_allele_counts(data, max_allele="foo")
     with pytest.raises(TypeError):
+        # noinspection PyTypeChecker
         genotypes_to_allele_counts(data, max_allele=[1])
     with pytest.raises(ValueError):
         genotypes_to_allele_counts(data, max_allele=128)

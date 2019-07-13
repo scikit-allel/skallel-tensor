@@ -418,11 +418,11 @@ concatenate_dispatcher.add((Mapping,), group_concatenate)
 
 
 # TODO HaplotypeArray
-# TODO is_called
-# TODO is_missing
-# TODO is_ref
-# TODO is_alt
-# TODO is_call
+# TODO locate_called
+# TODO locate_missing
+# TODO locate_ref
+# TODO locate_alt
+# TODO locate_call
 # TODO to_genotypes
 # TODO count_alleles
 # TODO map_alleles
@@ -437,14 +437,17 @@ concatenate_dispatcher.add((Mapping,), group_concatenate)
 # TODO to_frequencies
 # TODO allelism
 # TODO max_allele
-# TODO is_variant
-# TODO is_non_variant
-# TODO is_segregating
-# TODO is_non_segregating
-# TODO is_singleton
-# TODO is_doubleton
-# TODO is_biallelic
-# TODO is_biallelic_01
+# TODO locate_called
+# TODO locate_missing
+# TODO locate_hom
+# TODO locate_het
+# TODO locate_call
+# TODO locate_variant
+# TODO locate_non_variant
+# TODO locate_segregating
+# TODO locate_non_segregating
+# TODO locate_biallelic
+# TODO squeeze_biallelic
 # TODO map_alleles
 # TODO display
 
