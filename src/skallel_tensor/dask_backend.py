@@ -48,7 +48,7 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
     return a[item]
 
 
-api.select_slice_dispatcher.add((daskish_array_types,), select_slice)
+api.dispatch_select_slice.add((daskish_array_types,), select_slice)
 
 
 def select_indices(a, indices, axis=0):
@@ -57,10 +57,10 @@ def select_indices(a, indices, axis=0):
     return da.take(a, indices, axis=axis)
 
 
-api.select_indices_dispatcher.add(
+api.dispatch_select_indices.add(
     (daskish_array_types, np.ndarray), select_indices
 )
-api.select_indices_dispatcher.add(
+api.dispatch_select_indices.add(
     (daskish_array_types, daskish_array_types), select_indices
 )
 
@@ -71,8 +71,8 @@ def select_mask(a, mask, axis=0):
     return da.compress(mask, a, axis=axis)
 
 
-api.select_mask_dispatcher.add((daskish_array_types, np.ndarray), select_mask)
-api.select_mask_dispatcher.add(
+api.dispatch_select_mask.add((daskish_array_types, np.ndarray), select_mask)
+api.dispatch_select_mask.add(
     (daskish_array_types, daskish_array_types), select_mask
 )
 
@@ -82,7 +82,7 @@ def concatenate(seq, axis=0):
     return da.concatenate(seq, axis=axis)
 
 
-api.concatenate_dispatcher.add((daskish_array_types,), concatenate)
+api.dispatch_concatenate.add((daskish_array_types,), concatenate)
 
 
 def genotypes_3d_locate_called(gt):
@@ -93,7 +93,7 @@ def genotypes_3d_locate_called(gt):
     return out
 
 
-api.genotypes_3d_locate_called_dispatcher.add(
+api.dispatch_genotypes_3d_locate_called.add(
     (daskish_array_types,), genotypes_3d_locate_called
 )
 
@@ -106,7 +106,7 @@ def genotypes_3d_locate_missing(gt):
     return out
 
 
-api.genotypes_3d_locate_missing_dispatcher.add(
+api.dispatch_genotypes_3d_locate_missing.add(
     (daskish_array_types,), genotypes_3d_locate_missing
 )
 
@@ -119,7 +119,7 @@ def genotypes_3d_locate_hom(gt):
     return out
 
 
-api.genotypes_3d_locate_hom_dispatcher.add(
+api.dispatch_genotypes_3d_locate_hom.add(
     (daskish_array_types,), genotypes_3d_locate_hom
 )
 
@@ -132,7 +132,7 @@ def genotypes_3d_locate_het(gt):
     return out
 
 
-api.genotypes_3d_locate_het_dispatcher.add(
+api.dispatch_genotypes_3d_locate_het.add(
     (daskish_array_types,), genotypes_3d_locate_het
 )
 
@@ -149,7 +149,7 @@ def genotypes_3d_locate_call(gt, call):
     return out
 
 
-api.genotypes_3d_locate_call_dispatcher.add(
+api.dispatch_genotypes_3d_locate_call.add(
     (daskish_array_types, np.ndarray), genotypes_3d_locate_call
 )
 
@@ -183,7 +183,7 @@ def genotypes_3d_count_alleles(gt, max_allele):
     return out
 
 
-api.genotypes_3d_count_alleles_dispatcher.add(
+api.dispatch_genotypes_3d_count_alleles.add(
     (daskish_array_types,), genotypes_3d_count_alleles
 )
 
@@ -206,7 +206,7 @@ def genotypes_3d_to_allele_counts(gt, max_allele):
     return out
 
 
-api.genotypes_3d_to_allele_counts_dispatcher.add(
+api.dispatch_genotypes_3d_to_allele_counts.add(
     (daskish_array_types, numbers.Integral), genotypes_3d_to_allele_counts
 )
 
@@ -231,7 +231,7 @@ def genotypes_3d_to_allele_counts_melt(gt, max_allele):
     return out
 
 
-api.genotypes_3d_to_allele_counts_melt_dispatcher.add(
+api.dispatch_genotypes_3d_to_allele_counts_melt.add(
     (daskish_array_types, numbers.Integral), genotypes_3d_to_allele_counts_melt
 )
 
@@ -271,6 +271,6 @@ def variants_to_dataframe(variants, columns):
     return df
 
 
-api.variants_to_dataframe_dispatcher.add(
+api.dispatch_variants_to_dataframe.add(
     (daskish_array_types,), variants_to_dataframe
 )

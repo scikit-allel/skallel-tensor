@@ -27,15 +27,15 @@ def genotypes_locate_called(gt):
 
     check_array_like(gt, dtype="i1")
     if gt.ndim == 2:
-        return genotypes_2d_locate_called_dispatcher(gt)
+        return dispatch_genotypes_2d_locate_called(gt)
     elif gt.ndim == 3:
-        return genotypes_3d_locate_called_dispatcher(gt)
+        return dispatch_genotypes_3d_locate_called(gt)
     else:
         raise ValueError
 
 
-genotypes_2d_locate_called_dispatcher = Dispatcher("genotypes_2d_locate_called")
-genotypes_3d_locate_called_dispatcher = Dispatcher("genotypes_3d_locate_called")
+dispatch_genotypes_2d_locate_called = Dispatcher("genotypes_2d_locate_called")
+dispatch_genotypes_3d_locate_called = Dispatcher("genotypes_3d_locate_called")
 
 
 def genotypes_locate_missing(gt):
@@ -53,19 +53,15 @@ def genotypes_locate_missing(gt):
 
     check_array_like(gt, dtype="i1")
     if gt.ndim == 2:
-        return genotypes_2d_locate_missing_dispatcher(gt)
+        return dispatch_genotypes_2d_locate_missing(gt)
     elif gt.ndim == 3:
-        return genotypes_3d_locate_missing_dispatcher(gt)
+        return dispatch_genotypes_3d_locate_missing(gt)
     else:
         raise ValueError
 
 
-genotypes_2d_locate_missing_dispatcher = Dispatcher(
-    "genotypes_2d_locate_missing"
-)
-genotypes_3d_locate_missing_dispatcher = Dispatcher(
-    "genotypes_3d_locate_missing"
-)
+dispatch_genotypes_2d_locate_missing = Dispatcher("genotypes_2d_locate_missing")
+dispatch_genotypes_3d_locate_missing = Dispatcher("genotypes_3d_locate_missing")
 
 
 def genotypes_locate_hom(gt):
@@ -83,15 +79,15 @@ def genotypes_locate_hom(gt):
 
     check_array_like(gt, dtype="i1")
     if gt.ndim == 2:
-        return genotypes_2d_locate_hom_dispatcher(gt)
+        return dispatch_genotypes_2d_locate_hom(gt)
     elif gt.ndim == 3:
-        return genotypes_3d_locate_hom_dispatcher(gt)
+        return dispatch_genotypes_3d_locate_hom(gt)
     else:
         raise ValueError
 
 
-genotypes_2d_locate_hom_dispatcher = Dispatcher("genotypes_2d_locate_hom")
-genotypes_3d_locate_hom_dispatcher = Dispatcher("genotypes_3d_locate_hom")
+dispatch_genotypes_2d_locate_hom = Dispatcher("genotypes_2d_locate_hom")
+dispatch_genotypes_3d_locate_hom = Dispatcher("genotypes_3d_locate_hom")
 
 
 def genotypes_locate_het(gt):
@@ -109,15 +105,15 @@ def genotypes_locate_het(gt):
 
     check_array_like(gt, dtype="i1")
     if gt.ndim == 2:
-        return genotypes_2d_locate_het_dispatcher(gt)
+        return dispatch_genotypes_2d_locate_het(gt)
     elif gt.ndim == 3:
-        return genotypes_3d_locate_het_dispatcher(gt)
+        return dispatch_genotypes_3d_locate_het(gt)
     else:
         raise ValueError
 
 
-genotypes_2d_locate_het_dispatcher = Dispatcher("genotypes_2d_locate_het")
-genotypes_3d_locate_het_dispatcher = Dispatcher("genotypes_3d_locate_het")
+dispatch_genotypes_2d_locate_het = Dispatcher("genotypes_2d_locate_het")
+dispatch_genotypes_3d_locate_het = Dispatcher("genotypes_3d_locate_het")
 
 
 def genotypes_locate_call(gt, *, call):
@@ -142,15 +138,15 @@ def genotypes_locate_call(gt, *, call):
         raise ValueError
 
     if gt.ndim == 2:
-        return genotypes_2d_locate_call_dispatcher(gt, call)
+        return dispatch_genotypes_2d_locate_call(gt, call)
     elif gt.ndim == 3:
-        return genotypes_3d_locate_call_dispatcher(gt, call)
+        return dispatch_genotypes_3d_locate_call(gt, call)
     else:
         raise ValueError
 
 
-genotypes_2d_locate_call_dispatcher = Dispatcher("genotypes_2d_locate_call")
-genotypes_3d_locate_call_dispatcher = Dispatcher("genotypes_3d_locate_call")
+dispatch_genotypes_2d_locate_call = Dispatcher("genotypes_2d_locate_call")
+dispatch_genotypes_3d_locate_call = Dispatcher("genotypes_3d_locate_call")
 
 
 def genotypes_count_alleles(gt, *, max_allele):
@@ -169,10 +165,10 @@ def genotypes_count_alleles(gt, *, max_allele):
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotypes_3d_count_alleles_dispatcher(gt, max_allele=max_allele)
+    return dispatch_genotypes_3d_count_alleles(gt, max_allele=max_allele)
 
 
-genotypes_3d_count_alleles_dispatcher = Dispatcher("genotypes_3d_count_alleles")
+dispatch_genotypes_3d_count_alleles = Dispatcher("genotypes_3d_count_alleles")
 
 
 def genotypes_to_allele_counts(gt, *, max_allele):
@@ -191,10 +187,10 @@ def genotypes_to_allele_counts(gt, *, max_allele):
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotypes_3d_to_allele_counts_dispatcher(gt, max_allele)
+    return dispatch_genotypes_3d_to_allele_counts(gt, max_allele)
 
 
-genotypes_3d_to_allele_counts_dispatcher = Dispatcher(
+dispatch_genotypes_3d_to_allele_counts = Dispatcher(
     "genotypes_3d_to_allele_counts"
 )
 
@@ -216,10 +212,10 @@ def genotypes_to_allele_counts_melt(gt, *, max_allele):
 
     check_array_like(gt, dtype="i1", ndim=3)
     max_allele = coerce_scalar(max_allele, "i1")
-    return genotypes_3d_to_allele_counts_melt_dispatcher(gt, max_allele)
+    return dispatch_genotypes_3d_to_allele_counts_melt(gt, max_allele)
 
 
-genotypes_3d_to_allele_counts_melt_dispatcher = Dispatcher(
+dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
     "genotypes_3d_to_allele_counts_melt"
 )
 
@@ -229,7 +225,7 @@ genotypes_3d_to_allele_counts_melt_dispatcher = Dispatcher(
 # TODO map_alleles
 
 
-variants_to_dataframe_dispatcher = Dispatcher("variants_to_dataframe")
+dispatch_variants_to_dataframe = Dispatcher("variants_to_dataframe")
 
 
 def variants_to_dataframe(variants, columns=None):
@@ -246,7 +242,7 @@ def variants_to_dataframe(variants, columns=None):
     a = variants[columns[0]]
 
     # Manually dispatch.
-    f = variants_to_dataframe_dispatcher.dispatch(type(a))
+    f = dispatch_variants_to_dataframe.dispatch(type(a))
     if f is None:
         raise NotImplementedError
     return f(variants, columns)
@@ -275,13 +271,13 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-select_slice_dispatcher = Dispatcher("select_slice")
+dispatch_select_slice = Dispatcher("select_slice")
 
 
 def select_slice(o, start=None, stop=None, step=None, axis=0):
     """TODO"""
 
-    return select_slice_dispatcher(
+    return dispatch_select_slice(
         o, start=start, stop=stop, step=step, axis=axis
     )
 
@@ -292,39 +288,39 @@ def group_select_slice(o, start=None, stop=None, step=None, axis=0):
     )
 
 
-select_slice_dispatcher.add((Mapping,), group_select_slice)
+dispatch_select_slice.add((Mapping,), group_select_slice)
 
 
-select_indices_dispatcher = Dispatcher("select_indices")
+dispatch_select_indices = Dispatcher("select_indices")
 
 
 def select_indices(o, indices, *, axis=0):
     """TODO"""
 
-    return select_indices_dispatcher(o, indices, axis=axis)
+    return dispatch_select_indices(o, indices, axis=axis)
 
 
 def group_select_indices(o, indices, *, axis=0):
     return GroupSelection(o, select_indices, indices, axis=axis)
 
 
-select_indices_dispatcher.add((Mapping, object), group_select_indices)
+dispatch_select_indices.add((Mapping, object), group_select_indices)
 
 
-select_mask_dispatcher = Dispatcher("select_mask")
+dispatch_select_mask = Dispatcher("select_mask")
 
 
 def select_mask(o, mask, *, axis=0):
     """TODO"""
 
-    return select_mask_dispatcher(o, mask, axis=axis)
+    return dispatch_select_mask(o, mask, axis=axis)
 
 
 def group_select_mask(o, mask, *, axis=0):
     return GroupSelection(o, select_mask, mask, axis=axis)
 
 
-select_mask_dispatcher.add((Mapping, object), group_select_mask)
+dispatch_select_mask.add((Mapping, object), group_select_mask)
 
 
 def select_range(o, index, *, begin=None, end=None, axis=0):
@@ -367,7 +363,7 @@ def select_values(o, index, query, *, axis=0):
     return select_indices(o, indices, axis=axis)
 
 
-concatenate_dispatcher = Dispatcher("concatenate")
+dispatch_concatenate = Dispatcher("concatenate")
 
 
 def concatenate(seq, *, axis=0):
@@ -377,7 +373,7 @@ def concatenate(seq, *, axis=0):
 
     # Manually dispatch on type of first object in `seq`.
     o = seq[0]
-    f = concatenate_dispatcher.dispatch(type(o))
+    f = dispatch_concatenate.dispatch(type(o))
     if f is None:
         raise NotImplementedError
     return f(seq, axis=axis)
@@ -414,7 +410,7 @@ def group_concatenate(seq, *, axis=0):
     return GroupConcatenation(seq, axis=axis)
 
 
-concatenate_dispatcher.add((Mapping,), group_concatenate)
+dispatch_concatenate.add((Mapping,), group_concatenate)
 
 
 # TODO HaplotypeArray
@@ -452,16 +448,16 @@ concatenate_dispatcher.add((Mapping,), group_concatenate)
 # TODO display
 
 
-allele_counts_2d_locate_segregating_dispatcher = Dispatcher(
-    "allele_counts_locate_segregating"
-)
-
-
 def allele_counts_locate_segregating(ac):
     """TODO"""
 
     check_array_like(ac, dtype="i4", ndim=2)
-    allele_counts_2d_locate_segregating_dispatcher(ac)
+    dispatch_allele_counts_2d_locate_segregating(ac)
+
+
+dispatch_allele_counts_2d_locate_segregating = Dispatcher(
+    "allele_counts_locate_segregating"
+)
 
 
 # TODO GenotypeAlleleCountsArray

@@ -13,28 +13,28 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
     return a[item]
 
 
-api.select_slice_dispatcher.add((np.ndarray,), select_slice)
+api.dispatch_select_slice.add((np.ndarray,), select_slice)
 
 
 def select_indices(a, indices, axis=0):
     return np.take(a, indices, axis=axis)
 
 
-api.select_indices_dispatcher.add((np.ndarray, np.ndarray), select_indices)
+api.dispatch_select_indices.add((np.ndarray, np.ndarray), select_indices)
 
 
 def select_mask(a, mask, axis=0):
     return np.compress(mask, a, axis=axis)
 
 
-api.select_mask_dispatcher.add((np.ndarray, np.ndarray), select_mask)
+api.dispatch_select_mask.add((np.ndarray, np.ndarray), select_mask)
 
 
 def concatenate(seq, axis=0):
     return np.concatenate(seq, axis=axis)
 
 
-api.concatenate_dispatcher.add((np.ndarray,), concatenate)
+api.dispatch_concatenate.add((np.ndarray,), concatenate)
 
 
 @numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
@@ -51,7 +51,7 @@ def genotypes_2d_locate_called(gt):
     return out
 
 
-api.genotypes_2d_locate_called_dispatcher.add(
+api.dispatch_genotypes_2d_locate_called.add(
     (np.ndarray,), genotypes_2d_locate_called
 )
 
@@ -72,7 +72,7 @@ def genotypes_3d_locate_called(gt):
     return out
 
 
-api.genotypes_3d_locate_called_dispatcher.add(
+api.dispatch_genotypes_3d_locate_called.add(
     (np.ndarray,), genotypes_3d_locate_called
 )
 
@@ -91,7 +91,7 @@ def genotypes_2d_locate_missing(gt):
     return out
 
 
-api.genotypes_2d_locate_missing_dispatcher.add(
+api.dispatch_genotypes_2d_locate_missing.add(
     (np.ndarray,), genotypes_2d_locate_missing
 )
 
@@ -112,7 +112,7 @@ def genotypes_3d_locate_missing(gt):
     return out
 
 
-api.genotypes_3d_locate_missing_dispatcher.add(
+api.dispatch_genotypes_3d_locate_missing.add(
     (np.ndarray,), genotypes_3d_locate_missing
 )
 
@@ -135,9 +135,7 @@ def genotypes_2d_locate_hom(gt):
     return out
 
 
-api.genotypes_2d_locate_hom_dispatcher.add(
-    (np.ndarray,), genotypes_2d_locate_hom
-)
+api.dispatch_genotypes_2d_locate_hom.add((np.ndarray,), genotypes_2d_locate_hom)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -160,9 +158,7 @@ def genotypes_3d_locate_hom(gt):
     return out
 
 
-api.genotypes_3d_locate_hom_dispatcher.add(
-    (np.ndarray,), genotypes_3d_locate_hom
-)
+api.dispatch_genotypes_3d_locate_hom.add((np.ndarray,), genotypes_3d_locate_hom)
 
 
 @numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
@@ -182,9 +178,7 @@ def genotypes_2d_locate_het(gt):
     return out
 
 
-api.genotypes_2d_locate_het_dispatcher.add(
-    (np.ndarray,), genotypes_2d_locate_het
-)
+api.dispatch_genotypes_2d_locate_het.add((np.ndarray,), genotypes_2d_locate_het)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -206,9 +200,7 @@ def genotypes_3d_locate_het(gt):
     return out
 
 
-api.genotypes_3d_locate_het_dispatcher.add(
-    (np.ndarray,), genotypes_3d_locate_het
-)
+api.dispatch_genotypes_3d_locate_het.add((np.ndarray,), genotypes_3d_locate_het)
 
 
 @numba.njit(numba.boolean[:](numba.int8[:, :], numba.int8[:]), nogil=True)
@@ -225,7 +217,7 @@ def genotypes_2d_locate_call(gt, call):
     return out
 
 
-api.genotypes_2d_locate_call_dispatcher.add(
+api.dispatch_genotypes_2d_locate_call.add(
     (np.ndarray, np.ndarray), genotypes_2d_locate_call
 )
 
@@ -246,7 +238,7 @@ def genotypes_3d_locate_call(gt, call):
     return out
 
 
-api.genotypes_3d_locate_call_dispatcher.add(
+api.dispatch_genotypes_3d_locate_call.add(
     (np.ndarray, np.ndarray), genotypes_3d_locate_call
 )
 
@@ -266,7 +258,7 @@ def genotypes_3d_count_alleles(gt, max_allele):
     return out
 
 
-api.genotypes_3d_count_alleles_dispatcher.add(
+api.dispatch_genotypes_3d_count_alleles.add(
     (np.ndarray,), genotypes_3d_count_alleles
 )
 
@@ -286,7 +278,7 @@ def genotypes_3d_to_allele_counts(gt, max_allele):
     return out
 
 
-api.genotypes_3d_to_allele_counts_dispatcher.add(
+api.dispatch_genotypes_3d_to_allele_counts.add(
     (np.ndarray, numbers.Integral), genotypes_3d_to_allele_counts
 )
 
@@ -306,7 +298,7 @@ def genotypes_3d_to_allele_counts_melt(gt, max_allele):
     return out
 
 
-api.genotypes_3d_to_allele_counts_melt_dispatcher.add(
+api.dispatch_genotypes_3d_to_allele_counts_melt.add(
     (np.ndarray, numbers.Integral), genotypes_3d_to_allele_counts_melt
 )
 
@@ -341,7 +333,7 @@ def variants_to_dataframe(variants, columns):
     return df
 
 
-api.variants_to_dataframe_dispatcher.add((np.ndarray,), variants_to_dataframe)
+api.dispatch_variants_to_dataframe.add((np.ndarray,), variants_to_dataframe)
 
 
 @numba.njit(numba.float32[:, :](numba.int32[:, :]), nogil=True)
