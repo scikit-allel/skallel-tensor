@@ -12,58 +12,6 @@ from .utils import (
 )
 
 
-def genotypes_locate_called(gt):
-    """Locate non-missing genotype calls.
-
-    Parameters
-    ----------
-    gt : array_like, int8
-
-    Returns
-    -------
-    out: array_like, bool
-
-    """
-
-    check_array_like(gt, dtype=np.int8)
-    if gt.ndim == 2:
-        return dispatch_genotypes_2d_locate_called(gt)
-    elif gt.ndim == 3:
-        return dispatch_genotypes_3d_locate_called(gt)
-    else:
-        raise ValueError
-
-
-dispatch_genotypes_2d_locate_called = Dispatcher("genotypes_2d_locate_called")
-dispatch_genotypes_3d_locate_called = Dispatcher("genotypes_3d_locate_called")
-
-
-def genotypes_locate_missing(gt):
-    """Locate missing genotype calls.
-
-    Parameters
-    ----------
-    gt : array_like, int8
-
-    Returns
-    -------
-    out: array_like, bool
-
-    """
-
-    check_array_like(gt, dtype=np.int8)
-    if gt.ndim == 2:
-        return dispatch_genotypes_2d_locate_missing(gt)
-    elif gt.ndim == 3:
-        return dispatch_genotypes_3d_locate_missing(gt)
-    else:
-        raise ValueError
-
-
-dispatch_genotypes_2d_locate_missing = Dispatcher("genotypes_2d_locate_missing")
-dispatch_genotypes_3d_locate_missing = Dispatcher("genotypes_3d_locate_missing")
-
-
 def genotypes_locate_hom(gt):
     """Locate homozygous genotype calls.
 
@@ -77,7 +25,7 @@ def genotypes_locate_hom(gt):
 
     """
 
-    check_array_like(gt, dtype=np.int8)
+    check_array_like(gt, kind="i")
     if gt.ndim == 2:
         return dispatch_genotypes_2d_locate_hom(gt)
     elif gt.ndim == 3:
@@ -103,7 +51,7 @@ def genotypes_locate_het(gt):
 
     """
 
-    check_array_like(gt, dtype=np.int8)
+    check_array_like(gt, kind="i")
     if gt.ndim == 2:
         return dispatch_genotypes_2d_locate_het(gt)
     elif gt.ndim == 3:
@@ -130,8 +78,8 @@ def genotypes_locate_call(gt, *, call):
 
     """
 
-    check_array_like(gt, dtype=np.int8)
-    call = np.asarray(call, dtype=np.int8)
+    check_array_like(gt, kind="i")
+    call = np.asarray(call, dtype=gt.dtype)
     if call.ndim != 1:
         raise ValueError
     if gt.shape[-1] != call.shape[0]:
@@ -163,12 +111,72 @@ def genotypes_count_alleles(gt, *, max_allele):
 
     """
 
-    check_array_like(gt, dtype=np.int8, ndim=3)
+    check_array_like(gt, kind="i", ndim=3)
     max_allele = coerce_scalar(max_allele, np.int8)
     return dispatch_genotypes_3d_count_alleles(gt, max_allele=max_allele)
 
 
 dispatch_genotypes_3d_count_alleles = Dispatcher("genotypes_3d_count_alleles")
+
+
+def genotypes_to_called_allele_counts(gt):
+    """Count non-missing alleles within genotype calls.
+
+    Parameters
+    ----------
+    gt : array_like, int8
+
+    Returns
+    -------
+    out: array_like, int8
+
+    """
+
+    check_array_like(gt, kind="i")
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_to_called_allele_counts(gt)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_to_called_allele_counts(gt)
+    else:
+        raise ValueError
+
+
+dispatch_genotypes_2d_to_called_allele_counts = Dispatcher(
+    "genotypes_2d_to_called_allele_counts"
+)
+dispatch_genotypes_3d_to_called_allele_counts = Dispatcher(
+    "genotypes_3d_to_called_allele_counts"
+)
+
+
+def genotypes_to_missing_allele_counts(gt):
+    """Count missing alleles within genotype calls.
+
+    Parameters
+    ----------
+    gt : array_like, int8
+
+    Returns
+    -------
+    out: array_like, bool
+
+    """
+
+    check_array_like(gt, kind="i")
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_to_missing_allele_counts(gt)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_to_missing_allele_counts(gt)
+    else:
+        raise ValueError
+
+
+dispatch_genotypes_2d_to_missing_allele_counts = Dispatcher(
+    "genotypes_2d_to_missing_allele_counts"
+)
+dispatch_genotypes_3d_to_missing_allele_counts = Dispatcher(
+    "genotypes_3d_to_missing_allele_counts"
+)
 
 
 def genotypes_to_allele_counts(gt, *, max_allele):
@@ -185,7 +193,7 @@ def genotypes_to_allele_counts(gt, *, max_allele):
 
     """
 
-    check_array_like(gt, dtype=np.int8, ndim=3)
+    check_array_like(gt, kind="i", ndim=3)
     max_allele = coerce_scalar(max_allele, np.int8)
     return dispatch_genotypes_3d_to_allele_counts(gt, max_allele)
 
@@ -210,7 +218,7 @@ def genotypes_to_allele_counts_melt(gt, *, max_allele):
 
     """
 
-    check_array_like(gt, dtype=np.int8, ndim=3)
+    check_array_like(gt, kind="i", ndim=3)
     max_allele = coerce_scalar(max_allele, np.int8)
     return dispatch_genotypes_3d_to_allele_counts_melt(gt, max_allele)
 
@@ -226,8 +234,8 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 
 
 # TODO HaplotypeArray
-# TODO locate_called
-# TODO locate_missing
+# TODO count_alleles_called
+# TODO to_missing_allele_counts
 # TODO locate_ref
 # TODO locate_alt
 # TODO locate_call
@@ -245,8 +253,8 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 # TODO to_frequencies
 # TODO allelism
 # TODO max_allele
-# TODO locate_called
-# TODO locate_missing
+# TODO count_alleles_called
+# TODO to_missing_allele_counts
 # TODO locate_hom
 # TODO locate_het
 # TODO locate_call
@@ -263,7 +271,7 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 def allele_counts_to_frequencies(ac):
     """TODO"""
 
-    check_array_like(ac, dtype=np.int32)
+    check_array_like(ac, kind="ui")
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_to_frequencies(ac)
     elif ac.ndim == 3:
@@ -280,37 +288,39 @@ dispatch_allele_counts_2d_to_frequencies = Dispatcher(
 def allele_counts_allelism(ac):
     """TODO"""
 
-    check_array_like(ac, dtype=np.int32)
+    check_array_like(ac, kind="ui")
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_allelism(ac)
     elif ac.ndim == 3:
-        raise NotImplementedError
+        return dispatch_allele_counts_3d_allelism(ac)
     else:
         raise ValueError
 
 
 dispatch_allele_counts_2d_allelism = Dispatcher("allele_counts_2d_allelism")
+dispatch_allele_counts_3d_allelism = Dispatcher("allele_counts_3d_allelism")
 
 
 def allele_counts_max_allele(ac):
     """TODO"""
 
-    check_array_like(ac, dtype=np.int32)
+    check_array_like(ac, kind="ui")
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_max_allele(ac)
     elif ac.ndim == 3:
-        raise NotImplementedError
+        return dispatch_allele_counts_3d_max_allele(ac)
     else:
         raise ValueError
 
 
 dispatch_allele_counts_2d_max_allele = Dispatcher("allele_counts_2d_max_allele")
+dispatch_allele_counts_3d_max_allele = Dispatcher("allele_counts_3d_max_allele")
 
 
 def allele_counts_locate_variant(ac):
     """TODO"""
 
-    check_array_like(ac, dtype=np.int32)
+    check_array_like(ac, kind="ui")
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_locate_variant(ac)
     elif ac.ndim == 3:
@@ -327,7 +337,7 @@ dispatch_allele_counts_2d_locate_variant = Dispatcher(
 def allele_counts_locate_non_variant(ac):
     """TODO"""
 
-    check_array_like(ac, dtype=np.int32)
+    check_array_like(ac, kind="ui")
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_locate_non_variant(ac)
     elif ac.ndim == 3:
@@ -344,7 +354,7 @@ dispatch_allele_counts_2d_locate_non_variant = Dispatcher(
 def allele_counts_locate_segregating(ac):
     """TODO"""
 
-    check_array_like(ac, dtype=np.int32)
+    check_array_like(ac, kind="ui")
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_locate_segregating(ac)
     elif ac.ndim == 3:
@@ -358,8 +368,36 @@ dispatch_allele_counts_2d_locate_segregating = Dispatcher(
 )
 
 
-# TODO GenotypeAlleleCountsArray
-# TODO ???
+def allele_counts_locate_hom(ac):
+    """TODO"""
+
+    check_array_like(ac, kind="ui")
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_locate_hom(ac)
+    elif ac.ndim == 3:
+        return dispatch_allele_counts_3d_locate_hom(ac)
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_locate_hom = Dispatcher("allele_counts_2d_locate_hom")
+dispatch_allele_counts_3d_locate_hom = Dispatcher("allele_counts_3d_locate_hom")
+
+
+def allele_counts_locate_het(ac):
+    """TODO"""
+
+    check_array_like(ac, kind="ui")
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_locate_het(ac)
+    elif ac.ndim == 3:
+        return dispatch_allele_counts_3d_locate_het(ac)
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_locate_het = Dispatcher("allele_counts_2d_locate_het")
+dispatch_allele_counts_3d_locate_het = Dispatcher("allele_counts_3d_locate_het")
 
 
 def variants_to_dataframe(variants, columns=None):

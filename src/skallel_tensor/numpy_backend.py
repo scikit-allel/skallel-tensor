@@ -38,7 +38,7 @@ api.dispatch_concatenate.add((np.ndarray,), concatenate)
 
 
 @numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
-def genotypes_2d_locate_called(gt):
+def genotypes_2d_to_called_allele_counts(gt):
     n = gt.shape[0]
     p = gt.shape[1]
     out = np.ones(n, dtype=np.bool_)
@@ -51,13 +51,13 @@ def genotypes_2d_locate_called(gt):
     return out
 
 
-api.dispatch_genotypes_2d_locate_called.add(
-    (np.ndarray,), genotypes_2d_locate_called
+api.dispatch_genotypes_2d_to_called_allele_counts.add(
+    (np.ndarray,), genotypes_2d_to_called_allele_counts
 )
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotypes_3d_locate_called(gt):
+def genotypes_3d_to_called_allele_counts(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -72,13 +72,13 @@ def genotypes_3d_locate_called(gt):
     return out
 
 
-api.dispatch_genotypes_3d_locate_called.add(
-    (np.ndarray,), genotypes_3d_locate_called
+api.dispatch_genotypes_3d_to_called_allele_counts.add(
+    (np.ndarray,), genotypes_3d_to_called_allele_counts
 )
 
 
 @numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
-def genotypes_2d_locate_missing(gt):
+def genotypes_2d_to_missing_allele_counts(gt):
     n = gt.shape[0]
     p = gt.shape[1]
     out = np.zeros(n, dtype=np.bool_)
@@ -91,13 +91,13 @@ def genotypes_2d_locate_missing(gt):
     return out
 
 
-api.dispatch_genotypes_2d_locate_missing.add(
-    (np.ndarray,), genotypes_2d_locate_missing
+api.dispatch_genotypes_2d_to_missing_allele_counts.add(
+    (np.ndarray,), genotypes_2d_to_missing_allele_counts
 )
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def genotypes_3d_locate_missing(gt):
+def genotypes_3d_to_missing_allele_counts(gt):
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -112,8 +112,8 @@ def genotypes_3d_locate_missing(gt):
     return out
 
 
-api.dispatch_genotypes_3d_locate_missing.add(
-    (np.ndarray,), genotypes_3d_locate_missing
+api.dispatch_genotypes_3d_to_missing_allele_counts.add(
+    (np.ndarray,), genotypes_3d_to_missing_allele_counts
 )
 
 
@@ -455,34 +455,32 @@ def allele_counts_3d_allelism(ac):
     return out
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def allele_counts_3d_locate_called(ac):
-    m = ac.shape[0]
-    n = ac.shape[1]
-    p = ac.shape[2]
-    out = np.zeros((m, n), dtype=np.bool_)
-    for i in range(m):
-        for j in range(n):
-            for k in range(p):
-                if ac[i, j, k] > 0:
-                    out[i, j] = True
-                    break
+api.dispatch_allele_counts_3d_allelism.add(
+    (np.ndarray,), allele_counts_3d_allelism
+)
+
+
+@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+def allele_counts_2d_locate_hom(ac):
+    n = ac.shape[0]
+    p = ac.shape[1]
+    out = np.zeros(n, dtype=np.bool_)
+    for i in range(n):
+        t = 0
+        allelism = 0
+        for j in range(p):
+            c = ac[i, j]
+            t += c
+            if c > 0:
+                allelism += 1
+        if allelism == 1 and t > 1:
+            out[i] = True
     return out
 
 
-@numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
-def allele_counts_3d_locate_missing(ac):
-    m = ac.shape[0]
-    n = ac.shape[1]
-    p = ac.shape[2]
-    out = np.ones((m, n), dtype=np.bool_)
-    for i in range(m):
-        for j in range(n):
-            for k in range(p):
-                if ac[i, j, k] > 0:
-                    out[i, j] = False
-                    break
-    return out
+api.dispatch_allele_counts_2d_locate_hom.add(
+    (np.ndarray,), allele_counts_2d_locate_hom
+)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -493,13 +491,42 @@ def allele_counts_3d_locate_hom(ac):
     out = np.zeros((m, n), dtype=np.bool_)
     for i in range(m):
         for j in range(n):
+            t = 0
             allelism = 0
             for k in range(p):
-                if ac[i, j, k] > 0:
+                c = ac[i, j, k]
+                t += c
+                if c > 0:
                     allelism += 1
-            if allelism == 1:
+            if allelism == 1 and t > 1:
                 out[i, j] = True
     return out
+
+
+api.dispatch_allele_counts_3d_locate_hom.add(
+    (np.ndarray,), allele_counts_3d_locate_hom
+)
+
+
+@numba.njit(numba.boolean[:](numba.int8[:, :]), nogil=True)
+def allele_counts_2d_locate_het(ac):
+    n = ac.shape[0]
+    p = ac.shape[1]
+    out = np.zeros(n, dtype=np.bool_)
+    for i in range(n):
+        allelism = 0
+        for j in range(p):
+            c = ac[i, j]
+            if c > 0:
+                allelism += 1
+        if allelism > 1:
+            out[i] = True
+    return out
+
+
+api.dispatch_allele_counts_2d_locate_het.add(
+    (np.ndarray,), allele_counts_2d_locate_het
+)
 
 
 @numba.njit(numba.boolean[:, :](numba.int8[:, :, :]), nogil=True)
@@ -512,8 +539,14 @@ def allele_counts_3d_locate_het(ac):
         for j in range(n):
             allelism = 0
             for k in range(p):
-                if ac[i, j, k] > 0:
+                c = ac[i, j, k]
+                if c > 0:
                     allelism += 1
             if allelism > 1:
                 out[i, j] = True
     return out
+
+
+api.dispatch_allele_counts_3d_locate_het.add(
+    (np.ndarray,), allele_counts_3d_locate_het
+)

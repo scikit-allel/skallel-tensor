@@ -85,29 +85,35 @@ def concatenate(seq, axis=0):
 api.dispatch_concatenate.add((chunked_array_types,), concatenate)
 
 
-def genotypes_3d_locate_called(gt):
+def genotypes_3d_to_called_allele_counts(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_locate_called, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_to_called_allele_counts,
+        gt,
+        drop_axis=2,
+        dtype=bool,
     )
     return out
 
 
-api.dispatch_genotypes_3d_locate_called.add(
-    (chunked_array_types,), genotypes_3d_locate_called
+api.dispatch_genotypes_3d_to_called_allele_counts.add(
+    (chunked_array_types,), genotypes_3d_to_called_allele_counts
 )
 
 
-def genotypes_3d_locate_missing(gt):
+def genotypes_3d_to_missing_allele_counts(gt):
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_locate_missing, gt, drop_axis=2, dtype=bool
+        numpy_backend.genotypes_3d_to_missing_allele_counts,
+        gt,
+        drop_axis=2,
+        dtype=bool,
     )
     return out
 
 
-api.dispatch_genotypes_3d_locate_missing.add(
-    (chunked_array_types,), genotypes_3d_locate_missing
+api.dispatch_genotypes_3d_to_missing_allele_counts.add(
+    (chunked_array_types,), genotypes_3d_to_missing_allele_counts
 )
 
 

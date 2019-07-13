@@ -12,13 +12,20 @@ def coerce_scalar(i, dtype):
     return i
 
 
-def check_array_like(a, dtype=None, ndim=None):
+def check_array_like(a, dtype=None, kind=None, ndim=None):
     array_attrs = "ndim", "dtype", "shape"
     for k in array_attrs:
         if not hasattr(a, k):
             raise TypeError
-    if dtype is not None and a.dtype != np.dtype(dtype):
-        raise TypeError
+    if dtype is not None:
+        if isinstance(dtype, set):
+            if a.dtype not in dtype:
+                raise TypeError
+        elif a.dtype != dtype:
+            raise TypeError
+    if kind is not None:
+        if a.dtype.kind not in kind:
+            raise TypeError
     if ndim is not None:
         if isinstance(ndim, set):
             if a.ndim not in ndim:
