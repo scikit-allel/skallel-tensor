@@ -1,3 +1,13 @@
+"""This module defines the public API for the skallel_tensor package.
+
+N.B., to allow for implementations of this API using different types of
+arrays, such as Numpy, Zarr or Dask arrays, this module implements a
+mechanism for dispatching to different backend functions depending on the
+type of the arguments. This dispatching is performed via the multipledispatch
+package.
+
+"""
+
 from collections.abc import Mapping
 from functools import reduce
 import numpy as np
@@ -12,202 +22,313 @@ from .utils import (
 )
 
 
-genotype_tensor_is_called_dispatcher = Dispatcher("genotype_tensor_is_called")
-
-
-def genotype_tensor_is_called(gt):
-    """
-    TODO
+def genotypes_locate_hom(gt):
+    """Locate homozygous genotype calls.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int
 
     Returns
     -------
-    out: array_like, bool, shape (n_variants, n_samples)
+    out: array_like, bool
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_called_dispatcher(gt)
+    check_array_like(gt, kind="i")
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_locate_hom(gt)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_locate_hom(gt)
+    else:
+        raise ValueError
 
 
-genotype_tensor_is_missing_dispatcher = Dispatcher("genotype_tensor_is_missing")
+dispatch_genotypes_2d_locate_hom = Dispatcher("genotypes_2d_locate_hom")
+dispatch_genotypes_3d_locate_hom = Dispatcher("genotypes_3d_locate_hom")
 
 
-def genotype_tensor_is_missing(gt):
-    """
-    TODO
+def genotypes_locate_het(gt):
+    """Locate heterozygous genotype calls.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int
 
     Returns
     -------
-    out: array_like, bool, shape (n_variants, n_samples)
+    out: array_like, bool
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_missing_dispatcher(gt)
+    check_array_like(gt, kind="i")
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_locate_het(gt)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_locate_het(gt)
+    else:
+        raise ValueError
 
 
-genotype_tensor_is_hom_dispatcher = Dispatcher("genotype_tensor_is_hom")
+dispatch_genotypes_2d_locate_het = Dispatcher("genotypes_2d_locate_het")
+dispatch_genotypes_3d_locate_het = Dispatcher("genotypes_3d_locate_het")
 
 
-def genotype_tensor_is_hom(gt):
-    """
-    TODO
+def genotypes_locate_call(gt, *, call):
+    """Locate genotypes with the given `call`.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int
+    call : array_like, int
 
     Returns
     -------
-    out: array_like, bool, shape (n_variants, n_samples)
+    out: array_like, bool
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_hom_dispatcher(gt)
+    check_array_like(gt, kind="i")
+    call = np.asarray(call, dtype=gt.dtype)
+    if call.ndim != 1:
+        raise ValueError
+    if gt.shape[-1] != call.shape[0]:
+        raise ValueError
+
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_locate_call(gt, call=call)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_locate_call(gt, call=call)
+    else:
+        raise ValueError
 
 
-genotype_tensor_is_het_dispatcher = Dispatcher("genotype_tensor_is_het")
+dispatch_genotypes_2d_locate_call = Dispatcher("genotypes_2d_locate_call")
+dispatch_genotypes_3d_locate_call = Dispatcher("genotypes_3d_locate_call")
 
 
-def genotype_tensor_is_het(gt):
-    """
-    TODO
+def genotypes_count_alleles(gt, *, max_allele):
+    """Count the number of calls for each allele.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int
+    max_allele : int8
 
     Returns
     -------
-    out: array_like, bool, shape (n_variants, n_samples)
+    ac: array_like, int
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    return genotype_tensor_is_het_dispatcher(gt)
+    check_array_like(gt, kind="i", ndim=3)
+    max_allele = coerce_scalar(max_allele, gt.dtype)
+    return dispatch_genotypes_3d_count_alleles(gt, max_allele=max_allele)
 
 
-genotype_tensor_is_call_dispatcher = Dispatcher("genotype_tensor_is_call")
+dispatch_genotypes_3d_count_alleles = Dispatcher("genotypes_3d_count_alleles")
 
 
-def genotype_tensor_is_call(gt, call):
-    """
-    TODO
+def genotypes_to_called_allele_counts(gt):
+    """Count non-missing alleles within genotype calls.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-    call : array_like, int8, shape (ploidy,)
+    gt : array_like, int
 
     Returns
     -------
-    out: array_like, bool, shape (n_variants, n_samples)
+    out: array_like, int
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    call = np.asarray(call, dtype="i1")
-    return genotype_tensor_is_call_dispatcher(gt, call)
+    check_array_like(gt, kind="i")
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_to_called_allele_counts(gt)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_to_called_allele_counts(gt)
+    else:
+        raise ValueError
 
 
-genotype_tensor_count_alleles_dispatcher = Dispatcher(
-    "genotype_tensor_count_alleles"
+dispatch_genotypes_2d_to_called_allele_counts = Dispatcher(
+    "genotypes_2d_to_called_allele_counts"
+)
+dispatch_genotypes_3d_to_called_allele_counts = Dispatcher(
+    "genotypes_3d_to_called_allele_counts"
 )
 
 
-def genotype_tensor_count_alleles(gt, max_allele):
-    """
-    TODO
+def genotypes_to_missing_allele_counts(gt):
+    """Count missing alleles within genotype calls.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int
+
+    Returns
+    -------
+    out: array_like, bool
+
+    """
+
+    check_array_like(gt, kind="i")
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_to_missing_allele_counts(gt)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_to_missing_allele_counts(gt)
+    else:
+        raise ValueError
+
+
+dispatch_genotypes_2d_to_missing_allele_counts = Dispatcher(
+    "genotypes_2d_to_missing_allele_counts"
+)
+dispatch_genotypes_3d_to_missing_allele_counts = Dispatcher(
+    "genotypes_3d_to_missing_allele_counts"
+)
+
+
+def genotypes_to_allele_counts(gt, *, max_allele):
+    """Convert genotypes to allele counts.
+
+    Parameters
+    ----------
+    gt : array_like, int
     max_allele : int
 
     Returns
     -------
-    ac: array_like, int32, shape (n_variants, max_allele + 1)
+    ac: array_like, int
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    max_allele = coerce_scalar(max_allele, "i1")
-    return genotype_tensor_count_alleles_dispatcher(gt, max_allele)
+    check_array_like(gt, kind="i")
+    max_allele = coerce_scalar(max_allele, gt.dtype)
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_to_allele_counts(gt, max_allele=max_allele)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_to_allele_counts(gt, max_allele=max_allele)
+    else:
+        raise ValueError
 
 
-genotype_tensor_to_allele_counts_dispatcher = Dispatcher(
-    "genotype_tensor_to_allele_counts"
+dispatch_genotypes_2d_to_allele_counts = Dispatcher(
+    "genotypes_2d_to_allele_counts"
+)
+dispatch_genotypes_3d_to_allele_counts = Dispatcher(
+    "genotypes_3d_to_allele_counts"
 )
 
 
-def genotype_tensor_to_allele_counts(gt, max_allele):
-    """
-    TODO
+def genotypes_to_allele_counts_melt(gt, *, max_allele):
+    """Convert genotypes to allele counts, melting each allele into a
+    separate row.
 
     Parameters
     ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
+    gt : array_like, int
     max_allele : int
 
     Returns
     -------
-    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
+    ac: array_like, int
 
     """
 
-    check_array_like(gt, dtype="i1", ndim=3)
-    max_allele = coerce_scalar(max_allele, "i1")
-    return genotype_tensor_to_allele_counts_dispatcher(gt, max_allele)
+    check_array_like(gt, kind="i", ndim=3)
+    max_allele = coerce_scalar(max_allele, gt.dtype)
+    return dispatch_genotypes_3d_to_allele_counts_melt(
+        gt, max_allele=max_allele
+    )
 
 
-genotype_tensor_to_allele_counts_melt_dispatcher = Dispatcher(
-    "genotype_tensor_to_allele_counts_melt"
+dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
+    "genotypes_3d_to_allele_counts_melt"
 )
 
 
-def genotype_tensor_to_allele_counts_melt(gt, max_allele):
-    """
-    TODO
-
-    Parameters
-    ----------
-    gt : array_like, int8, shape (n_variants, n_samples, ploidy)
-    max_allele : int
-
-    Returns
-    -------
-    gac: array_like, int32, shape (n_variants, n_samples, max_allele + 1)
-
-    """
-
-    check_array_like(gt, dtype="i1", ndim=3)
-    max_allele = coerce_scalar(max_allele, "i1")
-    return genotype_tensor_to_allele_counts_melt_dispatcher(gt, max_allele)
-
-
-# genotype array
+# genotypes
 # TODO to_haplotypes
-# TODO display
 # TODO map_alleles
 
 
-variants_to_dataframe_dispatcher = Dispatcher("variants_to_dataframe")
+# haplotypes
+# TODO count_alleles_called
+# TODO to_missing_allele_counts
+# TODO locate_ref
+# TODO locate_alt
+# TODO locate_call
+# TODO to_genotypes
+# TODO count_alleles
+# TODO map_alleles
+# TODO prefix_argsort
+# TODO distinct
+# TODO distinct_counts
+# TODO distinct_frequencies
+
+
+# allele counts
+# TODO map_alleles
+
+
+def allele_counts_to_frequencies(ac):
+    """TODO"""
+
+    check_array_like(ac, kind="ui")
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_to_frequencies(ac)
+    elif ac.ndim == 3:
+        return dispatch_allele_counts_3d_to_frequencies(ac)
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_to_frequencies = Dispatcher(
+    "allele_counts_2d_to_frequencies"
+)
+dispatch_allele_counts_3d_to_frequencies = Dispatcher(
+    "allele_counts_3d_to_frequencies"
+)
+
+
+def allele_counts_allelism(ac):
+    """TODO"""
+
+    check_array_like(ac, kind="ui")
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_allelism(ac)
+    elif ac.ndim == 3:
+        return dispatch_allele_counts_3d_allelism(ac)
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_allelism = Dispatcher("allele_counts_2d_allelism")
+dispatch_allele_counts_3d_allelism = Dispatcher("allele_counts_3d_allelism")
+
+
+def allele_counts_max_allele(ac):
+    """TODO"""
+
+    check_array_like(ac, kind="ui")
+    if ac.ndim == 2:
+        return dispatch_allele_counts_2d_max_allele(ac)
+    elif ac.ndim == 3:
+        return dispatch_allele_counts_3d_max_allele(ac)
+    else:
+        raise ValueError
+
+
+dispatch_allele_counts_2d_max_allele = Dispatcher("allele_counts_2d_max_allele")
+dispatch_allele_counts_3d_max_allele = Dispatcher("allele_counts_3d_max_allele")
 
 
 def variants_to_dataframe(variants, columns=None):
 
     # Check input types.
-    check_mapping(variants, str)
-    check_list_or_tuple(columns, str, optional=True)
+    check_mapping(variants, key_type=str)
+    check_list_or_tuple(columns, item_type=str, optional=True)
 
     # Check requested columns.
     columns = get_variants_array_names(variants, names=columns)
@@ -217,10 +338,13 @@ def variants_to_dataframe(variants, columns=None):
     a = variants[columns[0]]
 
     # Manually dispatch.
-    f = variants_to_dataframe_dispatcher.dispatch(type(a))
+    f = dispatch_variants_to_dataframe.dispatch(type(a))
     if f is None:
         raise NotImplementedError
     return f(variants, columns)
+
+
+dispatch_variants_to_dataframe = Dispatcher("variants_to_dataframe")
 
 
 class GroupSelection(Mapping):
@@ -246,15 +370,15 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-select_slice_dispatcher = Dispatcher("select_slice")
-
-
 def select_slice(o, start=None, stop=None, step=None, axis=0):
     """TODO"""
 
-    return select_slice_dispatcher(
+    return dispatch_select_slice(
         o, start=start, stop=stop, step=step, axis=axis
     )
+
+
+dispatch_select_slice = Dispatcher("select_slice")
 
 
 def group_select_slice(o, start=None, stop=None, step=None, axis=0):
@@ -263,42 +387,42 @@ def group_select_slice(o, start=None, stop=None, step=None, axis=0):
     )
 
 
-select_slice_dispatcher.add((Mapping,), group_select_slice)
+dispatch_select_slice.add((Mapping,), group_select_slice)
 
 
-select_indices_dispatcher = Dispatcher("select_indices")
-
-
-def select_indices(o, indices, axis=0):
+def select_indices(o, indices, *, axis=0):
     """TODO"""
 
-    return select_indices_dispatcher(o, indices, axis=axis)
+    return dispatch_select_indices(o, indices, axis=axis)
 
 
-def group_select_indices(o, indices, axis=0):
+dispatch_select_indices = Dispatcher("select_indices")
+
+
+def group_select_indices(o, indices, *, axis=0):
     return GroupSelection(o, select_indices, indices, axis=axis)
 
 
-select_indices_dispatcher.add((Mapping, object), group_select_indices)
+dispatch_select_indices.add((Mapping, object), group_select_indices)
 
 
-select_mask_dispatcher = Dispatcher("select_mask")
-
-
-def select_mask(o, mask, axis=0):
+def select_mask(o, mask, *, axis=0):
     """TODO"""
 
-    return select_mask_dispatcher(o, mask, axis=axis)
+    return dispatch_select_mask(o, mask, axis=axis)
 
 
-def group_select_mask(o, mask, axis=0):
+dispatch_select_mask = Dispatcher("select_mask")
+
+
+def group_select_mask(o, mask, *, axis=0):
     return GroupSelection(o, select_mask, mask, axis=axis)
 
 
-select_mask_dispatcher.add((Mapping, object), group_select_mask)
+dispatch_select_mask.add((Mapping, object), group_select_mask)
 
 
-def select_range(o, index, begin=None, end=None, axis=0):
+def select_range(o, index, *, begin=None, end=None, axis=0):
 
     # Obtain index as a numpy array.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -318,7 +442,7 @@ def select_range(o, index, begin=None, end=None, axis=0):
     return select_slice(o, start=start, stop=stop, axis=axis)
 
 
-def select_values(o, index, query, axis=0):
+def select_values(o, index, query, *, axis=0):
 
     # Obtain index as pandas index.
     if isinstance(o, Mapping) and isinstance(index, str):
@@ -338,20 +462,32 @@ def select_values(o, index, query, axis=0):
     return select_indices(o, indices, axis=axis)
 
 
-concatenate_dispatcher = Dispatcher("concatenate")
+def concatenate(seq, *, axis=0):
+    """Concatenate two or more objects along the given `axis`.
 
+    Parameters
+    ----------
+    seq : sequence of group or array_like
+    axis : int
 
-def concatenate(seq, axis=0):
+    Returns
+    -------
+    out : group or array_like
+
+    """
 
     # Check inputs.
     check_list_or_tuple(seq, min_length=2)
 
     # Manually dispatch on type of first object in `seq`.
     o = seq[0]
-    f = concatenate_dispatcher.dispatch(type(o))
+    f = dispatch_concatenate.dispatch(type(o))
     if f is None:
         raise NotImplementedError
     return f(seq, axis=axis)
+
+
+dispatch_concatenate = Dispatcher("concatenate")
 
 
 class GroupConcatenation(Mapping):
@@ -381,44 +517,8 @@ class GroupConcatenation(Mapping):
         return iter(sorted(self._key_set()))
 
 
-def group_concatenate(seq, axis=0):
+def group_concatenate(seq, *, axis=0):
     return GroupConcatenation(seq, axis=axis)
 
 
-concatenate_dispatcher.add((Mapping,), group_concatenate)
-
-
-# TODO HaplotypeArray
-# TODO is_called
-# TODO is_missing
-# TODO is_ref
-# TODO is_alt
-# TODO is_call
-# TODO to_genotypes
-# TODO count_alleles
-# TODO map_alleles
-# TODO prefix_argsort
-# TODO distinct
-# TODO distinct_counts
-# TODO distinct_frequencies
-# TODO display
-
-
-# TODO AlleleCountsArray
-# TODO to_frequencies
-# TODO allelism
-# TODO max_allele
-# TODO is_variant
-# TODO is_non_variant
-# TODO is_segregating
-# TODO is_non_segregating
-# TODO is_singleton
-# TODO is_doubleton
-# TODO is_biallelic
-# TODO is_biallelic_01
-# TODO map_alleles
-# TODO display
-
-
-# TODO GenotypeAlleleCountsArray
-# TODO ???
+dispatch_concatenate.add((Mapping,), group_concatenate)
