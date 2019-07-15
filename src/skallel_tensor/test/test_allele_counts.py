@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 import dask.array as da
+import zarr
+import pytest
 
 
 from skallel_tensor import (
@@ -28,6 +30,13 @@ def _test_ac_func(f, ac, expect, compare):
     compare(expect, actual.compute())
     assert expect.dtype == actual.dtype
 
+    # Test zarr array.
+    ac_zarr = zarr.array(data=ac)
+    actual = f(ac_zarr)
+    assert isinstance(actual, da.Array)
+    compare(expect, actual.compute())
+    assert expect.dtype == actual.dtype
+
     # Reshape to test as 2D.
     ac = ac.reshape((-1, ac.shape[2]))
     if expect.ndim == 3:
@@ -48,13 +57,31 @@ def _test_ac_func(f, ac, expect, compare):
     compare(expect, actual.compute())
     assert expect.dtype == actual.dtype
 
+    # Test zarr array.
+    ac_zarr = zarr.array(data=ac)
+    actual = f(ac_zarr)
+    assert isinstance(actual, da.Array)
+    compare(expect, actual.compute())
+    assert expect.dtype == actual.dtype
+
+    # Test errors.
+    with pytest.raises(TypeError):
+        # Wrong type.
+        f("foo")
+    with pytest.raises(TypeError):
+        # Wrong dtype.
+        f(ac.astype("f4"))
+    with pytest.raises(ValueError):
+        # Wrong ndim.
+        f(ac[0])
+
 
 def test_to_frequencies():
     ac = np.array(
         [
             [[3, 0, 0], [0, 3, 0], [2, 1, 0], [0, 1, 2], [1, 1, 1]],
             [[2, 0, 0], [0, 2, 0], [1, 1, 0], [0, 1, 1], [1, 0, 1]],
-            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0], [-1, -1, -1]],
+            [[1, 0, 0], [0, 1, 0], [0, 0, 0], [0, 1, -1], [-1, -1, -1]],
         ],
         dtype=np.int32,
     )
@@ -77,8 +104,8 @@ def test_to_frequencies():
             [
                 [1 / 1, 0 / 1, 0 / 1],
                 [0 / 1, 1 / 1, 0 / 1],
-                [0 / 1, 0 / 1, 1 / 1],
                 [np.nan, np.nan, np.nan],
+                [0 / 1, 1 / 1, np.nan],
                 [np.nan, np.nan, np.nan],
             ],
         ],
@@ -115,6 +142,3 @@ def test_max_allele():
         [[0, 1, 1, 2, 2], [0, 1, 1, 2, 2], [0, 1, 2, -1, -1]], dtype=np.int8
     )
     _test_ac_func(allele_counts_max_allele, ac, expect, assert_array_equal)
-
-
-# TODO Test errors.

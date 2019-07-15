@@ -17,7 +17,7 @@ def genotypes_locate_hom(gt):
 
     Parameters
     ----------
-    gt : array_like, int8
+    gt : array_like, int
 
     Returns
     -------
@@ -43,7 +43,7 @@ def genotypes_locate_het(gt):
 
     Parameters
     ----------
-    gt : array_like, int8
+    gt : array_like, int
 
     Returns
     -------
@@ -69,8 +69,8 @@ def genotypes_locate_call(gt, *, call):
 
     Parameters
     ----------
-    gt : array_like, int8
-    call : array_like, int8
+    gt : array_like, int
+    call : array_like, int
 
     Returns
     -------
@@ -86,9 +86,9 @@ def genotypes_locate_call(gt, *, call):
         raise ValueError
 
     if gt.ndim == 2:
-        return dispatch_genotypes_2d_locate_call(gt, call)
+        return dispatch_genotypes_2d_locate_call(gt, call=call)
     elif gt.ndim == 3:
-        return dispatch_genotypes_3d_locate_call(gt, call)
+        return dispatch_genotypes_3d_locate_call(gt, call=call)
     else:
         raise ValueError
 
@@ -102,17 +102,17 @@ def genotypes_count_alleles(gt, *, max_allele):
 
     Parameters
     ----------
-    gt : array_like, int8, shape
+    gt : array_like, int, shape
     max_allele : int8
 
     Returns
     -------
-    ac: array_like, int32
+    ac: array_like, int
 
     """
 
     check_array_like(gt, kind="i", ndim=3)
-    max_allele = coerce_scalar(max_allele, np.int8)
+    max_allele = coerce_scalar(max_allele, gt.dtype)
     return dispatch_genotypes_3d_count_alleles(gt, max_allele=max_allele)
 
 
@@ -124,11 +124,11 @@ def genotypes_to_called_allele_counts(gt):
 
     Parameters
     ----------
-    gt : array_like, int8
+    gt : array_like, int
 
     Returns
     -------
-    out: array_like, int8
+    out: array_like, int
 
     """
 
@@ -154,7 +154,7 @@ def genotypes_to_missing_allele_counts(gt):
 
     Parameters
     ----------
-    gt : array_like, int8
+    gt : array_like, int
 
     Returns
     -------
@@ -184,20 +184,28 @@ def genotypes_to_allele_counts(gt, *, max_allele):
 
     Parameters
     ----------
-    gt : array_like, int8
+    gt : array_like, int
     max_allele : int
 
     Returns
     -------
-    gac: array_like, int32
+    ac: array_like, int
 
     """
 
-    check_array_like(gt, kind="i", ndim=3)
-    max_allele = coerce_scalar(max_allele, np.int8)
-    return dispatch_genotypes_3d_to_allele_counts(gt, max_allele)
+    check_array_like(gt, kind="i")
+    max_allele = coerce_scalar(max_allele, gt.dtype)
+    if gt.ndim == 2:
+        return dispatch_genotypes_2d_to_allele_counts(gt, max_allele=max_allele)
+    elif gt.ndim == 3:
+        return dispatch_genotypes_3d_to_allele_counts(gt, max_allele=max_allele)
+    else:
+        raise ValueError
 
 
+dispatch_genotypes_2d_to_allele_counts = Dispatcher(
+    "genotypes_2d_to_allele_counts"
+)
 dispatch_genotypes_3d_to_allele_counts = Dispatcher(
     "genotypes_3d_to_allele_counts"
 )
@@ -209,18 +217,20 @@ def genotypes_to_allele_counts_melt(gt, *, max_allele):
 
     Parameters
     ----------
-    gt : array_like, int8
+    gt : array_like, int
     max_allele : int
 
     Returns
     -------
-    gac: array_like, int32
+    ac: array_like, int
 
     """
 
     check_array_like(gt, kind="i", ndim=3)
-    max_allele = coerce_scalar(max_allele, np.int8)
-    return dispatch_genotypes_3d_to_allele_counts_melt(gt, max_allele)
+    max_allele = coerce_scalar(max_allele, gt.dtype)
+    return dispatch_genotypes_3d_to_allele_counts_melt(
+        gt, max_allele=max_allele
+    )
 
 
 dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(

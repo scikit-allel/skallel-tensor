@@ -1,5 +1,4 @@
 import warnings
-import numbers
 import numpy as np
 import numba
 import pandas as pd
@@ -204,7 +203,7 @@ api.dispatch_genotypes_3d_locate_het.add((np.ndarray,), genotypes_3d_locate_het)
 
 
 @numba.njit(nogil=True)
-def genotypes_2d_locate_call(gt, call):
+def genotypes_2d_locate_call(gt, *, call):
     assert gt.ndim == 2
     assert call.ndim == 1
     assert gt.shape[1] == call.shape[0]
@@ -221,13 +220,15 @@ def genotypes_2d_locate_call(gt, call):
 
 
 api.dispatch_genotypes_2d_locate_call.add(
-    (np.ndarray, np.ndarray), genotypes_2d_locate_call
+    (np.ndarray,), genotypes_2d_locate_call
 )
 
 
 @numba.njit(nogil=True)
-def genotypes_3d_locate_call(gt, call):
+def genotypes_3d_locate_call(gt, *, call):
     assert gt.ndim == 3
+    assert call.ndim == 1
+    assert gt.shape[2] == call.shape[0]
     m = gt.shape[0]
     n = gt.shape[1]
     p = gt.shape[2]
@@ -243,12 +244,12 @@ def genotypes_3d_locate_call(gt, call):
 
 
 api.dispatch_genotypes_3d_locate_call.add(
-    (np.ndarray, np.ndarray), genotypes_3d_locate_call
+    (np.ndarray,), genotypes_3d_locate_call
 )
 
 
 @numba.njit(nogil=True)
-def genotypes_3d_count_alleles(gt, max_allele):
+def genotypes_3d_count_alleles(gt, *, max_allele):
     assert gt.ndim == 3
     m = gt.shape[0]
     n = gt.shape[1]
@@ -269,7 +270,26 @@ api.dispatch_genotypes_3d_count_alleles.add(
 
 
 @numba.njit(nogil=True)
-def genotypes_3d_to_allele_counts(gt, max_allele):
+def genotypes_2d_to_allele_counts(gt, *, max_allele):
+    assert gt.ndim == 2
+    n = gt.shape[0]
+    p = gt.shape[1]
+    out = np.zeros((n, max_allele + 1), dtype=np.int8)
+    for i in range(n):
+        for j in range(p):
+            allele = gt[i, j]
+            if 0 <= allele <= max_allele:
+                out[i, allele] += 1
+    return out
+
+
+api.dispatch_genotypes_2d_to_allele_counts.add(
+    (np.ndarray,), genotypes_2d_to_allele_counts
+)
+
+
+@numba.njit(nogil=True)
+def genotypes_3d_to_allele_counts(gt, *, max_allele):
     assert gt.ndim == 3
     m = gt.shape[0]
     n = gt.shape[1]
@@ -285,12 +305,12 @@ def genotypes_3d_to_allele_counts(gt, max_allele):
 
 
 api.dispatch_genotypes_3d_to_allele_counts.add(
-    (np.ndarray, numbers.Integral), genotypes_3d_to_allele_counts
+    (np.ndarray,), genotypes_3d_to_allele_counts
 )
 
 
 @numba.njit(nogil=True)
-def genotypes_3d_to_allele_counts_melt(gt, max_allele):
+def genotypes_3d_to_allele_counts_melt(gt, *, max_allele):
     assert gt.ndim == 3
     m = gt.shape[0]
     n = gt.shape[1]
@@ -306,7 +326,7 @@ def genotypes_3d_to_allele_counts_melt(gt, max_allele):
 
 
 api.dispatch_genotypes_3d_to_allele_counts_melt.add(
-    (np.ndarray, numbers.Integral), genotypes_3d_to_allele_counts_melt
+    (np.ndarray,), genotypes_3d_to_allele_counts_melt
 )
 
 

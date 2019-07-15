@@ -19,9 +19,10 @@ def check_array_like(a, dtype=None, kind=None, ndim=None):
             raise TypeError
     if dtype is not None:
         if isinstance(dtype, set):
+            dtype = {np.dtype(t) for t in dtype}
             if a.dtype not in dtype:
                 raise TypeError
-        elif a.dtype != dtype:
+        elif a.dtype != np.dtype(dtype):
             raise TypeError
     if kind is not None:
         if a.dtype.kind not in kind:
