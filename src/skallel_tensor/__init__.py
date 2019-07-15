@@ -1,7 +1,7 @@
 # flake8: noqa
 from .version import version as __version__
 
-
+# Import the public API.
 from .api import (
     genotypes_locate_hom,
     genotypes_locate_het,
@@ -14,23 +14,15 @@ from .api import (
     allele_counts_to_frequencies,
     allele_counts_allelism,
     allele_counts_max_allele,
-    GroupSelection,
     select_slice,
     select_indices,
     select_mask,
     select_range,
     select_values,
-    GroupConcatenation,
     concatenate,
 )
 
-
-from .utils import DictGroup
-
-
+# Import these modules to ensure that their implementation functions are
+# registered with the API for dispatching.
 from . import numpy_backend
-
-try:
-    from . import dask_backend
-except ImportError:  # pragma: no cover
-    pass
+from . import dask_backend

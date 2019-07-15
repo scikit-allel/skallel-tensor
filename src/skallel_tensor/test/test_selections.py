@@ -5,15 +5,14 @@ import dask.array as da
 import zarr
 
 
+from skallel_tensor.utils import DictGroup
+from skallel_tensor.api import GroupSelection, GroupConcatenation
 from skallel_tensor import (
-    GroupSelection,
-    DictGroup,
     select_slice,
     select_indices,
     select_mask,
     select_range,
     select_values,
-    GroupConcatenation,
     concatenate,
 )
 

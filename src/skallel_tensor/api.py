@@ -1,3 +1,13 @@
+"""This module defines the public API for the skallel_tensor package.
+
+N.B., to allow for implementations of this API using different types of
+arrays, such as Numpy, Zarr or Dask arrays, this module implements a
+mechanism for dispatching to different backend functions depending on the
+type of the arguments. This dispatching is performed via the multipledispatch
+package.
+
+"""
+
 from collections.abc import Mapping
 from functools import reduce
 import numpy as np
@@ -74,7 +84,7 @@ def genotypes_locate_call(gt, *, call):
 
     Returns
     -------
-    out: array_like, bool, shape (n_variants, n_samples)
+    out: array_like, bool
 
     """
 
@@ -102,7 +112,7 @@ def genotypes_count_alleles(gt, *, max_allele):
 
     Parameters
     ----------
-    gt : array_like, int, shape
+    gt : array_like, int
     max_allele : int8
 
     Returns
@@ -319,8 +329,8 @@ dispatch_allele_counts_3d_max_allele = Dispatcher("allele_counts_3d_max_allele")
 def variants_to_dataframe(variants, columns=None):
 
     # Check input types.
-    check_mapping(variants, str)
-    check_list_or_tuple(columns, str, optional=True)
+    check_mapping(variants, key_type=str)
+    check_list_or_tuple(columns, item_type=str, optional=True)
 
     # Check requested columns.
     columns = get_variants_array_names(variants, names=columns)
