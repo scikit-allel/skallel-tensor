@@ -244,6 +244,7 @@ api.dispatch_genotypes_3d_to_allele_counts_melt.add(
 
 def allele_counts_2d_to_frequencies(ac):
     ac = ensure_dask_array(ac)
+    assert ac.ndim == 2
     out = da.map_blocks(
         numpy_backend.allele_counts_2d_to_frequencies, ac, dtype=np.float32
     )
@@ -255,8 +256,23 @@ api.dispatch_allele_counts_2d_to_frequencies.add(
 )
 
 
+def allele_counts_3d_to_frequencies(ac):
+    ac = ensure_dask_array(ac)
+    assert ac.ndim == 3
+    out = da.map_blocks(
+        numpy_backend.allele_counts_3d_to_frequencies, ac, dtype=np.float32
+    )
+    return out
+
+
+api.dispatch_allele_counts_3d_to_frequencies.add(
+    (chunked_array_types,), allele_counts_3d_to_frequencies
+)
+
+
 def allele_counts_2d_max_allele(ac):
     ac = ensure_dask_array(ac)
+    assert ac.ndim == 2
     out = da.map_blocks(
         numpy_backend.allele_counts_2d_max_allele,
         ac,
@@ -268,6 +284,23 @@ def allele_counts_2d_max_allele(ac):
 
 api.dispatch_allele_counts_2d_max_allele.add(
     (chunked_array_types,), allele_counts_2d_max_allele
+)
+
+
+def allele_counts_3d_max_allele(ac):
+    ac = ensure_dask_array(ac)
+    assert ac.ndim == 3
+    out = da.map_blocks(
+        numpy_backend.allele_counts_3d_max_allele,
+        ac,
+        dtype=np.int8,
+        drop_axis=2,
+    )
+    return out
+
+
+api.dispatch_allele_counts_3d_max_allele.add(
+    (chunked_array_types,), allele_counts_3d_max_allele
 )
 
 
@@ -284,83 +317,17 @@ api.dispatch_allele_counts_2d_allelism.add(
 )
 
 
-def allele_counts_2d_locate_variant(ac):
+def allele_counts_3d_allelism(ac):
     ac = ensure_dask_array(ac)
+    assert ac.ndim == 3
     out = da.map_blocks(
-        numpy_backend.allele_counts_2d_locate_variant,
-        ac,
-        dtype=np.bool_,
-        drop_axis=1,
+        numpy_backend.allele_counts_3d_allelism, ac, dtype=np.int8, drop_axis=2
     )
     return out
 
 
-api.dispatch_allele_counts_2d_locate_variant.add(
-    (chunked_array_types,), allele_counts_2d_locate_variant
-)
-
-
-def allele_counts_2d_locate_non_variant(ac):
-    ac = ensure_dask_array(ac)
-    out = da.map_blocks(
-        numpy_backend.allele_counts_2d_locate_non_variant,
-        ac,
-        dtype=np.bool_,
-        drop_axis=1,
-    )
-    return out
-
-
-api.dispatch_allele_counts_2d_locate_non_variant.add(
-    (chunked_array_types,), allele_counts_2d_locate_non_variant
-)
-
-
-def allele_counts_2d_locate_segregating(ac):
-    ac = ensure_dask_array(ac)
-    out = da.map_blocks(
-        numpy_backend.allele_counts_2d_locate_segregating,
-        ac,
-        dtype=np.bool_,
-        drop_axis=1,
-    )
-    return out
-
-
-api.dispatch_allele_counts_2d_locate_segregating.add(
-    (chunked_array_types,), allele_counts_2d_locate_segregating
-)
-
-
-def allele_counts_3d_locate_hom(ac):
-    ac = ensure_dask_array(ac)
-    out = da.map_blocks(
-        numpy_backend.allele_counts_3d_locate_hom,
-        ac,
-        dtype=np.bool_,
-        drop_axis=2,
-    )
-    return out
-
-
-api.dispatch_allele_counts_3d_locate_hom.add(
-    (chunked_array_types,), allele_counts_3d_locate_hom
-)
-
-
-def allele_counts_3d_locate_het(ac):
-    ac = ensure_dask_array(ac)
-    out = da.map_blocks(
-        numpy_backend.allele_counts_3d_locate_het,
-        ac,
-        dtype=np.bool_,
-        drop_axis=2,
-    )
-    return out
-
-
-api.dispatch_allele_counts_3d_locate_het.add(
-    (chunked_array_types,), allele_counts_3d_locate_het
+api.dispatch_allele_counts_3d_allelism.add(
+    (chunked_array_types,), allele_counts_3d_allelism
 )
 
 

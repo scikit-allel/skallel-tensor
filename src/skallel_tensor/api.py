@@ -250,20 +250,6 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 
 
 # TODO AlleleCountsArray
-# TODO to_frequencies
-# TODO allelism
-# TODO max_allele
-# TODO count_alleles_called
-# TODO to_missing_allele_counts
-# TODO locate_hom
-# TODO locate_het
-# TODO locate_call
-# TODO locate_variant
-# TODO locate_non_variant
-# TODO locate_segregating
-# TODO locate_non_segregating
-# TODO locate_biallelic
-# TODO squeeze_biallelic
 # TODO map_alleles
 # TODO display
 
@@ -275,13 +261,16 @@ def allele_counts_to_frequencies(ac):
     if ac.ndim == 2:
         return dispatch_allele_counts_2d_to_frequencies(ac)
     elif ac.ndim == 3:
-        raise NotImplementedError
+        return dispatch_allele_counts_3d_to_frequencies(ac)
     else:
         raise ValueError
 
 
 dispatch_allele_counts_2d_to_frequencies = Dispatcher(
     "allele_counts_2d_to_frequencies"
+)
+dispatch_allele_counts_3d_to_frequencies = Dispatcher(
+    "allele_counts_3d_to_frequencies"
 )
 
 
@@ -315,89 +304,6 @@ def allele_counts_max_allele(ac):
 
 dispatch_allele_counts_2d_max_allele = Dispatcher("allele_counts_2d_max_allele")
 dispatch_allele_counts_3d_max_allele = Dispatcher("allele_counts_3d_max_allele")
-
-
-def allele_counts_locate_variant(ac):
-    """TODO"""
-
-    check_array_like(ac, kind="ui")
-    if ac.ndim == 2:
-        return dispatch_allele_counts_2d_locate_variant(ac)
-    elif ac.ndim == 3:
-        raise NotImplementedError
-    else:
-        raise ValueError
-
-
-dispatch_allele_counts_2d_locate_variant = Dispatcher(
-    "allele_counts_2d_locate_variant"
-)
-
-
-def allele_counts_locate_non_variant(ac):
-    """TODO"""
-
-    check_array_like(ac, kind="ui")
-    if ac.ndim == 2:
-        return dispatch_allele_counts_2d_locate_non_variant(ac)
-    elif ac.ndim == 3:
-        raise NotImplementedError
-    else:
-        raise ValueError
-
-
-dispatch_allele_counts_2d_locate_non_variant = Dispatcher(
-    "allele_counts_2d_locate_non_variant"
-)
-
-
-def allele_counts_locate_segregating(ac):
-    """TODO"""
-
-    check_array_like(ac, kind="ui")
-    if ac.ndim == 2:
-        return dispatch_allele_counts_2d_locate_segregating(ac)
-    elif ac.ndim == 3:
-        raise NotImplementedError
-    else:
-        raise ValueError
-
-
-dispatch_allele_counts_2d_locate_segregating = Dispatcher(
-    "allele_counts_2d_locate_segregating"
-)
-
-
-def allele_counts_locate_hom(ac):
-    """TODO"""
-
-    check_array_like(ac, kind="ui")
-    if ac.ndim == 2:
-        return dispatch_allele_counts_2d_locate_hom(ac)
-    elif ac.ndim == 3:
-        return dispatch_allele_counts_3d_locate_hom(ac)
-    else:
-        raise ValueError
-
-
-dispatch_allele_counts_2d_locate_hom = Dispatcher("allele_counts_2d_locate_hom")
-dispatch_allele_counts_3d_locate_hom = Dispatcher("allele_counts_3d_locate_hom")
-
-
-def allele_counts_locate_het(ac):
-    """TODO"""
-
-    check_array_like(ac, kind="ui")
-    if ac.ndim == 2:
-        return dispatch_allele_counts_2d_locate_het(ac)
-    elif ac.ndim == 3:
-        return dispatch_allele_counts_3d_locate_het(ac)
-    else:
-        raise ValueError
-
-
-dispatch_allele_counts_2d_locate_het = Dispatcher("allele_counts_2d_locate_het")
-dispatch_allele_counts_3d_locate_het = Dispatcher("allele_counts_3d_locate_het")
 
 
 def variants_to_dataframe(variants, columns=None):

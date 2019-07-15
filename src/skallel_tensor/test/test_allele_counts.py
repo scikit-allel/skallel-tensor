@@ -7,228 +7,114 @@ from skallel_tensor import (
     allele_counts_to_frequencies,
     allele_counts_allelism,
     allele_counts_max_allele,
-    allele_counts_locate_variant,
-    allele_counts_locate_non_variant,
-    allele_counts_locate_segregating,
-    allele_counts_locate_hom,
-    allele_counts_locate_het,
-    genotypes_to_allele_counts,
 )
 
 
-def test_2d_to_frequencies():
+def _test_ac_func(f, ac, expect, compare):
+
+    # 3D tests.
+    assert ac.ndim == 3
+
+    # Test numpy array.
+    actual = f(ac)
+    assert isinstance(actual, np.ndarray)
+    compare(expect, actual)
+    assert expect.dtype == actual.dtype
+
+    # Test dask array.
+    ac_dask = da.from_array(ac, chunks=(1, 2, -1))
+    actual = f(ac_dask)
+    assert isinstance(actual, da.Array)
+    compare(expect, actual.compute())
+    assert expect.dtype == actual.dtype
+
+    # Reshape to test as 2D.
+    ac = ac.reshape((-1, ac.shape[2]))
+    if expect.ndim == 3:
+        expect = expect.reshape(ac.shape)
+    elif expect.ndim == 2:
+        expect = expect.reshape(-1)
+
+    # Test numpy array.
+    actual = f(ac)
+    assert isinstance(actual, np.ndarray)
+    compare(expect, actual)
+    assert expect.dtype == actual.dtype
+
+    # Test dask array.
+    ac_dask = da.from_array(ac, chunks=(2, -1))
+    actual = f(ac_dask)
+    assert isinstance(actual, da.Array)
+    compare(expect, actual.compute())
+    assert expect.dtype == actual.dtype
+
+
+def test_to_frequencies():
     ac = np.array(
-        [[3, 1, 0], [1, 2, 1], [1, 2, 1], [0, 0, 2], [0, 0, 0], [0, 1, 2]],
+        [
+            [[3, 0, 0], [0, 3, 0], [2, 1, 0], [0, 1, 2], [1, 1, 1]],
+            [[2, 0, 0], [0, 2, 0], [1, 1, 0], [0, 1, 1], [1, 0, 1]],
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0], [-1, -1, -1]],
+        ],
         dtype=np.int32,
     )
     expect = np.array(
         [
-            [3 / 4, 1 / 4, 0 / 4],
-            [1 / 4, 2 / 4, 1 / 4],
-            [1 / 4, 2 / 4, 1 / 4],
-            [0 / 2, 0 / 2, 2 / 2],
-            [np.nan, np.nan, np.nan],
-            [0 / 3, 1 / 3, 2 / 3],
+            [
+                [3 / 3, 0 / 3, 0 / 3],
+                [0 / 3, 3 / 3, 0 / 3],
+                [2 / 3, 1 / 3, 0 / 3],
+                [0 / 3, 1 / 3, 2 / 3],
+                [1 / 3, 1 / 3, 1 / 3],
+            ],
+            [
+                [2 / 2, 0 / 2, 0 / 2],
+                [0 / 2, 2 / 2, 0 / 2],
+                [1 / 2, 1 / 2, 0 / 2],
+                [0 / 2, 1 / 2, 1 / 2],
+                [1 / 2, 0 / 2, 1 / 2],
+            ],
+            [
+                [1 / 1, 0 / 1, 0 / 1],
+                [0 / 1, 1 / 1, 0 / 1],
+                [0 / 1, 0 / 1, 1 / 1],
+                [np.nan, np.nan, np.nan],
+                [np.nan, np.nan, np.nan],
+            ],
         ],
         dtype=np.float32,
     )
-
-    # Test numpy array.
-    actual = allele_counts_to_frequencies(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_allclose(expect, actual)
-    assert expect.dtype == actual.dtype
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(2, -1))
-    actual = allele_counts_to_frequencies(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_allclose(expect, actual.compute())
-    assert expect.dtype == actual.dtype
-
-    # TODO Test errors.
+    _test_ac_func(allele_counts_to_frequencies, ac, expect, assert_allclose)
 
 
-def test_2d_allelism():
+def test_allelism():
     ac = np.array(
-        [[3, 1, 0], [1, 2, 1], [1, 2, 1], [0, 0, 2], [0, 0, 0], [0, 1, 2]],
-        dtype=np.int32,
-    )
-    expect = np.array([2, 3, 3, 1, 0, 2], np.int8)
-
-    # Test numpy array.
-    actual = allele_counts_allelism(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-    assert expect.dtype == actual.dtype
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(2, -1))
-    actual = allele_counts_allelism(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-    assert expect.dtype == actual.dtype
-
-
-def test_2d_max_allele():
-    ac = np.array(
-        [[3, 1, 0], [1, 2, 1], [1, 2, 1], [0, 0, 2], [0, 0, 0], [0, 1, 2]],
-        dtype=np.int32,
-    )
-    expect = np.array([1, 2, 2, 2, -1, 2], dtype=np.int8)
-
-    # Test numpy array.
-    actual = allele_counts_max_allele(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-    assert expect.dtype == actual.dtype
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(2, -1))
-    actual = allele_counts_max_allele(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-    assert expect.dtype == actual.dtype
-
-
-def test_2d_locate_variant():
-    ac = np.array(
-        [[3, 1, 0], [1, 2, 1], [1, 2, 1], [0, 0, 2], [0, 0, 0], [0, 1, 2]],
-        dtype=np.int32,
-    )
-    expect = np.array([1, 1, 1, 1, 0, 1], dtype=np.bool_)
-
-    # Test numpy array.
-    actual = allele_counts_locate_variant(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-    assert expect.dtype == actual.dtype
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(2, -1))
-    actual = allele_counts_locate_variant(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-    assert expect.dtype == actual.dtype
-
-
-def test_2d_locate_non_variant():
-    ac = np.array(
-        [[3, 1, 0], [1, 2, 1], [1, 2, 1], [0, 0, 2], [0, 0, 0], [0, 1, 2]],
-        dtype=np.int32,
-    )
-    expect = np.array([0, 0, 0, 0, 1, 0], dtype=np.bool_)
-
-    # Test numpy array.
-    actual = allele_counts_locate_non_variant(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-    assert expect.dtype == actual.dtype
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(2, -1))
-    actual = allele_counts_locate_non_variant(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-    assert expect.dtype == actual.dtype
-
-
-def test_2d_locate_segregating():
-    ac = np.array(
-        [[3, 1, 0], [1, 2, 1], [1, 2, 1], [0, 0, 2], [0, 0, 0], [0, 1, 2]],
-        dtype=np.int32,
-    )
-    expect = np.array([1, 1, 1, 0, 0, 1], dtype=np.bool_)
-
-    # Test numpy array.
-    actual = allele_counts_locate_segregating(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-    assert expect.dtype == actual.dtype
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(2, -1))
-    actual = allele_counts_locate_segregating(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-    assert expect.dtype == actual.dtype
-
-
-def test_3d_locate_hom():
-
-    gt = np.array(
-        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [0, -1], [-1, -1]]], dtype=np.int8
-    )
-    ac = genotypes_to_allele_counts(gt, max_allele=3)
-    expect = np.array([[True, False, True], [False, False, False]], dtype=bool)
-
-    # Test numpy array.
-    actual = allele_counts_locate_hom(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-
-    # Test row/column.
-    actual = allele_counts_locate_hom(ac[0])
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect[0], actual)
-    actual = allele_counts_locate_hom(ac[:, 0])
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect[:, 0], actual)
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(1, 1, -1))
-    actual = allele_counts_locate_hom(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-
-
-def test_3d_locate_het():
-
-    gt = np.array(
-        [[[0, 0], [0, 1], [1, 2]], [[-1, 0], [0, -1], [-1, -1]]], dtype=np.int8
-    )
-    ac = genotypes_to_allele_counts(gt, max_allele=3)
-    expect = np.array([[False, True, True], [False, False, False]], dtype=bool)
-
-    # Test numpy array.
-    actual = allele_counts_locate_het(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
-
-    # Test row/column.
-    actual = allele_counts_locate_het(ac[0])
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect[0], actual)
-    actual = allele_counts_locate_het(ac[:, 0])
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect[:, 0], actual)
-
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(1, 1, -1))
-    actual = allele_counts_locate_het(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
-
-
-def test_3d_locate_het_triploid():
-
-    gt = np.array(
         [
-            [[0, 0, 0], [0, 0, 1], [0, 1, 2]],
-            [[0, 0, -1], [0, 1, -1], [0, -1, -1]],
+            [[3, 0, 0], [0, 3, 0], [2, 1, 0], [0, 1, 2], [1, 1, 1]],
+            [[2, 0, 0], [0, 2, 0], [1, 1, 0], [0, 1, 1], [1, 0, 1]],
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0], [-1, -1, -1]],
         ],
-        dtype=np.int8,
+        dtype=np.int32,
     )
-    ac = genotypes_to_allele_counts(gt, max_allele=2)
-    expect = np.array([[False, True, True], [False, True, False]], dtype=bool)
+    expect = np.array(
+        [[1, 1, 2, 2, 3], [1, 1, 2, 2, 2], [1, 1, 1, 0, 0]], dtype=np.int8
+    )
+    _test_ac_func(allele_counts_allelism, ac, expect, assert_array_equal)
 
-    # Test numpy array.
-    actual = allele_counts_locate_het(ac)
-    assert isinstance(actual, np.ndarray)
-    assert_array_equal(expect, actual)
 
-    # Test dask array.
-    ac_dask = da.from_array(ac, chunks=(1, 1, -1))
-    actual = allele_counts_locate_het(ac_dask)
-    assert isinstance(actual, da.Array)
-    assert_array_equal(expect, actual.compute())
+def test_max_allele():
+    ac = np.array(
+        [
+            [[3, 0, 0], [0, 3, 0], [2, 1, 0], [0, 1, 2], [1, 1, 1]],
+            [[2, 0, 0], [0, 2, 0], [1, 1, 0], [0, 1, 1], [1, 0, 1]],
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0], [-1, -1, -1]],
+        ],
+        dtype=np.int32,
+    )
+    expect = np.array(
+        [[0, 1, 1, 2, 2], [0, 1, 1, 2, 2], [0, 1, 2, -1, -1]], dtype=np.int8
+    )
+    _test_ac_func(allele_counts_max_allele, ac, expect, assert_array_equal)
+
+
+# TODO Test errors.
