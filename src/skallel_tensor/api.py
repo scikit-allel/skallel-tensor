@@ -248,12 +248,12 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 )
 
 
-# genotype array
+# genotypes
 # TODO to_haplotypes
 # TODO map_alleles
 
 
-# TODO HaplotypeArray
+# haplotypes
 # TODO count_alleles_called
 # TODO to_missing_allele_counts
 # TODO locate_ref
@@ -266,12 +266,10 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 # TODO distinct
 # TODO distinct_counts
 # TODO distinct_frequencies
-# TODO display
 
 
-# TODO AlleleCountsArray
+# allele counts
 # TODO map_alleles
-# TODO display
 
 
 def allele_counts_to_frequencies(ac):
