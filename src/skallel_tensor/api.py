@@ -248,6 +248,26 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 )
 
 
+def genotypes_to_haplotypes(gt):
+    """TODO
+
+    Parameters
+    ----------
+    gt : array_like, int
+
+    Returns
+    -------
+    ht : array_like, int
+
+    """
+
+    check_array_like(gt, kind="i", ndim=3)
+    return dispatch_genotypes_3d_to_haplotypes(gt)
+
+
+dispatch_genotypes_3d_to_haplotypes = Dispatcher("genotypes_3d_to_haplotypes")
+
+
 # genotypes
 # TODO to_haplotypes
 # TODO map_alleles

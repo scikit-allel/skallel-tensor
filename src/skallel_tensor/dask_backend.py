@@ -353,6 +353,18 @@ api.dispatch_genotypes_3d_to_allele_counts_melt.add(
 )
 
 
+def genotypes_3d_to_haplotypes(gt):
+    assert gt.ndim == 3
+    m = gt.shape[0]
+    gt = ensure_dask_array(gt)
+    return gt.reshape((m, -1))
+
+
+api.dispatch_genotypes_3d_to_haplotypes.add(
+    (chunked_array_types,), genotypes_3d_to_haplotypes
+)
+
+
 def allele_counts_2d_to_frequencies(ac):
     assert ac.ndim == 2
     ac = ensure_dask_array(ac)

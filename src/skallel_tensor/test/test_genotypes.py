@@ -14,6 +14,7 @@ from skallel_tensor import (
     genotypes_to_missing_allele_counts,
     genotypes_to_allele_counts,
     genotypes_to_allele_counts_melt,
+    genotypes_to_haplotypes,
 )
 
 
@@ -239,3 +240,41 @@ def test_to_allele_counts_melt():
         genotypes_to_allele_counts_melt(gt, max_allele="foo")
     with pytest.raises(ValueError):
         genotypes_to_allele_counts_melt(gt, max_allele=128)
+
+
+def test_to_haplotypes():
+
+    gt = np.array(
+        [[[0, 0], [0, 1], [2, 2]], [[-1, 0], [1, -1], [-1, -1]]], dtype=np.int8
+    )
+    expect = np.array(
+        [[0, 0, 0, 1, 2, 2], [-1, 0, 1, -1, -1, -1]], dtype=np.int8
+    )
+
+    # Test numpy array.
+    actual = genotypes_to_haplotypes(gt)
+    assert isinstance(actual, np.ndarray)
+    assert_array_equal(expect, actual)
+
+    # Test dask array.
+    gt_dask = da.from_array(gt, chunks=(1, 2, -1))
+    actual = genotypes_to_haplotypes(gt_dask)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute())
+
+    # Test zarr array.
+    gt_zarr = zarr.array(gt, chunks=(1, 2, 2))
+    actual = genotypes_to_haplotypes(gt_zarr)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute())
+
+    # Test exceptions.
+    with pytest.raises(TypeError):
+        # Wrong type.
+        genotypes_to_haplotypes("foo")
+    with pytest.raises(TypeError):
+        # Wrong dtype.
+        genotypes_to_haplotypes(gt.astype("f4"))
+    with pytest.raises(ValueError):
+        # Wrong ndim.
+        genotypes_to_haplotypes(gt[0])

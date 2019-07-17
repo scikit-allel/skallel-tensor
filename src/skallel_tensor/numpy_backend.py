@@ -330,6 +330,17 @@ api.dispatch_genotypes_3d_to_allele_counts_melt.add(
 )
 
 
+def genotypes_3d_to_haplotypes(gt):
+    assert gt.ndim == 3
+    m = gt.shape[0]
+    return gt.reshape((m, -1))
+
+
+api.dispatch_genotypes_3d_to_haplotypes.add(
+    (np.ndarray,), genotypes_3d_to_haplotypes
+)
+
+
 def variants_to_dataframe(variants, columns):
 
     # Build dataframe.
