@@ -23,6 +23,12 @@ def _test_ac_func(f, ac, expect, compare):
     compare(expect, actual)
     assert expect.dtype == actual.dtype
 
+    # Test numpy array, Fortran order.
+    actual = f(np.asfortranarray(ac))
+    assert isinstance(actual, np.ndarray)
+    compare(expect, actual)
+    assert expect.dtype == actual.dtype
+
     # Test dask array.
     ac_dask = da.from_array(ac, chunks=(1, 2, -1))
     actual = f(ac_dask)
