@@ -39,7 +39,7 @@ def ensure_dask_or_numpy_array(a):
         return ensure_dask_array(a)
 
 
-def select_slice(a, start=None, stop=None, step=None, axis=0):
+def select_slice(a, *, start=None, stop=None, step=None, axis=0):
     a = ensure_dask_array(a)
     item = utils.expand_slice(
         start=start, stop=stop, step=step, axis=axis, ndim=a.ndim
@@ -50,7 +50,7 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
 api.dispatch_select_slice.add((chunked_array_types,), select_slice)
 
 
-def select_indices(a, indices, axis=0):
+def select_indices(a, indices, *, axis=0):
     a = ensure_dask_array(a)
     indices = ensure_dask_or_numpy_array(indices)
     return da.take(a, indices, axis=axis)
@@ -64,7 +64,7 @@ api.dispatch_select_indices.add(
 )
 
 
-def select_mask(a, mask, axis=0):
+def select_mask(a, mask, *, axis=0):
     a = ensure_dask_array(a)
     mask = ensure_dask_or_numpy_array(mask)
     return da.compress(mask, a, axis=axis)
@@ -76,7 +76,7 @@ api.dispatch_select_mask.add(
 )
 
 
-def concatenate(seq, axis=0):
+def concatenate(seq, *, axis=0):
     seq = [ensure_dask_array(a) for a in seq]
     return da.concatenate(seq, axis=axis)
 
@@ -455,7 +455,7 @@ api.dispatch_allele_counts_3d_allelism.add(
 )
 
 
-def variants_to_dataframe(variants, columns):
+def variants_to_dataframe(variants, *, columns):
 
     # Build dataframe.
     df_cols = []

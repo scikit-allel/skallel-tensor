@@ -344,7 +344,7 @@ dispatch_allele_counts_2d_max_allele = Dispatcher("allele_counts_2d_max_allele")
 dispatch_allele_counts_3d_max_allele = Dispatcher("allele_counts_3d_max_allele")
 
 
-def variants_to_dataframe(variants, columns=None):
+def variants_to_dataframe(variants, *, columns=None):
 
     # Check input types.
     check_mapping(variants, key_type=str)
@@ -361,7 +361,7 @@ def variants_to_dataframe(variants, columns=None):
     f = dispatch_variants_to_dataframe.dispatch(type(a))
     if f is None:
         raise NotImplementedError
-    return f(variants, columns)
+    return f(variants, columns=columns)
 
 
 dispatch_variants_to_dataframe = Dispatcher("variants_to_dataframe")
@@ -390,7 +390,7 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-def select_slice(o, start=None, stop=None, step=None, axis=0):
+def select_slice(o, *, start=None, stop=None, step=None, axis=0):
     """TODO"""
 
     return dispatch_select_slice(
@@ -401,7 +401,7 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
 dispatch_select_slice = Dispatcher("select_slice")
 
 
-def group_select_slice(o, start=None, stop=None, step=None, axis=0):
+def group_select_slice(o, *, start=None, stop=None, step=None, axis=0):
     return GroupSelection(
         o, select_slice, start=start, stop=stop, step=step, axis=axis
     )

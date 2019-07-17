@@ -5,7 +5,7 @@ import pandas as pd
 from . import api, utils
 
 
-def select_slice(a, start=None, stop=None, step=None, axis=0):
+def select_slice(a, *, start=None, stop=None, step=None, axis=0):
     item = utils.expand_slice(
         start=start, stop=stop, step=step, axis=axis, ndim=a.ndim
     )
@@ -15,21 +15,21 @@ def select_slice(a, start=None, stop=None, step=None, axis=0):
 api.dispatch_select_slice.add((np.ndarray,), select_slice)
 
 
-def select_indices(a, indices, axis=0):
+def select_indices(a, indices, *, axis=0):
     return np.take(a, indices, axis=axis)
 
 
 api.dispatch_select_indices.add((np.ndarray, np.ndarray), select_indices)
 
 
-def select_mask(a, mask, axis=0):
+def select_mask(a, mask, *, axis=0):
     return np.compress(mask, a, axis=axis)
 
 
 api.dispatch_select_mask.add((np.ndarray, np.ndarray), select_mask)
 
 
-def concatenate(seq, axis=0):
+def concatenate(seq, *, axis=0):
     return np.concatenate(seq, axis=axis)
 
 
@@ -341,7 +341,7 @@ api.dispatch_genotypes_3d_to_haplotypes.add(
 )
 
 
-def variants_to_dataframe(variants, columns):
+def variants_to_dataframe(variants, *, columns):
 
     # Build dataframe.
     df_cols = {}
