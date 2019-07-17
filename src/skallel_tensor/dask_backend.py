@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 import dask.array as da
 import dask.dataframe as dd
-from . import api, numpy_backend, utils
+from . import api, utils
 
 
 chunked_array_types = (da.Array,)
@@ -88,7 +88,7 @@ def genotypes_2d_to_called_allele_counts(gt):
     assert gt.ndim == 2
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_2d_to_called_allele_counts,
+        api.dispatch_genotypes_2d_to_called_allele_counts,
         gt,
         drop_axis=1,
         dtype=bool,
@@ -105,7 +105,7 @@ def genotypes_3d_to_called_allele_counts(gt):
     assert gt.ndim == 3
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_to_called_allele_counts,
+        api.dispatch_genotypes_3d_to_called_allele_counts,
         gt,
         drop_axis=2,
         dtype=bool,
@@ -122,7 +122,7 @@ def genotypes_2d_to_missing_allele_counts(gt):
     assert gt.ndim == 2
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_2d_to_missing_allele_counts,
+        api.dispatch_genotypes_2d_to_missing_allele_counts,
         gt,
         drop_axis=1,
         dtype=bool,
@@ -139,7 +139,7 @@ def genotypes_3d_to_missing_allele_counts(gt):
     assert gt.ndim == 3
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_to_missing_allele_counts,
+        api.dispatch_genotypes_3d_to_missing_allele_counts,
         gt,
         drop_axis=2,
         dtype=bool,
@@ -156,7 +156,7 @@ def genotypes_2d_locate_hom(gt):
     assert gt.ndim == 2
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_2d_locate_hom, gt, drop_axis=1, dtype=bool
+        api.dispatch_genotypes_2d_locate_hom, gt, drop_axis=1, dtype=bool
     )
     return out
 
@@ -170,7 +170,7 @@ def genotypes_3d_locate_hom(gt):
     assert gt.ndim == 3
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_locate_hom, gt, drop_axis=2, dtype=bool
+        api.dispatch_genotypes_3d_locate_hom, gt, drop_axis=2, dtype=bool
     )
     return out
 
@@ -184,7 +184,7 @@ def genotypes_2d_locate_het(gt):
     assert gt.ndim == 2
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_2d_locate_het, gt, drop_axis=1, dtype=bool
+        api.dispatch_genotypes_2d_locate_het, gt, drop_axis=1, dtype=bool
     )
     return out
 
@@ -198,7 +198,7 @@ def genotypes_3d_locate_het(gt):
     assert gt.ndim == 3
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_locate_het, gt, drop_axis=2, dtype=bool
+        api.dispatch_genotypes_3d_locate_het, gt, drop_axis=2, dtype=bool
     )
     return out
 
@@ -212,7 +212,7 @@ def genotypes_2d_locate_call(gt, *, call):
     assert gt.ndim == 2
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_2d_locate_call,
+        api.dispatch_genotypes_2d_locate_call,
         gt,
         call=call,
         drop_axis=1,
@@ -230,7 +230,7 @@ def genotypes_3d_locate_call(gt, *, call):
     assert gt.ndim == 3
     gt = ensure_dask_array(gt)
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_locate_call,
+        api.dispatch_genotypes_3d_locate_call,
         gt,
         call=call,
         drop_axis=2,
@@ -247,7 +247,7 @@ api.dispatch_genotypes_3d_locate_call.add(
 def _map_genotypes_3d_count_alleles(chunk, max_allele):
 
     # Compute allele counts for chunk.
-    ac = numpy_backend.genotypes_3d_count_alleles(chunk, max_allele=max_allele)
+    ac = api.dispatch_genotypes_3d_count_alleles(chunk, max_allele=max_allele)
 
     # Insert extra dimension to allow for reducing.
     ac = ac[:, None, :]
@@ -288,7 +288,7 @@ def genotypes_2d_to_allele_counts(gt, *, max_allele):
 
     # Map blocks.
     out = da.map_blocks(
-        numpy_backend.genotypes_2d_to_allele_counts,
+        api.dispatch_genotypes_2d_to_allele_counts,
         gt,
         max_allele=max_allele,
         chunks=chunks,
@@ -312,7 +312,7 @@ def genotypes_3d_to_allele_counts(gt, *, max_allele):
 
     # Map blocks.
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_to_allele_counts,
+        api.dispatch_genotypes_3d_to_allele_counts,
         gt,
         max_allele=max_allele,
         chunks=chunks,
@@ -337,7 +337,7 @@ def genotypes_3d_to_allele_counts_melt(gt, *, max_allele):
 
     # Map blocks.
     out = da.map_blocks(
-        numpy_backend.genotypes_3d_to_allele_counts_melt,
+        api.dispatch_genotypes_3d_to_allele_counts_melt,
         gt,
         max_allele=max_allele,
         chunks=chunks,
@@ -369,7 +369,7 @@ def allele_counts_2d_to_frequencies(ac):
     assert ac.ndim == 2
     ac = ensure_dask_array(ac)
     out = da.map_blocks(
-        numpy_backend.allele_counts_2d_to_frequencies, ac, dtype=np.float32
+        api.dispatch_allele_counts_2d_to_frequencies, ac, dtype=np.float32
     )
     return out
 
@@ -383,7 +383,7 @@ def allele_counts_3d_to_frequencies(ac):
     assert ac.ndim == 3
     ac = ensure_dask_array(ac)
     out = da.map_blocks(
-        numpy_backend.allele_counts_3d_to_frequencies, ac, dtype=np.float32
+        api.dispatch_allele_counts_3d_to_frequencies, ac, dtype=np.float32
     )
     return out
 
@@ -397,10 +397,7 @@ def allele_counts_2d_max_allele(ac):
     assert ac.ndim == 2
     ac = ensure_dask_array(ac)
     out = da.map_blocks(
-        numpy_backend.allele_counts_2d_max_allele,
-        ac,
-        dtype=np.int8,
-        drop_axis=1,
+        api.dispatch_allele_counts_2d_max_allele, ac, dtype=np.int8, drop_axis=1
     )
     return out
 
@@ -414,10 +411,7 @@ def allele_counts_3d_max_allele(ac):
     assert ac.ndim == 3
     ac = ensure_dask_array(ac)
     out = da.map_blocks(
-        numpy_backend.allele_counts_3d_max_allele,
-        ac,
-        dtype=np.int8,
-        drop_axis=2,
+        api.dispatch_allele_counts_3d_max_allele, ac, dtype=np.int8, drop_axis=2
     )
     return out
 
@@ -431,7 +425,7 @@ def allele_counts_2d_allelism(ac):
     assert ac.ndim == 2
     ac = ensure_dask_array(ac)
     out = da.map_blocks(
-        numpy_backend.allele_counts_2d_allelism, ac, dtype=np.int8, drop_axis=1
+        api.dispatch_allele_counts_2d_allelism, ac, dtype=np.int8, drop_axis=1
     )
     return out
 
@@ -445,7 +439,7 @@ def allele_counts_3d_allelism(ac):
     assert ac.ndim == 3
     ac = ensure_dask_array(ac)
     out = da.map_blocks(
-        numpy_backend.allele_counts_3d_allelism, ac, dtype=np.int8, drop_axis=2
+        api.dispatch_allele_counts_3d_allelism, ac, dtype=np.int8, drop_axis=2
     )
     return out
 
