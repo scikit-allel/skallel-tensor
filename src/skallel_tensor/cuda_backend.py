@@ -1,8 +1,19 @@
 from numba import cuda
-from numba.cuda.cudadrv.devicearray import DeviceNDArray
 import numpy as np
-import math
 from skallel_tensor import api
+
+# Simulated CUDA arrays.
+from numba.cuda.simulator.cudadrv.devicearray import FakeCUDAArray
+
+cuda_array_types = (FakeCUDAArray,)
+try:
+    # noinspection PyUnresolvedReferences
+    from numba.cuda.cudadrv.devicearray import DeviceNDArray
+
+    cuda_array_types += (DeviceNDArray,)
+except ImportError:
+    # Not available when using CUDA simulator.
+    pass
 
 
 @cuda.jit
@@ -10,6 +21,9 @@ def kernel_genotypes_3d_count_alleles(gt, max_allele, out):
     m = gt.shape[0]
     i = cuda.grid(1)
     if i < m:
+        # Initialize to zero.
+        for j in range(max_allele + 1):
+            out[i, j] = 0
         n = gt.shape[1]
         p = gt.shape[2]
         for j in range(n):
@@ -21,17 +35,14 @@ def kernel_genotypes_3d_count_alleles(gt, max_allele, out):
 
 def genotypes_3d_count_alleles(gt, *, max_allele):
     assert gt.ndim == 3
-    assert cuda.is_cuda_array(gt)
-    gt = cuda.as_cuda_array(gt)
     m = gt.shape[0]
     out = cuda.device_array((m, max_allele + 1), dtype=np.int32)
-    threads = 32
-    blocks = math.ceil(m / threads)
-    kernel_genotypes_3d_count_alleles[blocks, threads](gt, max_allele, out)
-    # TODO return cupy array to allow for inserting axes
+    # Let numba decide number of threads and blocks.
+    kernel = kernel_genotypes_3d_count_alleles.forall(m)
+    kernel(gt, max_allele, out)
     return out
 
 
 api.dispatch_genotypes_3d_count_alleles.add(
-    (DeviceNDArray,), genotypes_3d_count_alleles
+    (cuda_array_types,), genotypes_3d_count_alleles
 )

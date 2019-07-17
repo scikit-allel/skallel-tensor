@@ -1,14 +1,24 @@
 import numpy as np
 import dask.array as da
-from skallel_tensor import numpy_backend, dask_backend
+from numba import cuda
+import os
+from skallel_tensor import numpy_backend, dask_backend, cuda_backend
+
+
+cudasim = False
+if os.environ.get("NUMBA_ENABLE_CUDASIM", "0") == "1":
+    cudasim = True
 
 
 class TimeGenotypes3D:
     """Timing benchmarks for genotypes 3D functions."""
 
     def setup(self):
-        self.data = np.random.randint(-1, 4, size=(10000, 1000, 2), dtype="i1")
-        self.data_dask = da.from_array(self.data, chunks=(1000, 200, 2))
+        self.data = np.random.randint(-1, 4, size=(50000, 1000, 2), dtype="i1")
+        self.data_dask = da.from_array(self.data, chunks=(5000, 1000, 2))
+        if not cudasim:
+            self.data_cuda = cuda.to_device(self.data)
+            self.data_dask_cuda = self.data_dask.map_blocks(cuda.to_device)
 
     def time_locate_hom_numpy(self):
         numpy_backend.genotypes_3d_locate_hom(self.data)
@@ -35,10 +45,23 @@ class TimeGenotypes3D:
     def time_count_alleles_numpy(self):
         numpy_backend.genotypes_3d_count_alleles(self.data, max_allele=3)
 
+    def time_count_alleles_cuda(self):
+        if not cudasim:
+            cuda_backend.genotypes_3d_count_alleles(
+                self.data_cuda, max_allele=3
+            )
+            cuda.synchronize()
+
     def time_count_alleles_dask(self):
         dask_backend.genotypes_3d_count_alleles(
             self.data_dask, max_allele=3
         ).compute()
+
+    def time_count_alleles_dask_cuda(self):
+        if not cudasim:
+            dask_backend.genotypes_3d_count_alleles(
+                self.data_dask_cuda, max_allele=3
+            ).compute(scheduler="single-threaded")
 
     def time_to_allele_counts_numpy(self):
         numpy_backend.genotypes_3d_to_allele_counts(self.data, max_allele=3)

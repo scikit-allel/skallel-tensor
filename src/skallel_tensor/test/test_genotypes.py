@@ -156,11 +156,17 @@ def test_count_alleles():
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
-    # Test Zarr array.
+    # Test zarr array.
     gt_zarr = zarr.array(gt)
     actual = genotypes_count_alleles(gt_zarr, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
+
+    # Test dask cuda array.
+    gt_dask_cuda = gt_dask.map_blocks(cuda.to_device)
+    actual = genotypes_count_alleles(gt_dask_cuda, max_allele=2)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute(scheduler="single-threaded"))
 
     # Test exceptions.
     with pytest.raises(TypeError):

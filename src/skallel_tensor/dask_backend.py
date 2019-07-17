@@ -250,7 +250,8 @@ def _map_genotypes_3d_count_alleles(chunk, max_allele):
     ac = api.dispatch_genotypes_3d_count_alleles(chunk, max_allele=max_allele)
 
     # Insert extra dimension to allow for reducing.
-    ac = ac[:, None, :]
+    # ac = ac[:, None, :]
+    ac = ac.reshape((ac.shape[0], 1, ac.shape[1]))
 
     return ac
 
