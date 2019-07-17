@@ -28,6 +28,7 @@ def genotypes_3d_count_alleles(gt, *, max_allele):
     threads = 32
     blocks = math.ceil(m / threads)
     kernel_genotypes_3d_count_alleles[blocks, threads](gt, max_allele, out)
+    # TODO return cupy array to allow for inserting axes
     return out
 
 
