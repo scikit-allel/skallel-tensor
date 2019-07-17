@@ -248,6 +248,26 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 )
 
 
+def genotypes_to_haplotypes(gt):
+    """TODO
+
+    Parameters
+    ----------
+    gt : array_like, int
+
+    Returns
+    -------
+    ht : array_like, int
+
+    """
+
+    check_array_like(gt, kind="i", ndim=3)
+    return dispatch_genotypes_3d_to_haplotypes(gt)
+
+
+dispatch_genotypes_3d_to_haplotypes = Dispatcher("genotypes_3d_to_haplotypes")
+
+
 # genotypes
 # TODO to_haplotypes
 # TODO map_alleles
@@ -324,7 +344,7 @@ dispatch_allele_counts_2d_max_allele = Dispatcher("allele_counts_2d_max_allele")
 dispatch_allele_counts_3d_max_allele = Dispatcher("allele_counts_3d_max_allele")
 
 
-def variants_to_dataframe(variants, columns=None):
+def variants_to_dataframe(variants, *, columns=None):
 
     # Check input types.
     check_mapping(variants, key_type=str)
@@ -341,7 +361,7 @@ def variants_to_dataframe(variants, columns=None):
     f = dispatch_variants_to_dataframe.dispatch(type(a))
     if f is None:
         raise NotImplementedError
-    return f(variants, columns)
+    return f(variants, columns=columns)
 
 
 dispatch_variants_to_dataframe = Dispatcher("variants_to_dataframe")
@@ -370,7 +390,7 @@ class GroupSelection(Mapping):
         return self.inner.keys()
 
 
-def select_slice(o, start=None, stop=None, step=None, axis=0):
+def select_slice(o, *, start=None, stop=None, step=None, axis=0):
     """TODO"""
 
     return dispatch_select_slice(
@@ -381,7 +401,7 @@ def select_slice(o, start=None, stop=None, step=None, axis=0):
 dispatch_select_slice = Dispatcher("select_slice")
 
 
-def group_select_slice(o, start=None, stop=None, step=None, axis=0):
+def group_select_slice(o, *, start=None, stop=None, step=None, axis=0):
     return GroupSelection(
         o, select_slice, start=start, stop=stop, step=step, axis=axis
     )
