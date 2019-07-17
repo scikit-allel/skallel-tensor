@@ -28,6 +28,11 @@ def _test_gt_func(f, gt, expect, compare, **kwargs):
     assert isinstance(actual, np.ndarray)
     compare(expect, actual)
 
+    # Test numpy array, Fortran order.
+    actual = f(np.asfortranarray(gt), **kwargs)
+    assert isinstance(actual, np.ndarray)
+    compare(expect, actual)
+
     # Test dask array.
     gt_dask = da.from_array(gt, chunks=(1, 2, -1))
     actual = f(gt_dask, **kwargs)
@@ -253,6 +258,11 @@ def test_to_haplotypes():
 
     # Test numpy array.
     actual = genotypes_to_haplotypes(gt)
+    assert isinstance(actual, np.ndarray)
+    assert_array_equal(expect, actual)
+
+    # Test numpy array, F order.
+    actual = genotypes_to_haplotypes(np.asfortranarray(gt))
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
