@@ -6,7 +6,7 @@ from skallel_tensor import api
 from numba.cuda.simulator.cudadrv.devicearray import FakeCUDAArray
 
 cuda_array_types = (FakeCUDAArray,)
-try:
+try:  # pragma: no cover
     # noinspection PyUnresolvedReferences
     from numba.cuda.cudadrv.devicearray import DeviceNDArray
 
