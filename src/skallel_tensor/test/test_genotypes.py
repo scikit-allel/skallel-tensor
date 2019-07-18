@@ -3,6 +3,7 @@ import dask.array as da
 from numpy.testing import assert_array_equal
 import pytest
 import zarr
+from numba import cuda
 
 
 from skallel_tensor import (
@@ -143,17 +144,29 @@ def test_count_alleles():
     assert isinstance(actual, np.ndarray)
     assert_array_equal(expect, actual)
 
+    # Test cuda array.
+    gt_cuda = cuda.to_device(gt)
+    actual = genotypes_count_alleles(gt_cuda, max_allele=2)
+    assert isinstance(actual, type(gt_cuda))
+    assert_array_equal(expect, actual.copy_to_host())
+
     # Test dask array.
     gt_dask = da.from_array(gt, chunks=(1, 2, -1))
     actual = genotypes_count_alleles(gt_dask, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
 
-    # Test Zarr array.
+    # Test zarr array.
     gt_zarr = zarr.array(gt)
     actual = genotypes_count_alleles(gt_zarr, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
+
+    # Test dask cuda array.
+    gt_dask_cuda = gt_dask.map_blocks(cuda.to_device)
+    actual = genotypes_count_alleles(gt_dask_cuda, max_allele=2)
+    assert isinstance(actual, da.Array)
+    assert_array_equal(expect, actual.compute(scheduler="single-threaded"))
 
     # Test exceptions.
     with pytest.raises(TypeError):

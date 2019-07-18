@@ -27,3 +27,4 @@ from .api import (
 # registered with the API for dispatching.
 from . import numpy_backend
 from . import dask_backend
+from . import cuda_backend
