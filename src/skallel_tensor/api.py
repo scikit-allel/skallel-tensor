@@ -248,6 +248,32 @@ dispatch_genotypes_3d_to_allele_counts_melt = Dispatcher(
 )
 
 
+def genotypes_to_major_allele_counts(gt, *, max_allele):
+    """Convert genotypes to major allele counts.
+
+    Parameters
+    ----------
+    gt : array_like, int
+    max_allele : int
+
+    Returns
+    -------
+    ac: array_like, int
+
+    """
+
+    check_array_like(gt, kind="i", ndim=3)
+    max_allele = coerce_scalar(max_allele, gt.dtype)
+    return dispatch_genotypes_3d_to_major_allele_counts(
+        gt, max_allele=max_allele
+    )
+
+
+dispatch_genotypes_3d_to_major_allele_counts = Dispatcher(
+    "genotypes_3d_to_major_allele_counts"
+)
+
+
 def genotypes_to_haplotypes(gt):
     """TODO
 

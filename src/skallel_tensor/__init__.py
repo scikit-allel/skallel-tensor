@@ -11,6 +11,7 @@ from .api import (
     genotypes_to_missing_allele_counts,
     genotypes_to_allele_counts,
     genotypes_to_allele_counts_melt,
+    genotypes_to_major_allele_counts,
     genotypes_to_haplotypes,
     allele_counts_to_frequencies,
     allele_counts_allelism,

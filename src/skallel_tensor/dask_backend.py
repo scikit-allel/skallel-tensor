@@ -91,7 +91,7 @@ def genotypes_2d_to_called_allele_counts(gt):
         api.dispatch_genotypes_2d_to_called_allele_counts,
         gt,
         drop_axis=1,
-        dtype=bool,
+        dtype=np.int8,
     )
     return out
 
@@ -108,7 +108,7 @@ def genotypes_3d_to_called_allele_counts(gt):
         api.dispatch_genotypes_3d_to_called_allele_counts,
         gt,
         drop_axis=2,
-        dtype=bool,
+        dtype=np.int8,
     )
     return out
 
@@ -125,7 +125,7 @@ def genotypes_2d_to_missing_allele_counts(gt):
         api.dispatch_genotypes_2d_to_missing_allele_counts,
         gt,
         drop_axis=1,
-        dtype=bool,
+        dtype=np.int8,
     )
     return out
 
@@ -142,7 +142,7 @@ def genotypes_3d_to_missing_allele_counts(gt):
         api.dispatch_genotypes_3d_to_missing_allele_counts,
         gt,
         drop_axis=2,
-        dtype=bool,
+        dtype=np.int8,
     )
     return out
 
@@ -250,7 +250,6 @@ def _map_genotypes_3d_count_alleles(chunk, max_allele):
     ac = api.dispatch_genotypes_3d_count_alleles(chunk, max_allele=max_allele)
 
     # Insert extra dimension to allow for reducing.
-    # ac = ac[:, None, :]
     ac = ac.reshape((ac.shape[0], 1, ac.shape[1]))
 
     return ac
@@ -269,8 +268,8 @@ def genotypes_3d_count_alleles(gt, *, max_allele):
         gt,
         max_allele=max_allele,
         chunks=chunks,
-        dtype="i4",
-    ).sum(axis=1, dtype="i4")
+        dtype=np.int32,
+    ).sum(axis=1, dtype=np.int32)
 
     return out
 
@@ -293,7 +292,7 @@ def genotypes_2d_to_allele_counts(gt, *, max_allele):
         gt,
         max_allele=max_allele,
         chunks=chunks,
-        dtype="i1",
+        dtype=np.int8,
     )
 
     return out
@@ -317,7 +316,7 @@ def genotypes_3d_to_allele_counts(gt, *, max_allele):
         gt,
         max_allele=max_allele,
         chunks=chunks,
-        dtype="i1",
+        dtype=np.int8,
     )
 
     return out
@@ -342,7 +341,7 @@ def genotypes_3d_to_allele_counts_melt(gt, *, max_allele):
         gt,
         max_allele=max_allele,
         chunks=chunks,
-        dtype="i1",
+        dtype=np.int8,
         drop_axis=2,
     )
 
@@ -351,6 +350,28 @@ def genotypes_3d_to_allele_counts_melt(gt, *, max_allele):
 
 api.dispatch_genotypes_3d_to_allele_counts_melt.add(
     (chunked_array_types,), genotypes_3d_to_allele_counts_melt
+)
+
+
+def genotypes_3d_to_major_allele_counts(gt, *, max_allele):
+    assert gt.ndim == 3
+    gt = ensure_dask_array(gt)
+    # Simple strategy for now, ensure chunks along first dimension only,
+    # as implementation needs to count alleles across all samples to find
+    # major allele.
+    gt = gt.rechunk((gt.chunks[0], -1, -1))
+    out = da.map_blocks(
+        api.dispatch_genotypes_3d_to_major_allele_counts,
+        gt,
+        max_allele=max_allele,
+        drop_axis=2,
+        dtype=np.int8,
+    )
+    return out
+
+
+api.dispatch_genotypes_3d_to_major_allele_counts.add(
+    (chunked_array_types,), genotypes_3d_to_major_allele_counts
 )
 
 

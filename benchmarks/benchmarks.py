@@ -14,8 +14,8 @@ class TimeGenotypes3D:
     """Timing benchmarks for genotypes 3D functions."""
 
     def setup(self):
-        self.data = np.random.randint(-1, 4, size=(50000, 1000, 2), dtype="i1")
-        self.data_dask = da.from_array(self.data, chunks=(5000, 1000, 2))
+        self.data = np.random.randint(-1, 4, size=(20000, 1000, 2), dtype="i1")
+        self.data_dask = da.from_array(self.data, chunks=(2000, 1000, 2))
         if not cudasim:
             self.data_cuda = cuda.to_device(self.data)
             self.data_dask_cuda = self.data_dask.map_blocks(cuda.to_device)
@@ -63,6 +63,22 @@ class TimeGenotypes3D:
                 self.data_dask_cuda, max_allele=3
             ).compute(scheduler="single-threaded")
 
+    def time_to_called_allele_counts_numpy(self):
+        numpy_backend.genotypes_3d_to_called_allele_counts(self.data)
+
+    def time_to_called_allele_counts_dask(self):
+        dask_backend.genotypes_3d_to_called_allele_counts(
+            self.data_dask
+        ).compute()
+
+    def time_to_missing_allele_counts_numpy(self):
+        numpy_backend.genotypes_3d_to_missing_allele_counts(self.data)
+
+    def time_to_missing_allele_counts_dask(self):
+        dask_backend.genotypes_3d_to_missing_allele_counts(
+            self.data_dask
+        ).compute()
+
     def time_to_allele_counts_numpy(self):
         numpy_backend.genotypes_3d_to_allele_counts(self.data, max_allele=3)
 
@@ -78,6 +94,16 @@ class TimeGenotypes3D:
 
     def time_to_allele_counts_melt_dask(self):
         dask_backend.genotypes_3d_to_allele_counts_melt(
+            self.data_dask, max_allele=3
+        ).compute()
+
+    def time_to_major_allele_counts_numpy(self):
+        numpy_backend.genotypes_3d_to_major_allele_counts(
+            self.data, max_allele=3
+        )
+
+    def time_to_major_allele_counts_dask(self):
+        dask_backend.genotypes_3d_to_major_allele_counts(
             self.data_dask, max_allele=3
         ).compute()
 

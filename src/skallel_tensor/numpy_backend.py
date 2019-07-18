@@ -330,6 +330,44 @@ api.dispatch_genotypes_3d_to_allele_counts_melt.add(
 )
 
 
+@numba.njit(nogil=True)
+def genotypes_3d_to_major_allele_counts(gt, *, max_allele):
+    assert gt.ndim == 3
+    m = gt.shape[0]
+    n = gt.shape[1]
+    p = gt.shape[2]
+    ac = np.zeros(max_allele + 1, dtype=np.int32)
+    out = np.zeros((m, n), dtype=np.int8)
+    for i in range(m):
+        # First count alleles, needed to find major allele.
+        ac[:] = 0
+        for j in range(n):
+            for k in range(p):
+                allele = gt[i, j, k]
+                if 0 <= allele <= max_allele:
+                    ac[allele] += 1
+        # Now find major allele.
+        major_allele = -1
+        major_allele_count = 0
+        for j in range(max_allele + 1):
+            c = ac[j]
+            if c > major_allele_count:
+                major_allele = j
+                major_allele_count = c
+        # Now recode genotypes as major allele counts.
+        if major_allele >= 0:
+            for j in range(n):
+                for k in range(p):
+                    if gt[i, j, k] == major_allele:
+                        out[i, j] += 1
+    return out
+
+
+api.dispatch_genotypes_3d_to_major_allele_counts.add(
+    (np.ndarray,), genotypes_3d_to_major_allele_counts
+)
+
+
 def genotypes_3d_to_haplotypes(gt):
     assert gt.ndim == 3
     m = gt.shape[0]
