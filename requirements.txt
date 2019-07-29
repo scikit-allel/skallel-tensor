@@ -18,4 +18,5 @@ setuptools-scm==3.3.3
 asv==0.4.1
 h5py==2.9.0
 zarr==2.3.2
-
+# workaround for https://github.com/pypa/packaging/issues/170
+pyparsing==2.4.0
