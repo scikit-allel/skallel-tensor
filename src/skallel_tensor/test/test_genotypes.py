@@ -42,7 +42,7 @@ def _test_gt_func(f, gt, expect, compare, **kwargs):
     assert_array_equal(expect, actual.compute())
 
     # Test zarr array.
-    gt_zarr = zarr.array(data=gt)
+    gt_zarr = zarr.array(data=gt, chunks=(1, 2, None))
     actual = f(gt_zarr, **kwargs)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
@@ -158,7 +158,7 @@ def test_count_alleles():
     assert_array_equal(expect, actual.compute())
 
     # Test zarr array.
-    gt_zarr = zarr.array(gt)
+    gt_zarr = zarr.array(gt, chunks=(1, 2, None))
     actual = genotypes_count_alleles(gt_zarr, max_allele=2)
     assert isinstance(actual, da.Array)
     assert_array_equal(expect, actual.compute())
