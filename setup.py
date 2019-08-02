@@ -6,7 +6,7 @@ setup(
     packages=find_packages("src"),
     package_dir={"": "src"},
     setup_requires=["setuptools>18.0", "setuptools-scm>1.5.4"],
-    install_requires=["numpy", "numba", "dask>=2.0.0", "multipledispatch"],
+    install_requires=["numpy", "numba", "dask[complete]>=2.0.0", "multipledispatch"],
     use_scm_version={
         "version_scheme": "guess-next-dev",
         "local_scheme": "dirty-tag",
