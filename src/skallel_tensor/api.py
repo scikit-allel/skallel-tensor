@@ -31,7 +31,7 @@ def genotypes_locate_hom(gt):
 
     Returns
     -------
-    out: array_like, bool
+    out : array_like, bool
 
     """
 
@@ -57,7 +57,7 @@ def genotypes_locate_het(gt):
 
     Returns
     -------
-    out: array_like, bool
+    out : array_like, bool
 
     """
 
@@ -84,7 +84,7 @@ def genotypes_locate_call(gt, *, call):
 
     Returns
     -------
-    out: array_like, bool
+    out : array_like, bool
 
     """
 
@@ -117,7 +117,7 @@ def genotypes_count_alleles(gt, *, max_allele):
 
     Returns
     -------
-    ac: array_like, int
+    ac : array_like, int
 
     """
 
@@ -138,7 +138,7 @@ def genotypes_to_called_allele_counts(gt):
 
     Returns
     -------
-    out: array_like, int
+    out : array_like, int
 
     """
 
@@ -168,7 +168,7 @@ def genotypes_to_missing_allele_counts(gt):
 
     Returns
     -------
-    out: array_like, bool
+    out : array_like, bool
 
     """
 
@@ -199,7 +199,7 @@ def genotypes_to_allele_counts(gt, *, max_allele):
 
     Returns
     -------
-    ac: array_like, int
+    ac : array_like, int
 
     """
 
@@ -232,7 +232,7 @@ def genotypes_to_allele_counts_melt(gt, *, max_allele):
 
     Returns
     -------
-    ac: array_like, int
+    ac : array_like, int
 
     """
 
@@ -258,7 +258,7 @@ def genotypes_to_major_allele_counts(gt, *, max_allele):
 
     Returns
     -------
-    ac: array_like, int
+    ac : array_like, int
 
     """
 
