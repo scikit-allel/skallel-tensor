@@ -3,8 +3,8 @@
 # library requirements
 multipledispatch==0.6.0
 numba==0.45.0
-numpy==1.16.4
-dask[complete]==2.1.0
+numpy==1.17.0
+dask[complete]==2.2.0
 pandas==0.25.0
 #
 # test requirements
@@ -12,11 +12,11 @@ tox==3.13.2
 pytest==5.0.1
 pytest-cov==2.7.1
 flake8==3.7.8
-coverage==4.5.3
-coveralls==1.8.1
+coverage==4.5.4
+coveralls==1.8.2
 setuptools-scm==3.3.3
 asv==0.4.1
 h5py==2.9.0
 zarr==2.3.2
 # workaround for https://github.com/pypa/packaging/issues/170
-pyparsing==2.4.0
+pyparsing==2.4.2
