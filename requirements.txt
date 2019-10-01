@@ -8,7 +8,7 @@ dask[complete]==2.5.0
 pandas==0.25.1
 #
 # test requirements
-tox==3.13.2
+tox==3.14.0
 pytest==5.0.1
 pytest-cov==2.7.1
 flake8==3.7.8
